@@ -1318,7 +1318,7 @@ actions:
   variants:
   - cloud
 
-- trigger: ssh-files
+- trigger: post-files
   action: |-
     #!/bin/sh
     set -eux

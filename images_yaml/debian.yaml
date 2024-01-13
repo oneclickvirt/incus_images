@@ -1171,6 +1171,7 @@ packages:
     - openssh-server
     - iptables
     - dos2unix
+    - cron
     action: install
 
   - packages:

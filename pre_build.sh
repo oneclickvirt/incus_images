@@ -21,7 +21,7 @@ for version in "${debian_versions[@]}"; do
             cd ./${arch}
             mkdir ${variant}
             cd ./${variant}
-            distrobuilder build-lxc /root/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+            distrobuilder build-lxd /root/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
             cd ..
             cd ..
             cd ..

@@ -10,7 +10,7 @@ fi
 mkdir images
 cd ./images
 debian_versions=("stretch" "buster" "bullseye" "bookworm" "trixie")
-architectures=("amd64" "arm64" "armel" "armhf" "i386" "ppc64el" "s390x")
+architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
 variants=("default", "cloud")
 mkdir debian
 cd ./debian

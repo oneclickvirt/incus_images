@@ -12,6 +12,7 @@ fi
 if ! command -v debootstrap >/dev/null 2>&1; then
     sudo apt-get install debootstrap -y
 fi
+run_funct="${1:-debian}"
 
 debian(){
     # debian
@@ -232,3 +233,5 @@ archlinux(){
         done
     done
 }
+
+$run_funct

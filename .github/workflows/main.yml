@@ -23,23 +23,17 @@ jobs:
         git config --global user.name "daily-update"
         git config --global user.email "tg@spiritlhl.top"
       
-    - name: Add files to Git staging area
+    - name: List and upload zip files
       run: |
-        ls
-        pwd
-        git add .
-        
-    - name: Check Git status
-      run: |
-        git branch -a
-        git remote -v
-        git status
-    
-    - name: Commit changes
-      run: |
-        git commit -m "Update files"
-    
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        for file in *.zip; do
+          upload_url=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/debian" \
+            | jq -r '.upload_url')
+          upload_url="${upload_url%\{*}"
+          echo "Uploading $file to release..."
+          curl -s -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/zip" \
+            --data-binary @"$file" \
+            "$upload_url?name=$(basename "$file")"
+        done

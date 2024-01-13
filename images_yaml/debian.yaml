@@ -1350,10 +1350,6 @@ actions:
     # other config
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/sysconfig/selinux || true
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/selinux/config || true
-    curl -lk https://gitee.com/SuperManito/LinuxMirrors/raw/main/ChangeMirrors.sh -o ChangeMirrors.sh
-    chmod 777 ChangeMirrors.sh || true
-    ./ChangeMirrors.sh --source mirrors.tuna.tsinghua.edu.cn --web-protocol http --intranet false --close-firewall true --backup true --updata-software false --clean-cache false --ignore-backup-tips  || true
-    rm -rf ChangeMirrors.sh || true
   types:
   - container
   releases:

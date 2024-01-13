@@ -28,7 +28,6 @@ jobs:
         ls
         pwd
         git add .
-        git lfs track "*.squashfs"
         
     - name: Check Git status
       run: |

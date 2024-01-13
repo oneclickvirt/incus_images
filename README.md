@@ -2,7 +2,8 @@
 
 ```
 lxc image import incus.tar.xz rootfs.squashfs --alias mydebian
-lxc launch mydebian test
+lxc init mydebian test
+lxc start test
 lxc exec test -- /bin/bash
 ```
 

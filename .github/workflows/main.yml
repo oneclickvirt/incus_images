@@ -16,7 +16,7 @@ jobs:
       
     - name: build images
       run: |
-        bash pre_build.sh
+        bash build_images.sh
         
     - name: Configure Git
       run: |

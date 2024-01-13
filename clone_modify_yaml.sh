@@ -1,6 +1,6 @@
 #!/bin/bash
 # from https://github.com/oneclickvirt/incus_images
-
+# Thanks https://github.com/lxc/lxc-ci/tree/main/images
 
 cd /home/runner/work/incus_images/incus_images/images_yaml/
 # debian

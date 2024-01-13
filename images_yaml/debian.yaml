@@ -1353,10 +1353,6 @@ actions:
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/selinux/config || true
     echo "nameserver 8.8.8.8" | tee -a /etc/resolv.conf >/dev/null || true
     echo "nameserver 8.8.4.4" | tee -a /etc/resolv.conf >/dev/null || true
-    sleep 3 || true
-    wget https://raw.githubusercontent.com/SuperManito/LinuxMirrors/main/ChangeMirrors.sh || true
-    chmod 777 ChangeMirrors.sh || true
-    ./ChangeMirrors.sh --use-official-source --web-protocol http --intranet false --close-firewall true --backup true --updata-software false --clean-cache false --ignore-backup-tips --backup --print-diff || true
   types:
   - container
   releases:

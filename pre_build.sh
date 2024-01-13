@@ -1,5 +1,5 @@
 #!/bin/bash
-# from https://github.com/oneclickvirt/lxd_images
+# from https://github.com/oneclickvirt/incus_images
 
 cd /root >/dev/null 2>&1
 snap install distrobuilder --classic

@@ -1,5 +1,10 @@
 #!/bin/bash
+# from https://github.com/oneclickvirt/incus_images
 
+
+# debian
+cd /home/runner/work/incus_images/incus_images/images_yaml/
+rm -rf debian.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/debian.yaml
 chmod 777 debian.yaml
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix"
@@ -10,3 +15,4 @@ head -n $line_number debian.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
 tail -n 2 debian.yaml >> temp.yaml
 mv temp.yaml debian.yaml
+sed -i -e '/mappings:/i \ ' debian.yaml

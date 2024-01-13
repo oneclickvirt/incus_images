@@ -53,7 +53,7 @@ insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\
 sed -i "/- vim-minimal/ a\\$insert_content_1" centos.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat centos.yaml > temp.yaml
-echo "" > temp.yaml
+echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml centos.yaml
 
@@ -65,7 +65,7 @@ insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\
 sed -i "/- vim-minimal/ a\\$insert_content_1" almalinux.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat almalinux.yaml > temp.yaml
-echo "" > temp.yaml
+echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml almalinux.yaml
 
@@ -77,7 +77,7 @@ insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\
 sed -i "/- vim-minimal/ a\\$insert_content_1" rockylinux.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat rockylinux.yaml > temp.yaml
-echo "" > temp.yaml
+echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml rockylinux.yaml
 
@@ -89,7 +89,7 @@ insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\
 sed -i "/- vim-minimal/ a\\$insert_content_1" oracle.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat oracle.yaml > temp.yaml
-echo "" > temp.yaml
+echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml oracle.yaml
 

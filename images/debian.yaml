@@ -1156,9 +1156,8 @@ packages:
     url: |-
       deb http://deb.debian.org/debian {{ image.release }} main
       {% if image.release != "sid" %}deb http://deb.debian.org/debian {{ image.release }}-updates main{% endif %}
-      {% if image.release != "sid" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
-      {% if image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
-      {% if image.release == "stretch" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
+      {% if image.release != "sid" and image.release != "stretch" and image.release != "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}-security main{% endif %}
+      {% if image.release == "stretch" or image.release == "buster" %}deb http://deb.debian.org/debian-security/ {{ image.release }}/updates main{% endif %}
     architectures:
     - amd64
     - arm64

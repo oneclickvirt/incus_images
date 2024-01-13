@@ -2,9 +2,11 @@
 # from https://github.com/oneclickvirt/incus_images
 
 
-snap install distrobuilder --classic
-apt-get install debootstrap -y
-rm -r images
+sudo snap install distrobuilder --classic
+sudo apt-get install debootstrap -y
+if [ -f images ]; then
+    rm -r images
+fi
 mkdir images
 cd ./images
 debian_versions=("stretch" "buster" "bullseye" "bookworm" "trixie")
@@ -21,7 +23,7 @@ for version in "${debian_versions[@]}"; do
             cd ./${arch}
             mkdir ${variant}
             cd ./${variant}
-            distrobuilder build-incus /home/runner/work/incus_images/incus_images/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+            sudo distrobuilder build-incus /home/runner/work/incus_images/incus_images/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
             cd ..
             cd ..
             cd ..

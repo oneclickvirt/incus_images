@@ -16,7 +16,7 @@ jobs:
       
     - name: build images
       run: |
-        bash build_images.sh
+        bash build_images.sh debian
         
     - name: Configure Git
       run: |

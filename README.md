@@ -5,13 +5,13 @@ distrobuilder build-incus debian.yaml -o image.release=bullseye -o image.archite
 ```
 
 ```
-lxc image import incus.tar.xz rootfs.squashfs --alias mydebian
-lxc init mydebian test
-lxc start test
-lxc exec test -- /bin/bash
+incus image import incus.tar.xz rootfs.squashfs --alias mydebian
+incus init mydebian test
+incus start test
+incus exec test -- /bin/bash
 ```
 
 ```
-lxc delete -f test
-lxc image delete mydebian
+incus delete -f test
+incus image delete mydebian
 ```

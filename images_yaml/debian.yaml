@@ -6327,6 +6327,7 @@ packages:
     - curl
     - wget
     - bash
+    - lsof
     - sshpass
     - openssh-server
     - iptables

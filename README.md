@@ -1,7 +1,7 @@
 # lxd_images
 
 ```
-distrobuilder build-incus debian.yaml -o image.release=bullseye -o image.architecture=amd64 -o image.variant=cloud
+distrobuilder build-incus debian.yaml -o image.release=bullseye -o image.architecture=amd64 -o image.variant=default
 ```
 
 ```

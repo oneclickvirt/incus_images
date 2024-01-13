@@ -1100,12 +1100,13 @@ packages:
     - procps
     - sudo
     - vim
-    - dos2unix
+    - curl
     - wget
     - bash
     - sshpass
     - openssh-server
     - iptables
+    - dos2unix
     action: install
 
   - packages:
@@ -1363,6 +1364,7 @@ actions:
   - trixie
   variants:
   - cloud
+  - default
   
 mappings:
   architecture_map: debian

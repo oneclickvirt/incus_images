@@ -5,10 +5,10 @@
 sudo apt-get install zip -y
 sudo snap install distrobuilder --classic
 sudo apt-get install debootstrap -y
-debian_versions=("stretch" "buster" "bullseye" "bookworm" "trixie")
-debian_ver_nums=("9" "10" "11" "12" "13")
-architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
-variants=("default", "cloud")
+debian_versions=("buster" "bullseye" "bookworm" "trixie")
+debian_ver_nums=("10" "11" "12" "13")
+architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
+variants=("default" "cloud")
 len=${#debian_versions[@]}
 for ((i=0; i<len; i++)); do
     version=${debian_versions[i]}

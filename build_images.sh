@@ -34,3 +34,4 @@ for version in "${debian_versions[@]}"; do
         done
     done
 done
+cd /home/runner/work/incus_images/incus_images

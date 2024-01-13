@@ -1,7 +1,5 @@
 # incus_images
 
-timeout-minutes: 15 
-
 ```
 distrobuilder build-incus debian.yaml -o image.release=bullseye -o image.architecture=amd64 -o image.variant=default
 ```

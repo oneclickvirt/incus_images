@@ -17,9 +17,13 @@ cd ./debian
 for version in "${debian_versions[@]}"; do
     for arch in "${architectures[@]}"; do
         for variant in "${variants[@]}"; do
-            mkdir ${version}
+            if [ ! -f ${version} ]; then
+                mkdir ${version}
+            fi
             cd ./${version}
-            mkdir ${arch}
+            if [ ! -f ${arch} ]; then
+                mkdir ${arch}
+            fi
             cd ./${arch}
             mkdir ${variant}
             cd ./${variant}

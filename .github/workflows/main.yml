@@ -1,0 +1,48 @@
+name: Daily update
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+
+jobs:
+  update_csv_files:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: check path
+      run: |
+        pwd
+      
+    - name: build images
+      run: |
+        bash pre_build.sh
+        
+    - name: Configure Git
+      run: |
+        git config --global user.name "daily-update"
+        git config --global user.email "tg@spiritlhl.top"
+      
+    - name: Add files to Git staging area
+      run: |
+        ls
+        pwd
+        git add .
+        
+    - name: Check Git status
+      run: |
+        git branch -a
+        git remote -v
+        git status
+    
+    - name: Commit changes
+      run: |
+        git commit -m "Update CSV files"
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}

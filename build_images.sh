@@ -2,35 +2,24 @@
 # from https://github.com/oneclickvirt/incus_images
 
 
+sudo apt-get install zip -y
 sudo snap install distrobuilder --classic
 sudo apt-get install debootstrap -y
-if [ -f images ]; then
-    rm -r images
-fi
-mkdir images
-cd ./images
 debian_versions=("stretch" "buster" "bullseye" "bookworm" "trixie")
+debian_ver_nums=("9" "10" "11" "12" "13")
 architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
 variants=("default", "cloud")
-mkdir debian
-cd ./debian
-for version in "${debian_versions[@]}"; do
+len=${#debian_versions[@]}
+for ((i=0; i<len; i++)); do
+    version=${debian_versions[i]}
+    ver_num=${debian_ver_nums[i]}
     for arch in "${architectures[@]}"; do
         for variant in "${variants[@]}"; do
-            if [ ! -f ${version} ]; then
-                mkdir ${version}
-            fi
-            cd ./${version}
-            if [ ! -f ${arch} ]; then
-                mkdir ${arch}
-            fi
-            cd ./${arch}
-            mkdir ${variant}
-            cd ./${variant}
             sudo distrobuilder build-incus /home/runner/work/incus_images/incus_images/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-            cd ..
-            cd ..
-            cd ..
+            if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                zip debian_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                rm -rf incus.tar.xz rootfs.squashfs
+            fi
         done
     done
 done

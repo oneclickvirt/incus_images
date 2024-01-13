@@ -37,7 +37,7 @@ jobs:
     
     - name: Commit changes
       run: |
-        git commit -m "Update CSV files"
+        git commit -m "Update files"
     
     - name: Push changes
       uses: ad-m/github-push-action@master

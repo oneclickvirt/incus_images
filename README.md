@@ -6,4 +6,7 @@ lxc launch mydebian test
 lxc exec test -- /bin/bash
 ```
 
-lines: 1058~6270
+```
+lxc delete -f test
+lxc image delete mydebian
+```

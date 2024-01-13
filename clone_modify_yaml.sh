@@ -4,8 +4,7 @@
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/debian.yaml
 chmod 777 debian.yaml
 sed -i 's/- vim\n    action: install/- vim\n    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    action: install/g' debian.yaml
-insert_content="
-- trigger: post-files
+insert_content='- trigger: post-files
   action: |-
     #!/bin/sh
     set -eux
@@ -36,5 +35,5 @@ insert_content="
     # other config
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/sysconfig/selinux || true
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/selinux/config || true
-"
+'
 sed -i "/mappings:/i $insert_content" debian.yaml

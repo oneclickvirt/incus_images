@@ -13,6 +13,8 @@ if ! command -v debootstrap >/dev/null 2>&1; then
     sudo apt-get install debootstrap -y
 fi
 run_funct="${1:-debian}"
+is_build_image="${2:-false}"
+zip_name_list=()
 
 debian(){
     # debian
@@ -26,14 +28,21 @@ debian(){
         ver_num=${debian_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip debian_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/debian.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip debian_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("debian_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 ubuntu(){
@@ -48,14 +57,21 @@ ubuntu(){
         ver_num=${ubuntu_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/ubuntu.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip ubuntu_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/ubuntu.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip ubuntu_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("ubuntu_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 kali(){
@@ -70,14 +86,21 @@ kali(){
         ver_num=${kali_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/kali.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip kali_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/kali.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip kali_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("kali_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 centos(){
@@ -92,14 +115,21 @@ centos(){
         ver_num=${centos_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/centos.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip centos_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/centos.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip centos_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("centos_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 almalinux(){
@@ -114,14 +144,21 @@ almalinux(){
         ver_num=${almalinux_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/almalinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip almalinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/almalinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip almalinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("almalinux_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 rockylinux(){
@@ -136,14 +173,21 @@ rockylinux(){
         ver_num=${rockylinux_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/rockylinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip rockylinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/rockylinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip rockylinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("rockylinux_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 alpine(){
@@ -158,14 +202,21 @@ alpine(){
         ver_num=${alpine_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/alpine.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip alpine_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/alpine.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip alpine_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("alpine_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 openwrt(){
@@ -180,14 +231,21 @@ openwrt(){
         ver_num=${openwrt_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/openwrt.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip openwrt_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/openwrt.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip openwrt_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("openwrt_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 oracle(){
@@ -202,14 +260,21 @@ oracle(){
         ver_num=${oracle_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/oracle.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip oracle_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/oracle.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip oracle_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("oracle_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 archlinux(){
@@ -224,14 +289,21 @@ archlinux(){
         ver_num=${archlinux_ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                sudo distrobuilder build-incus ${opath}/images_yaml/archlinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
-                    zip archlinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
-                    rm -rf incus.tar.xz rootfs.squashfs
+                if [ "$is_build_image" == true ]; then
+                    sudo distrobuilder build-incus ${opath}/images_yaml/archlinux.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                    if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
+                        zip archlinux_${ver_num}_${version}_${arch}_${variant}.zip incus.tar.xz rootfs.squashfs
+                        rm -rf incus.tar.xz rootfs.squashfs
+                    fi
+                else
+                    zip_name_list+=("archlinux_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
             done
         done
     done
+    if [ "$is_build_image" == false ]; then
+        echo "${zip_name_list[@]}"
+    fi
 }
 
 $run_funct

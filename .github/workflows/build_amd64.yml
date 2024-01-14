@@ -44,7 +44,8 @@ jobs:
                 else
                     echo "No $file file."
                 fi
-                bash build_images.sh $distro true
+                echo "Building $distro and packge zips"
+                bash build_images.sh $distro true >/dev/null 2>&1
                 if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 10485760 ]; then
                     echo "Uploading $file to release..."
                     curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \

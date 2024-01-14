@@ -38,20 +38,19 @@ jobs:
                 | jq -r --arg name "$(basename "$file")" '.[] | select(.name == $name) | .id')
             
               if [ -n "$existing_asset_id" ]; then
-                echo "Asset $file already exists in release, deleting existing asset..."
+                  echo "Asset $file already exists in release, deleting existing asset..."
                 
-                # 删除现有的文件
-                delete_response=$(curl -X DELETE -w "%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                  "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$existing_asset_id")
+                  # 删除现有的文件
+                  delete_response=$(curl -X DELETE -w "%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$existing_asset_id")
                 
-                # 检查删除的响应状态码
-                if [ "$delete_response" -eq 204 ]; then
-                  echo "Existing asset deleted successfully."
-                else
-                  echo "Failed to delete existing asset. Skipping file upload..."
-                  rm -rf $file
-                  continue
-                fi
+                  # 检查删除的响应状态码
+                  if [ "$delete_response" -eq 204 ]; then
+                    echo "Existing asset deleted successfully."
+                  else
+                    echo "Failed to delete existing asset. Skipping file upload..."
+                    rm -rf $file
+                    continue
+                  fi
               fi
               
               # 上传文件

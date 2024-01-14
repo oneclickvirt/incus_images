@@ -23,8 +23,6 @@ elif command -v yum >/dev/null 2>&1; then
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo yum install epel-release -y
         sudo yum install snapd -y
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
         sudo ln -s /var/lib/snapd/snap /snap
         snap –version
         sudo snap install distrobuilder --classic
@@ -37,8 +35,6 @@ elif command -v dnf >/dev/null 2>&1; then
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo dnf install epel-release -y
         sudo dnf install snapd -y
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
         sudo ln -s /var/lib/snapd/snap /snap
         snap –version
         sudo snap install distrobuilder --classic
@@ -50,8 +46,6 @@ elif command -v pacman >/dev/null 2>&1; then
     fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo pacman -Sy --noconfirm --needed snapd
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
         sudo ln -s /var/lib/snapd/snap /snap
         snap –version
         sudo snap install distrobuilder --classic
@@ -63,8 +57,6 @@ elif command -v apk >/dev/null 2>&1; then
     fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo apk add snapd
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
         sudo ln -s /var/lib/snapd/snap /snap
         snap –version
         sudo snap install distrobuilder --classic

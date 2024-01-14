@@ -21,7 +21,8 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        for distro in debian ubuntu kali centos almalinux rockylinux alpine openwrt oracle archlinux; do
+        # debian ubuntu
+        for distro in kali centos almalinux rockylinux alpine openwrt oracle archlinux; do
           bash build_images.sh $distro
           
           release_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \

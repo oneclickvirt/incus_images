@@ -22,6 +22,7 @@ elif command -v yum >/dev/null 2>&1; then
     fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo yum install wget -y
+        sudo yum install python2 -y
         wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
         chmod a+x /bin/systemctl
         sudo yum install snapd -y

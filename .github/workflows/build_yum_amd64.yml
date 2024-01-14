@@ -25,7 +25,7 @@ jobs:
         yum install -y epel-release
         yum install -y git
         yum install -y sudo
-        yum update
+        yum update -y
         yum install -y jq
         git config --global user.name "daily-update"
         git config --global user.email "tg@spiritlhl.top"

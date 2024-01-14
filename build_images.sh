@@ -43,7 +43,21 @@ elif command -v dnf >/dev/null 2>&1; then
         snap –version
         sudo snap install distrobuilder --classic
     fi
+elif command -v pacman >/dev/null 2>&1; then
+    # archlinux
+    if ! command -v zip >/dev/null 2>&1; then
+        sudo pacman -Sy --noconfirm --needed zip
+    fi
+    if ! command -v distrobuilder >/dev/null 2>&1; then
+        sudo pacman -Sy --noconfirm --needed snapd
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
+        sudo ln -s /var/lib/snapd/snap /snap
+        snap –version
+        sudo snap install distrobuilder --classic
+    fi
 fi
+
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"
 zip_name_list=()

@@ -20,8 +20,10 @@ zip_name_list=()
 
 # 构建或列出不同发行版的镜像
 build_or_list_images() {
-    local versions=("$1")
-    local ver_nums=("$2")
+    local versions=()
+    local ver_nums=()
+    read -ra versions <<< "$1"
+    read -ra ver_nums <<< "$2"
     local architectures=("amd64")
     local variants=("default" "cloud")
     local len=${#versions[@]}

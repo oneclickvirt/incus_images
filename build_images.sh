@@ -21,13 +21,13 @@ elif command -v yum >/dev/null 2>&1; then
         sudo yum install zip -y
     fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo yum install snapd -y
-        sudo ln -s /var/lib/snapd/snap /snap
         sudo yum install wget -y
         wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
         chmod a+x /bin/systemctl
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
+        sudo yum install snapd -y
+        sudo ln -s /var/lib/snapd/snap /snap
+        sudo /bin/systemctl start snapd.socket
+        sudo /bin/systemctl enable --now snapd.socket
         sudo snap install distrobuilder --classic
     fi
 elif command -v dnf >/dev/null 2>&1; then

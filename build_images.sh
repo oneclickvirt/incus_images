@@ -35,7 +35,7 @@ elif command -v yum >/dev/null 2>&1; then
         # sudo snap install distrobuilder --classic
         rpm --import https://mirror.go-repo.io/centos/RPM-GPG-KEY-GO-REPO
         curl -s https://mirror.go-repo.io/centos/go-repo.repo | tee /etc/yum.repos.d/go-repo.repo
-        yum install golang
+        sudo yum install -y golang
         sudo yum install -y tar rsync gnupg squashfs-tools git make
         mkdir -p $HOME/go/src/github.com/lxc/
         cd $HOME/go/src/github.com/lxc/
@@ -43,8 +43,6 @@ elif command -v yum >/dev/null 2>&1; then
         cd ./distrobuilder
         make
         export PATH=$PATH:$HOME/go/bin
-        source ~/.bashrc
-        source ~/.bash_profile
     fi
 elif command -v dnf >/dev/null 2>&1; then
     # almalinux rockylinux oracle

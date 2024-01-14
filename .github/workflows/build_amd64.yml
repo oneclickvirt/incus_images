@@ -23,10 +23,11 @@ jobs:
       run: |
         # debian ubuntu centos almalinux rockylinux alpine openwrt oracle archlinux
         for distro in kali; do
-          zip_name_list=($(bash build_images.sh $distro false | tail -n 1))
-          release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')
-          for file in "${zip_name_list[@]}"; do
-                if [ -n "$file" ]; then
+            zip_name_list=($(bash build_images.sh $distro false | tail -n 1))
+            if echo "${zip_name_list[@]}" | grep -q "zip"; then
+                release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')
+                for file in "${zip_name_list[@]}"; do
+                    echi "$file"
                     echo "Checking if $file already exists in release..."
                     existing_asset_id=$(curl -s -H "Accept: application/vnd.github.v3+json" \
                       "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
@@ -50,17 +51,18 @@ jobs:
                       --data-binary @"$file" \
                       "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
                     rm -rf $file
-                else
-                    bash build_images.sh $distro true
-                    for file in *.zip; do
-                        echo "Uploading $file to release..."
-                        curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                          -H "Content-Type: application/zip" \
-                          --data-binary @"$file" \
-                          "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
-                        rm -rf $file
-                    done
-                fi
-            done
+                done
+            else
+                echo "No existing zip file."
+                bash build_images.sh $distro true
+                for file in *.zip; do
+                    echo "Uploading $file to release..."
+                    curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                      -H "Content-Type: application/zip" \
+                      --data-binary @"$file" \
+                      "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
+                    rm -rf $file
+                done
+            fi
         done
         

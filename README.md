@@ -1,5 +1,15 @@
 # incus_images
 
+Only support
+
+https://github.com/oneclickvirt/incus_images/releases/tag/ubuntu
+
+https://github.com/oneclickvirt/incus_images/releases/tag/debian
+
+https://github.com/oneclickvirt/incus_images/releases/tag/kali
+
+## test
+
 ```
 distrobuilder build-incus debian.yaml -o image.release=bullseye -o image.architecture=amd64 -o image.variant=default
 ```

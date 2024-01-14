@@ -9,11 +9,14 @@ if command -v apt-get >/dev/null 2>&1; then
     if ! command -v zip >/dev/null 2>&1; then
         sudo apt-get install zip -y
     fi
-    if ! command -v snap >/dev/null 2>&1; then
-        sudo apt-get install snapd -y
-    fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo snap install distrobuilder --classic
+    uname_output=$(uname -a)
+    if [[ $uname_output != *ARM* && $uname_output != *arm* ]]; then
+        if ! command -v snap >/dev/null 2>&1; then
+            sudo apt-get install snapd -y
+        fi
+        if ! command -v distrobuilder >/dev/null 2>&1; then
+            sudo snap install distrobuilder --classic
+        fi
     fi
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y

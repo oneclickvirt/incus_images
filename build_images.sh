@@ -16,7 +16,7 @@ if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi
 elif command -v yum >/dev/null 2>&1; then
-    # centos
+    # centos oracle
     if ! command -v zip >/dev/null 2>&1; then
         sudo yum install zip -y
     fi
@@ -30,7 +30,7 @@ elif command -v yum >/dev/null 2>&1; then
         sudo snap install distrobuilder --classic
     fi
 elif command -v dnf >/dev/null 2>&1; then
-    # almalinux rockylinux
+    # almalinux rockylinux oracle
     if ! command -v zip >/dev/null 2>&1; then
         sudo dnf install zip -y
     fi

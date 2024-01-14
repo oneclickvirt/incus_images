@@ -26,6 +26,7 @@ jobs:
           zip_name_list=($(bash build_images.sh $distro false))
           release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')
           for file in "${zip_name_list[@]}"; do
+              echo "$file"
               echo "Checking if $file already exists in release..."
               existing_asset_id=$(curl -s -H "Accept: application/vnd.github.v3+json" \
                 "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
@@ -42,14 +43,14 @@ jobs:
                       continue
                   fi
               fi
-              
-              # 上传文件
-              echo "Uploading $file to release..."
-              curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                -H "Content-Type: application/zip" \
-                --data-binary @"$file" \
-                "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
-              rm -rf $file
+              # # 上传文件
+              # bash build_images.sh $distro true
+              # echo "Uploading $file to release..."
+              # curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              #   -H "Content-Type: application/zip" \
+              #   --data-binary @"$file" \
+              #   "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
+              # rm -rf $file
             done
         done
         

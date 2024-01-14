@@ -21,7 +21,6 @@ elif command -v yum >/dev/null 2>&1; then
         sudo yum install zip -y
     fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo yum install epel-release -y
         sudo yum install snapd -y
         sudo ln -s /var/lib/snapd/snap /snap
         snap –version

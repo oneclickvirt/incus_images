@@ -4,16 +4,46 @@
 opath=$(pwd)
 
 # 检查并安装依赖工具
-if ! command -v zip >/dev/null 2>&1; then
-    sudo apt-get install zip -y
+if command -v apt-get >/dev/null 2>&1; then
+    # ubuntu debian kali
+    if ! command -v zip >/dev/null 2>&1; then
+        sudo apt-get install zip -y
+    fi
+    if ! command -v distrobuilder >/dev/null 2>&1; then
+        sudo snap install distrobuilder --classic
+    fi
+    if ! command -v debootstrap >/dev/null 2>&1; then
+        sudo apt-get install debootstrap -y
+    fi
+elif command -v yum >/dev/null 2>&1; then
+    # centos
+    if ! command -v zip >/dev/null 2>&1; then
+        sudo yum install zip -y
+    fi
+    if ! command -v distrobuilder >/dev/null 2>&1; then
+        sudo yum install epel-release -y
+        sudo yum install snapd -y
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
+        sudo ln -s /var/lib/snapd/snap /snap
+        snap –version
+        sudo snap install distrobuilder --classic
+    fi
+elif command -v dnf >/dev/null 2>&1; then
+    # almalinux rockylinux
+    if ! command -v zip >/dev/null 2>&1; then
+        sudo dnf install zip -y
+    fi
+    if ! command -v distrobuilder >/dev/null 2>&1; then
+        sudo dnf install epel-release -y
+        sudo dnf install snapd -y
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
+        sudo ln -s /var/lib/snapd/snap /snap
+        snap –version
+        sudo snap install distrobuilder --classic
+    fi
 fi
-if ! command -v distrobuilder >/dev/null 2>&1; then
-    sudo snap install distrobuilder --classic
-fi
-if ! command -v debootstrap >/dev/null 2>&1; then
-    sudo apt-get install debootstrap -y
-fi
-
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"
 zip_name_list=()

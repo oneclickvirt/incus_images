@@ -23,7 +23,11 @@ elif command -v yum >/dev/null 2>&1; then
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo yum install snapd -y
         sudo ln -s /var/lib/snapd/snap /snap
-        snap –version
+        sudo yum install wget -y
+        wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
+        chmod a+x /bin/systemctl
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
         sudo snap install distrobuilder --classic
     fi
 elif command -v dnf >/dev/null 2>&1; then
@@ -34,8 +38,12 @@ elif command -v dnf >/dev/null 2>&1; then
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo dnf install epel-release -y
         sudo dnf install snapd -y
+        sudo dnf install wget -y
+        wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
+        chmod a+x /bin/systemctl
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
         sudo ln -s /var/lib/snapd/snap /snap
-        snap –version
         sudo snap install distrobuilder --classic
     fi
 elif command -v pacman >/dev/null 2>&1; then
@@ -46,7 +54,11 @@ elif command -v pacman >/dev/null 2>&1; then
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo pacman -Sy --noconfirm --needed snapd
         sudo ln -s /var/lib/snapd/snap /snap
-        snap –version
+        sudo pacman -Sy --noconfirm --needed wget
+        wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
+        chmod a+x /bin/systemctl
+        sudo systemctl start snapd.socket
+        sudo systemctl enable --now snapd.socket
         sudo snap install distrobuilder --classic
     fi
 elif command -v apk >/dev/null 2>&1; then

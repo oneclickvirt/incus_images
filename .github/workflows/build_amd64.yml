@@ -29,22 +29,39 @@ jobs:
             "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" \
             | jq -r '.id')
     
-          existing_asset_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
-            | jq -r --arg name "$(basename "$file")" '.[] | select(.name == $name) | .id')
-    
-          if [ -n "$existing_asset_id" ]; then
-            curl -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$existing_asset_id"
-          fi
-    
           for file in *.zip; do
-            echo "\nUploading $file to release..."
-            curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: application/zip" \
-              --data-binary @"$file" \
-              "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
-          done
+              echo "\nChecking if $file already exists in release..."
+              
+              existing_asset_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
+                | jq -r --arg name "$(basename "$file")" '.[] | select(.name == $name) | .id')
+            
+              if [ -n "$existing_asset_id" ]; then
+                echo "Asset $file already exists in release, deleting existing asset..."
+                
+                # 删除现有的文件
+                delete_response=$(curl -X DELETE -w "%{http_code}" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                  "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$existing_asset_id")
+                
+                # 检查删除的响应状态码
+                if [ "$delete_response" -eq 204 ]; then
+                  echo "Existing asset deleted successfully."
+                else
+                  echo "Failed to delete existing asset. Skipping file upload..."
+                  rm -rf $file
+                  continue
+                fi
+              fi
+              
+              # 上传文件
+              echo "Uploading $file to release..."
+              curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                -H "Content-Type: application/zip" \
+                --data-binary @"$file" \
+                "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$(basename "$file")"
+              rm -rf $file
+            done
         done
+        
 

@@ -81,18 +81,6 @@ echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml rockylinux.yaml
 
-# oracle
-rm -rf oracle.yaml
-wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/oracle.yaml
-chmod 777 oracle.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
-sed -i "/- vim-minimal/ a\\$insert_content_1" oracle.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
-cat oracle.yaml > temp.yaml
-echo "" >> temp.yaml
-echo "$insert_content_2" >> temp.yaml
-mv temp.yaml oracle.yaml
-
 # archlinux
 rm -rf archlinux.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/archlinux.yaml
@@ -106,6 +94,18 @@ echo "$insert_content_2" >> temp.yaml
 tail -n 2 archlinux.yaml >> temp.yaml
 mv temp.yaml archlinux.yaml
 sed -i -e '/mappings:/i \ ' archlinux.yaml
+
+# oracle
+rm -rf oracle.yaml
+wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/oracle.yaml
+chmod 777 oracle.yaml
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
+sed -i "/- vim-minimal/ a\\$insert_content_1" oracle.yaml
+insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+cat oracle.yaml > temp.yaml
+echo "" >> temp.yaml
+echo "$insert_content_2" >> temp.yaml
+mv temp.yaml oracle.yaml
 
 # alpine
 rm -rf alpine.yaml

@@ -121,13 +121,13 @@ tail -n 2 alpine.yaml >> temp.yaml
 mv temp.yaml alpine.yaml
 sed -i -e '/mappings:/i \ ' alpine.yaml
 
-# openwrt
-rm -rf openwrt.yaml
-wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/openwrt.yaml
-chmod 777 openwrt.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - cron\n    - iptables\n    - dos2unix"
-sed -i "/- sudo/ a\\$insert_content_1" openwrt.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
-cat openwrt.yaml > temp.yaml
-echo "$insert_content_2" >> temp.yaml
-mv temp.yaml openwrt.yaml
+# # openwrt
+# rm -rf openwrt.yaml
+# wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/openwrt.yaml
+# chmod 777 openwrt.yaml
+# insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - cron\n    - iptables\n    - dos2unix"
+# sed -i "/- sudo/ a\\$insert_content_1" openwrt.yaml
+# insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
+# cat openwrt.yaml > temp.yaml
+# echo "$insert_content_2" >> temp.yaml
+# mv temp.yaml openwrt.yaml

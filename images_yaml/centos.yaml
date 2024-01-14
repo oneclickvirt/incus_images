@@ -2,7 +2,8 @@ image:
   distribution: centos
 
 source:
-  downloader: centos-http
+  downloader: debootstrap
+  # centos-http
   url: https://mirror.math.princeton.edu/pub/centos/
   keys:
   # RPM-GPG-KEY-CentOS-6

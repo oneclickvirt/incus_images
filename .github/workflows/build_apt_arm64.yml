@@ -25,7 +25,8 @@ jobs:
             uname -a
             echo ::set-output name=uname::$(uname -a)
             pwd
-            apt-get install git -y
+            apt-get update -q -y
+            apt-get install -q -y git
             git config --global user.name "daily-update"
             git config --global user.email "tg@spiritlhl.top"
             distros=("kali")

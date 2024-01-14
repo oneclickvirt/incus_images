@@ -21,24 +21,29 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        # debian ubuntu kali
-        for distro in centos almalinux rockylinux alpine openwrt oracle archlinux; do
-          bash build_images.sh $distro
-          release_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" \
-            | jq -r '.id')
-          for file in *.zip; do
+        # debian ubuntu centos almalinux rockylinux alpine openwrt oracle archlinux
+        for distro in kali; do
+          zip_name_list=$(bash build_images.sh $distro false)
+          release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')
+          for file in "${zip_name_list[@]}"; do
               echo "Checking if $file already exists in release..."
-              existing_asset_id=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                -H "Accept: application/vnd.github.v3+json" \
+              existing_asset_id=$(curl -s -H "Accept: application/vnd.github.v3+json" \
                 "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
                 | jq -r --arg name "$(basename "$file")" '.[] | select(.name == $name) | .id')
               if [ -n "$existing_asset_id" ]; then
-                  echo "Asset $file already exists in release, continue..."
-                  rm -rf $file
-                  continue
+                  echo "Asset $file already exists in release, deleting existing asset..."
+                  delete_response=$(curl -L -X DELETE -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$existing_asset_id")
+                  echo "$delete_response"
+                  if [ "$delete_response" == "Status: 204" ]; then
+                      echo "Existing asset deleted successfully."
+                  else
+                      echo "Failed to delete existing asset. Skipping file upload..."
+                      rm -rf $file
+                      continue
+                  fi
               fi
+              
+              # 上传文件
               echo "Uploading $file to release..."
               curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Content-Type: application/zip" \
@@ -48,4 +53,3 @@ jobs:
             done
         done
         
-

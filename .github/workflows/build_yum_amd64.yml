@@ -7,7 +7,7 @@ jobs:
   build_yum_images_amd64:
     runs-on: ubuntu-latest
     container:
-      image: "centos:7"
+      image: "centos:8"
     
     steps:
     - uses: actions/checkout@v2
@@ -18,7 +18,9 @@ jobs:
 
     - name: Configure Git
       run: |
-        yum install -y git sudo
+        yum install -y git
+        yum install -y sudo
+        yum install -y jq
         git config --global user.name "daily-update"
         git config --global user.email "tg@spiritlhl.top"
       

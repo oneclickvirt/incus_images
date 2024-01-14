@@ -18,7 +18,7 @@ debian(){
     # debian
     debian_versions=("buster" "bullseye" "bookworm" "trixie")
     debian_ver_nums=("10" "11" "12" "13")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#debian_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -40,7 +40,7 @@ ubuntu(){
     # ubuntu
     ubuntu_versions=("bionic" "focal" "jammy" "lunar" "mantic" "noble")
     ubuntu_ver_nums=("18.04" "20.04" "22.04" "23.04" "23.10" "24.04")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#ubuntu_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -62,7 +62,7 @@ kali(){
     # kali
     kali_versions=("kali-rolling")
     kali_ver_nums=("latest")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#kali_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -84,7 +84,7 @@ centos(){
     # centos
     centos_versions=("7" "8-Stream" "9-Stream")
     centos_ver_nums=("7" "8-Stream" "9-Stream")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#centos_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -106,7 +106,7 @@ almalinux(){
     # almalinux
     almalinux_versions=("8" "9")
     almalinux_ver_nums=("8" "9")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#almalinux_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -128,7 +128,7 @@ rockylinux(){
     # rockylinux
     rockylinux_versions=("8" "9")
     rockylinux_ver_nums=("8" "9")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#rockylinux_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -150,7 +150,7 @@ alpine(){
     # alpine
     alpine_versions=("3.17" "3.18" "3.19" "edge")
     alpine_ver_nums=("3.17" "3.18" "3.19" "edge")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#alpine_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -172,7 +172,7 @@ openwrt(){
     # openwrt
     openwrt_versions=("snapshot" "22.03" "23.05")
     openwrt_ver_nums=("snapshot" "22.03" "23.05")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#openwrt_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -194,7 +194,7 @@ oracle(){
     # oracle
     oracle_versions=("7" "8" "9")
     oracle_ver_nums=("7" "8" "9")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#oracle_versions[@]}
     for ((i=0; i<len; i++)); do
@@ -216,7 +216,7 @@ archlinux(){
     # archlinux
     archlinux_versions=("latest")
     archlinux_ver_nums=("latest")
-    architectures=("amd64" "arm64") # "armel" "armhf" "i386" "ppc64el" "s390x"
+    architectures=("amd64") # "arm64" "armel" "armhf" "i386" "ppc64el" "s390x"
     variants=("default" "cloud")
     len=${#archlinux_versions[@]}
     for ((i=0; i<len; i++)); do

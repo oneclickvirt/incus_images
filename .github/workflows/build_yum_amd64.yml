@@ -7,7 +7,7 @@ jobs:
   build_yum_images_amd64:
     runs-on: ubuntu-latest
     container:
-      image: "centos:8"
+      image: "centos:7"
     
     steps:
     - uses: actions/checkout@v2

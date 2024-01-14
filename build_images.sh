@@ -9,6 +9,9 @@ if command -v apt-get >/dev/null 2>&1; then
     if ! command -v zip >/dev/null 2>&1; then
         sudo apt-get install zip -y
     fi
+    if ! command -v snap >/dev/null 2>&1; then
+        sudo apt-get install snapd -y
+    fi
     if ! command -v distrobuilder >/dev/null 2>&1; then
         sudo snap install distrobuilder --classic
     fi

@@ -22,8 +22,10 @@ jobs:
         curl -lk https://gitee.com/SuperManito/LinuxMirrors/raw/main/ChangeMirrors.sh -o ChangeMirrors.sh
         chmod 777 ChangeMirrors.sh
         ./ChangeMirrors.sh --use-official-source --web-protocol http --intranet false --close-firewall true --backup true --updata-software false --clean-cache false --ignore-backup-tips
+        yum install -y epel-release
         yum install -y git
         yum install -y sudo
+        yum update
         yum install -y jq
         git config --global user.name "daily-update"
         git config --global user.email "tg@spiritlhl.top"

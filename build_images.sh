@@ -4,15 +4,15 @@
 opath=$(pwd)
 
 # 检查并安装依赖工具
-install_dependency() {
-    if ! command -v "$1" >/dev/null 2>&1; then
-        sudo apt-get install "$1" -y
-    fi
-}
-
-install_dependency zip
-install_dependency distrobuilder
-install_dependency debootstrap
+if ! command -v zip >/dev/null 2>&1; then
+    sudo apt-get install zip -y
+fi
+if ! command -v distrobuilder >/dev/null 2>&1; then
+    sudo snap install distrobuilder --classic
+fi
+if ! command -v debootstrap >/dev/null 2>&1; then
+    sudo apt-get install debootstrap -y
+fi
 
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"

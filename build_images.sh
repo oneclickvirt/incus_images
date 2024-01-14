@@ -46,6 +46,9 @@ elif command -v yum >/dev/null 2>&1; then
         cd ./distrobuilder
         make
         export PATH=$PATH:$HOME/go/bin
+        echo $PATH
+        distrobuilder --version
+        $HOME/go/bin/distrobuilder --version
     fi
 elif command -v dnf >/dev/null 2>&1; then
     # almalinux rockylinux oracle

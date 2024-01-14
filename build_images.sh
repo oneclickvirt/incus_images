@@ -31,6 +31,7 @@ build_or_list_images() {
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
                 if [ "$is_build_image" == true ]; then
+                    echo "sudo distrobuilder build-incus ${opath}/images_yaml/${run_funct}.yaml -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}"     
                     sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs

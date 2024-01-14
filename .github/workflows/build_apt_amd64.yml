@@ -6,7 +6,6 @@ on:
 jobs:
   build_images_amd64:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v2
 
@@ -21,8 +20,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("centos")
-        # "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux"
+        distros=("debian" "ubuntu" "kali")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false | tail -n 1))

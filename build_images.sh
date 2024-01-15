@@ -45,77 +45,6 @@ if command -v apt-get >/dev/null 2>&1; then
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi
-elif command -v yum >/dev/null 2>&1; then
-    # centos oracle
-    if ! command -v zip >/dev/null 2>&1; then
-        sudo yum install zip -y
-    fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        # sudo yum install wget -y
-        # sudo yum install python2 -y
-        # wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
-        # chmod a+x /bin/systemctl
-        # sudo yum install snapd -y
-        # sudo ln -s /var/lib/snapd/snap /snap
-        # sudo /bin/systemctl start snapd.socket
-        # sudo /bin/systemctl enable --now snapd.socket
-        # sudo snap install distrobuilder --classic
-        rpm --import https://mirror.go-repo.io/centos/RPM-GPG-KEY-GO-REPO
-        curl -s https://mirror.go-repo.io/centos/go-repo.repo | tee /etc/yum.repos.d/go-repo.repo
-        sudo yum install -y golang
-        sudo yum install -y tar rsync gnupg squashfs-tools git make
-        mkdir -p $HOME/go/src/github.com/lxc/
-        cd $HOME/go/src/github.com/lxc/
-        git clone https://github.com/lxc/distrobuilder
-        cd ./distrobuilder
-        make
-        export PATH=$PATH:$HOME/go/bin
-        echo $PATH
-        distrobuilder --version
-        $HOME/goprojects/bin/distrobuilder --version
-    fi
-elif command -v dnf >/dev/null 2>&1; then
-    # almalinux rockylinux oracle
-    if ! command -v zip >/dev/null 2>&1; then
-        sudo dnf install zip -y
-    fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo dnf install epel-release -y
-        sudo dnf install snapd -y
-        sudo dnf install wget -y
-        wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
-        chmod a+x /bin/systemctl
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
-        sudo ln -s /var/lib/snapd/snap /snap
-        sudo snap install distrobuilder --classic
-    fi
-elif command -v pacman >/dev/null 2>&1; then
-    # archlinux
-    if ! command -v zip >/dev/null 2>&1; then
-        sudo pacman -Sy --noconfirm --needed zip
-    fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo pacman -Sy --noconfirm --needed snapd
-        sudo ln -s /var/lib/snapd/snap /snap
-        sudo pacman -Sy --noconfirm --needed wget
-        wget https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/master/files/docker/systemctl.py -O /bin/systemctl
-        chmod a+x /bin/systemctl
-        sudo systemctl start snapd.socket
-        sudo systemctl enable --now snapd.socket
-        sudo snap install distrobuilder --classic
-    fi
-elif command -v apk >/dev/null 2>&1; then
-    # alpine
-    if ! command -v zip >/dev/null 2>&1; then
-        sudo apk add zip
-    fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo apk add snapd
-        sudo ln -s /var/lib/snapd/snap /snap
-        snap –version
-        sudo snap install distrobuilder --classic
-    fi
 fi
 
 run_funct="${1:-debian}"
@@ -137,11 +66,25 @@ build_or_list_images() {
         ver_num=${ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                if [ "$is_build_image" == true ]; then    
-                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}; then
+                if [ "$is_build_image" == true ]; then
+                    if [[ "$run_funct" == "centos" || "$run_funct" == "oracle" ]]; then
+                        manager="yum"
+                    elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
+                        manager="apt"
+                    elif [[ "$run_funct" == "almalinux" || "$run_funct" == "rockylinux" ]]; then
+                        manager="dnf"
+                    elif [[ "$run_funct" == "archlinux" ]]; then
+                        manager="pacman"
+                    elif [[ "$run_funct" == "alpine" ]]; then
+                        manager="apk"
+                    else
+                        echo "Unsupported distribution: $run_funct"
+                        exit 1
+                    fi
+                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}; then
                         echo "Command succeeded"
                     else
-                        sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                        sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs

@@ -35,8 +35,6 @@ if command -v apt-get >/dev/null 2>&1; then
         cd $HOME/go/src/github.com/lxc/
         git clone https://github.com/lxc/distrobuilder
         cd ./distrobuilder
-        export CGO_CFLAGS="-arch arm64"
-        export CGO_LDFLAGS="-arch arm64"
         make
         echo $PATH
         distrobuilder --version

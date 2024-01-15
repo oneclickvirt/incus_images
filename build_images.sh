@@ -20,6 +20,7 @@ if command -v apt-get >/dev/null 2>&1; then
     else
         sudo apt-get install build-essential -y
         export CGO_ENABLED=1
+        export CC=gcc
         wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
         chmod 777 go1.21.6.linux-arm64.tar.gz
         rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz

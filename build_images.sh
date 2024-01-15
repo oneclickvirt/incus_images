@@ -10,7 +10,7 @@ if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get install zip -y
     fi
     uname_output=$(uname -a)
-    if [[ $uname_output != *ARM* && $uname_output != *arm* ]]; then
+    if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
         if ! command -v snap >/dev/null 2>&1; then
             sudo apt-get install snapd -y
         fi

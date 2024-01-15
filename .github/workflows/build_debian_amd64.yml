@@ -20,7 +20,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("debian" )
+        distros=("debian")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false | tail -n 1))

@@ -137,8 +137,9 @@ build_or_list_images() {
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
                 if [ "$is_build_image" == true ]; then    
-                    sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
-                    if [ ! $? -eq 0 ]; then
+                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}; then
+                        echo "Command succeeded"
+                    else
                         sudo $HOME/go/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then

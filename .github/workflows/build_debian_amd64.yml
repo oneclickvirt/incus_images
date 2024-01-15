@@ -1,10 +1,10 @@
-name: Build apt images amd64
+name: Build debian images amd64
 
 on:
   workflow_dispatch:
 
 jobs:
-  build_apt_images_amd64:
+  build_debian_images_amd64:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("debian" "ubuntu" "kali")
+        distros=("debian" )
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false | tail -n 1))

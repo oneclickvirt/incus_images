@@ -36,7 +36,7 @@ if command -v apt-get >/dev/null 2>&1; then
         git clone https://github.com/lxc/distrobuilder
         cd ./distrobuilder
         make
-        export PATH=$HOME/go/bin:$PATH
+        export PATH=/root/goprojects/bin/distrobuilder:$PATH
         echo $PATH
         distrobuilder --version
         /root/goprojects/bin/distrobuilder --version

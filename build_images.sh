@@ -38,6 +38,7 @@ if command -v apt-get >/dev/null 2>&1; then
         make
         export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
         echo $PATH
+        find $HOME -name distrobuilder -type f 2>/dev/null
         distrobuilder --version
         $HOME/goprojects/bin/distrobuilder --version
     fi

@@ -23,7 +23,7 @@ jobs:
         distros=("debian")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
-            zip_name_list=($(bash build_images.sh $distro false | tail -n 1))
+            zip_name_list=($(bash build_images.sh $distro false amd64 | tail -n 1))
             release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')
             for file in "${zip_name_list[@]}"; do
                 echo "Checking if $file already exists in release..."

@@ -39,7 +39,7 @@ if command -v apt-get >/dev/null 2>&1; then
         export PATH=$HOME/go/bin:$PATH
         echo $PATH
         distrobuilder --version
-        $HOME/go/bin/distrobuilder --version
+        /root/goprojects/bin/distrobuilder --version
     fi
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
@@ -71,7 +71,7 @@ elif command -v yum >/dev/null 2>&1; then
         export PATH=$PATH:$HOME/go/bin
         echo $PATH
         distrobuilder --version
-        $HOME/go/bin/distrobuilder --version
+        /root/goprojects/bin/distrobuilder --version
     fi
 elif command -v dnf >/dev/null 2>&1; then
     # almalinux rockylinux oracle
@@ -140,7 +140,7 @@ build_or_list_images() {
                     if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}; then
                         echo "Command succeeded"
                     else
-                        sudo $HOME/go/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
+                        sudo /root/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant}
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs

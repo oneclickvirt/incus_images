@@ -57,7 +57,7 @@ jobs:
                     echo "No $file file."
                 fi
                 echo "Building $distro and packge zips"
-                bash build_images.sh $distro true
+                bash build_images.sh $distro true amd64
                 # >/dev/null 2>&1
                 if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 10485760 ]; then
                     echo "Uploading $file to release..."

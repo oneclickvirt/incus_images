@@ -1,12 +1,12 @@
-name: Build apt images arm64
+name: Build kali images arm64
 
 on:
   workflow_dispatch:
 
 jobs:
-  build_apt_images_arm64:
+  build_kali_images_arm64:
     runs-on: ubuntu-latest
-    name: Build on ubuntu-18.04 armv7
+    name: Build on ubuntu-latest aarch64
     steps:
       - uses: actions/checkout@v2
       - uses: uraimo/run-on-arch-action@v2

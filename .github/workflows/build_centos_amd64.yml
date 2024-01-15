@@ -1,10 +1,10 @@
-name: Build yum images amd64
+name: Build centos images amd64
 
 on:
   workflow_dispatch:
 
 jobs:
-  build_yum_images_amd64:
+  build_centos_images_amd64:
     runs-on: ubuntu-latest
     container:
       image: "centos:7"

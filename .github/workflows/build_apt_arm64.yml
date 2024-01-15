@@ -26,6 +26,7 @@ jobs:
             echo ::set-output name=uname::$(uname -a)
             pwd
             apt-get update -q -y
+            apt-get install -q -y apt-utils
             apt-get install -q -y git curl jq sudo wget
             distros=("kali")
             # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")

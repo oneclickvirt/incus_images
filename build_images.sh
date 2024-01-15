@@ -21,7 +21,9 @@ if command -v apt-get >/dev/null 2>&1; then
         wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
         chmod 777 go1.21.6.linux-arm64.tar.gz
         rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
-        export PATH=$PATH:/usr/local/go/bin
+        export GOROOT=/usr/local/go
+        export PATH=$GOROOT/bin:$PATH
+        export GOPATH=$HOME/goprojects/
         go version
         apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
         git config --global user.name "daily-update"
@@ -31,7 +33,6 @@ if command -v apt-get >/dev/null 2>&1; then
         git clone https://github.com/lxc/distrobuilder
         cd ./distrobuilder
         make
-        export PATH=$PATH:$HOME/go/bin
         echo $PATH
         distrobuilder --version
         $HOME/go/bin/distrobuilder --version

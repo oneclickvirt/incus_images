@@ -115,7 +115,7 @@ fi
 
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"
-build_arch="${2:-amd64}"
+build_arch="${3:-amd64}"
 zip_name_list=()
 
 # 构建或列出不同发行版的镜像

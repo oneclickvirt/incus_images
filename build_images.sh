@@ -115,6 +115,7 @@ fi
 
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"
+build_arch="${2:-amd64}"
 zip_name_list=()
 
 # 构建或列出不同发行版的镜像
@@ -123,7 +124,7 @@ build_or_list_images() {
     local ver_nums=()
     read -ra versions <<< "$1"
     read -ra ver_nums <<< "$2"
-    local architectures=("amd64")
+    local architectures=("$build_arch")
     local variants=("default" "cloud")
     local len=${#versions[@]}
     for ((i = 0; i < len; i++)); do

@@ -6,9 +6,6 @@ on:
 jobs:
   build_centos_images_amd64:
     runs-on: ubuntu-latest
-    container:
-      image: "centos:7"
-    
     steps:
     - uses: actions/checkout@v2
 
@@ -18,15 +15,6 @@ jobs:
 
     - name: Configure Git
       run: |
-        yum install -y curl
-        curl -lk https://gitee.com/SuperManito/LinuxMirrors/raw/main/ChangeMirrors.sh -o ChangeMirrors.sh
-        chmod 777 ChangeMirrors.sh
-        ./ChangeMirrors.sh --use-official-source --web-protocol http --intranet false --close-firewall true --backup true --updata-software false --clean-cache false --ignore-backup-tips
-        yum install -y epel-release
-        yum install -y git
-        yum install -y sudo
-        yum update -y
-        yum install -y jq
         git config --global user.name "daily-update"
         git config --global user.email "tg@spiritlhl.top"
       

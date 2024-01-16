@@ -125,7 +125,7 @@ sed -i -e '/mappings:/i \ ' alpine.yaml
 rm -rf openwrt.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/openwrt.yaml
 chmod 777 openwrt.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - iptables\n    - dos2unix"
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - iptables\n    - dos2unix"
 sed -i "/- sudo/ a\\$insert_content_1" openwrt.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
 cat openwrt.yaml > temp.yaml

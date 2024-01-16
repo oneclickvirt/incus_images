@@ -2,8 +2,6 @@
 
 This repository container image serves https://github.com/oneclickvirt/incus
 
-Known faulty container images (do not use): openwrt archlinux oracle
-
 ## test
 
 ```

@@ -1,6 +1,6 @@
 # incus_images
 
-This repository container image serves https://github.com/oneclickvirt/incus
+This repository container images serves https://github.com/oneclickvirt/incus
 
 ## test
 

@@ -1,4 +1,4 @@
-name: Build centos images amd64
+name: Build centos images x86_64
 
 on:
   workflow_dispatch:

@@ -148,7 +148,8 @@ debian)
     build_or_list_images "buster bullseye bookworm trixie" "10 11 12 13"
     ;;
 ubuntu)
-    build_or_list_images "bionic focal jammy lunar mantic noble" "18.04 20.04 22.04 23.04 23.10 24.04"
+    build_or_list_images "mantic noble" "23.10 24.04"
+    # "bionic focal jammy lunar mantic noble" "18.04 20.04 22.04 23.04 23.10 24.04"
     ;;
 kali)
     build_or_list_images "kali-rolling" "latest"

@@ -89,6 +89,8 @@ build_or_list_images() {
                         EXTRA_ARGS="-o source.same_as=3.19"
                     elif [[ "$run_funct" == "rockylinux" ]]; then
                         EXTRA_ARGS="-o source.variant=boot"
+                    elif [[ "$run_funct" == "almalinux" ]]; then
+                        EXTRA_ARGS="-o source.variant=boot"
                     elif [[ "$run_funct" == "ubuntu" ]]; then
                         if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" && [ "${arch}" != "x86_64" ]; then
                             EXTRA_ARGS="-o source.url=http://ports.ubuntu.com/ubuntu-ports"

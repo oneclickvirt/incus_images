@@ -67,6 +67,23 @@ build_or_list_images() {
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
                 if [ "$is_build_image" == true ]; then
+                    EXTRA_ARGS=""
+                    if [[ "$run_funct" == "oracle" && "$version" == "9" ]]; then
+                        EXTRA_ARGS="-o source.url=https://yum.oracle.com/ISOS/OracleLinux"
+                    elif [[ "$run_funct" == "centos" ]]; then
+                        if [ "$version" = "7" ] && [ "${architecture}" != "amd64" ]; then
+                            EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
+                        fi
+                        if [ "$version" = "8-Stream" ] || [ "$version" = "9-Stream" ]; then
+                            EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
+                        fi
+                        if [ "$version" = "9-Stream" ]; then
+                            EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
+                        fi
+                        if [ "$version" = "7" ]; then
+                            EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
+                        fi
+                    fi
                     if [[ "$run_funct" == "centos" ]]; then
                         manager="yum"
                     elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
@@ -83,10 +100,10 @@ build_or_list_images() {
                         echo "Unsupported distribution: $run_funct"
                         exit 1
                     fi
-                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}; then
+                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
                         echo "Command succeeded"
                     else
-                        sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}
+                        sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs

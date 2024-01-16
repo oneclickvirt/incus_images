@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_debian_images_amd64:
+  build_debian_images_x86_64:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

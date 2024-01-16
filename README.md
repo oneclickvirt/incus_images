@@ -1,16 +1,6 @@
 # incus_images
 
-For
-
-https://github.com/oneclickvirt/incus
-
-Only support
-
-https://github.com/oneclickvirt/incus_images/releases/tag/ubuntu
-
-https://github.com/oneclickvirt/incus_images/releases/tag/debian
-
-https://github.com/oneclickvirt/incus_images/releases/tag/kali
+This repository container image serves https://github.com/oneclickvirt/incus
 
 ## test
 

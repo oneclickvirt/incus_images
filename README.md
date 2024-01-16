@@ -22,6 +22,8 @@ incus image delete mydebian
 
 ## Thanks
 
+https://discuss.linuxcontainers.org/t/distrobuilder-how-to-compile-a-centos-container-image-in-an-ubuntu-environment-github-action/18709
+
 https://linuxcontainers.org/incus/docs/main/
 
 https://github.com/lxc/lxc-ci/tree/main/images

@@ -112,10 +112,18 @@ build_or_list_images() {
                         echo "Unsupported distribution: $run_funct"
                         exit 1
                     fi
-                    if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
-                        echo "Command succeeded"
+                    if [[ "$run_funct" != "archlinux" ]]; then
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
+                            echo "Command succeeded"
+                        else
+                            sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
+                        fi
                     else
-                        sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
+                            echo "Command succeeded"
+                        else
+                            sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
+                        fi
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs

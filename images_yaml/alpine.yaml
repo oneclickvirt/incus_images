@@ -318,7 +318,6 @@ packages:
     - openssh-server
     - openssh-keygen
     - cronie
-    - cron
     - iptables
     - dos2unix
     action: install

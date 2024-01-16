@@ -84,7 +84,9 @@ build_or_list_images() {
                             EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
                         fi
                     elif [[ "$run_funct" == "archlinux" ]]; then
-                        EXTRA_ARGS="-o source.url=http://os.archlinuxarm.org"
+                        if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" && [ "${arch}" != "x86_64" ]; then
+                            EXTRA_ARGS="-o source.url=http://os.archlinuxarm.org"
+                        fi
                     elif [[ "$run_funct" == "alpine" ]]; then
                         EXTRA_ARGS="-o source.same_as=3.19"
                     elif [[ "$run_funct" == "rockylinux" ]]; then

@@ -20,6 +20,9 @@ jobs:
           # a GitHub package registry.
           # githubToken: ${{ github.token }}
 
+          dockerRunArgs: |
+            --cap-add SYS_ADMIN
+
           # Set an output parameter `uname` for use in subsequent steps
           run: |
             uname -a

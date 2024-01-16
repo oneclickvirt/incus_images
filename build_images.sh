@@ -127,7 +127,7 @@ alpine)
     build_or_list_images "3.17 3.18 3.19 edge" "3.17 3.18 3.19 edge"
     ;;
 openwrt)
-    build_or_list_images "snapshot 22.03 23.05" "snapshot 22.03 23.05"
+    build_or_list_images "snapshot 21.02 22.03 23.05" "snapshot 21.02 22.03 23.05"
     ;;
 oracle)
     build_or_list_images "7 8 9" "7 8 9"

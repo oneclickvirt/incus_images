@@ -149,7 +149,8 @@ debian)
     ;;
 ubuntu)
     build_or_list_images "mantic noble" "23.10 24.04"
-    # "bionic focal jammy lunar mantic noble" "18.04 20.04 22.04 23.04 23.10 24.04"
+    # "bionic focal jammy lunar" "18.04 20.04 22.04 23.04"
+    # "mantic noble" "23.10 24.04"
     ;;
 kali)
     build_or_list_images "kali-rolling" "latest"

@@ -111,7 +111,7 @@ mv temp.yaml oracle.yaml
 rm -rf alpine.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/alpine.yaml
 chmod 777 alpine.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - cron\n    - iptables\n    - dos2unix"
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - iptables\n    - dos2unix"
 sed -i "/- doas/ a\\$insert_content_1" alpine.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
 line_number=$(($(wc -l < alpine.yaml) - 2))

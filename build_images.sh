@@ -10,38 +10,38 @@ if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get install zip -y
     fi
     uname_output=$(uname -a)
-    # if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
-    if ! command -v snap >/dev/null 2>&1; then
-        sudo apt-get install snapd -y
+    if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
+        if ! command -v snap >/dev/null 2>&1; then
+            sudo apt-get install snapd -y
+        fi
+        if ! command -v distrobuilder >/dev/null 2>&1; then
+            sudo snap install distrobuilder --classic
+        fi
+    else
+        sudo apt-get install build-essential -y
+        export CGO_ENABLED=1
+        export CC=gcc
+        wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
+        chmod 777 go1.21.6.linux-arm64.tar.gz
+        rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
+        export GOROOT=/usr/local/go
+        export PATH=$GOROOT/bin:$PATH
+        export GOPATH=$HOME/goprojects/
+        go version
+        apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
+        git config --global user.name "daily-update"
+        git config --global user.email "tg@spiritlhl.top"
+        mkdir -p $HOME/go/src/github.com/lxc/
+        cd $HOME/go/src/github.com/lxc/
+        git clone https://github.com/lxc/distrobuilder
+        cd ./distrobuilder
+        make
+        export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
+        echo $PATH
+        find $HOME -name distrobuilder -type f 2>/dev/null
+        distrobuilder --version
+        $HOME/goprojects/bin/distrobuilder --version
     fi
-    if ! command -v distrobuilder >/dev/null 2>&1; then
-        sudo snap install distrobuilder --classic
-    fi
-    # else
-    #     sudo apt-get install build-essential -y
-    #     export CGO_ENABLED=1
-    #     export CC=gcc
-    #     wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
-    #     chmod 777 go1.21.6.linux-arm64.tar.gz
-    #     rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
-    #     export GOROOT=/usr/local/go
-    #     export PATH=$GOROOT/bin:$PATH
-    #     export GOPATH=$HOME/goprojects/
-    #     go version
-    #     apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
-    #     git config --global user.name "daily-update"
-    #     git config --global user.email "tg@spiritlhl.top"
-    #     mkdir -p $HOME/go/src/github.com/lxc/
-    #     cd $HOME/go/src/github.com/lxc/
-    #     git clone https://github.com/lxc/distrobuilder
-    #     cd ./distrobuilder
-    #     make
-    #     export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
-    #     echo $PATH
-    #     find $HOME -name distrobuilder -type f 2>/dev/null
-    #     distrobuilder --version
-    #     $HOME/goprojects/bin/distrobuilder --version
-    # fi
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi

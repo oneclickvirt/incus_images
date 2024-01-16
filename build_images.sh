@@ -133,7 +133,7 @@ oracle)
     build_or_list_images "7 8 9" "7 8 9"
     ;;
 archlinux)
-    build_or_list_images "latest" "latest"
+    build_or_list_images "current" "current"
     ;;
 *)
     echo "Invalid distribution specified."

@@ -20,7 +20,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("oralce")
+        distros=("oracle")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false x86_64 | tail -n 1))

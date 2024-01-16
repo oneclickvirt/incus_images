@@ -67,11 +67,11 @@ build_or_list_images() {
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
                 if [ "$is_build_image" == true ]; then
-                    if [[ "$run_funct" == "centos" || "$run_funct" == "oracle" ]]; then
+                    if [[ "$run_funct" == "centos" ]]; then
                         manager="yum"
                     elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
                         manager="apt"
-                    elif [[ "$run_funct" == "almalinux" || "$run_funct" == "rockylinux" ]]; then
+                    elif [[ "$run_funct" == "almalinux" || "$run_funct" == "rockylinux" || "$run_funct" == "oracle" ]]; then
                         manager="dnf"
                     elif [[ "$run_funct" == "archlinux" ]]; then
                         manager="pacman"

@@ -18,6 +18,7 @@
     # other config
     /usr/sbin/sshd || true
     rc-update add sshd default || true
+    /etc/init.d/cron enable || true
   types:
   - container
   variants:

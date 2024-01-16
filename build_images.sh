@@ -77,6 +77,8 @@ build_or_list_images() {
                         manager="pacman"
                     elif [[ "$run_funct" == "alpine" ]]; then
                         manager="apk"
+                    elif [[ "$run_funct" == "openwrt" ]]; then
+                        manager="opkg"
                     else
                         echo "Unsupported distribution: $run_funct"
                         exit 1

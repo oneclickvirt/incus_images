@@ -2,6 +2,12 @@
 
 This repository container images serves https://github.com/oneclickvirt/incus and https://github.com/oneclickvirt/lxd
 
+Support:
+
+[incus full version](https://github.com/lxc/incus)
+
+LXD version <= [5.18](https://github.com/canonical/lxd/releases/tag/lxd-5.18)
+
 ## test
 
 ```

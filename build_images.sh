@@ -145,7 +145,7 @@ build_or_list_images() {
 # 不同发行版的配置
 case "$run_funct" in
 debian)
-    build_or_list_images "jessie stretch " "8 9"
+    build_or_list_images "buster bullseye bookworm trixie" "10 11 12 13"
     # "jessie stretch " "8 9"
     # "buster bullseye bookworm trixie" "10 11 12 13"
     ;;

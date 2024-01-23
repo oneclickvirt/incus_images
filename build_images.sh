@@ -86,9 +86,9 @@ build_or_list_images() {
                         if [ "$version" = "9-Stream" ]; then
                             EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
                         fi
-                        if [ "$version" = "7" ]; then
-                            EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
-                        fi
+                        # if [ "$version" = "7" ]; then
+                        #     EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
+                        # fi
                     elif [[ "$run_funct" == "archlinux" ]]; then
                         if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" && [ "${arch}" != "x86_64" ]; then
                             EXTRA_ARGS="-o source.url=http://os.archlinuxarm.org"
@@ -123,14 +123,14 @@ build_or_list_images() {
                     if [[ "$run_funct" != "archlinux" ]]; then
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
                             echo "Command succeeded"
-                        else
-                            sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
+                        # else
+                        #    sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
                         fi
                     else
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
                             echo "Command succeeded"
-                        else
-                            sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
+                        # else
+                        #     sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
                         fi
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then

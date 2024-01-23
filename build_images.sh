@@ -156,7 +156,7 @@ debian)
     # "buster bullseye bookworm trixie" "10 11 12 13"
     ;;
 ubuntu)
-    build_or_list_images "focal jammy noble" "20.04 22.04 24.04"
+    build_or_list_images "bionic focal jammy lunar" "18.04 20.04 22.04 23.04"
     # "bionic focal jammy lunar" "18.04 20.04 22.04 23.04"
     # "mantic noble" "23.10 24.04"
     ;;

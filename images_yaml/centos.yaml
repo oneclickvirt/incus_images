@@ -518,7 +518,6 @@ packages:
     - wget
     - bash
     - lsof
-    - epel-relase
     - sshpass
     - openssh-server
     - iptables

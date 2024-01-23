@@ -1,11 +1,14 @@
 name: Build debian images x86_64
 
 on:
+  schedule:
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
   build_debian_images_x86_64:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    # runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 

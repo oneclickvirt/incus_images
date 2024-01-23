@@ -1,11 +1,14 @@
 name: Build centos images x86_64
 
 on:
+  schedule:
+    - cron: '0 13 * * *'
   workflow_dispatch:
 
 jobs:
   build_centos_images_amd64:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    # runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 

@@ -5,7 +5,8 @@ on:
 
 jobs:
   build_kali_images_arm64:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    # runs-on: ubuntu-latest
     name: Build on ubuntu-latest aarch64
     steps:
       - uses: actions/checkout@v2

@@ -49,7 +49,8 @@ sed -i -e '/mappings:/i \ ' kali.yaml
 rm -rf centos.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/centos.yaml
 chmod 777 centos.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - epel-relase\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
+# epel-relase 不可用 cron 不可用
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" centos.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat centos.yaml > temp.yaml
@@ -61,6 +62,7 @@ mv temp.yaml centos.yaml
 rm -rf almalinux.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/almalinux.yaml
 chmod 777 almalinux.yaml
+# cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" almalinux.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
@@ -73,6 +75,7 @@ mv temp.yaml almalinux.yaml
 rm -rf rockylinux.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/rockylinux.yaml
 chmod 777 rockylinux.yaml
+# cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" rockylinux.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
@@ -85,6 +88,7 @@ mv temp.yaml rockylinux.yaml
 rm -rf archlinux.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/archlinux.yaml
 chmod 777 archlinux.yaml
+# cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - iptables\n    - dos2unix"
 sed -i "/- which/ a\\$insert_content_1" archlinux.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
@@ -99,6 +103,7 @@ sed -i -e '/mappings:/i \ ' archlinux.yaml
 rm -rf oracle.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/oracle.yaml
 chmod 777 oracle.yaml
+# cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" oracle.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
@@ -111,6 +116,7 @@ mv temp.yaml oracle.yaml
 rm -rf alpine.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/alpine.yaml
 chmod 777 alpine.yaml
+# cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - iptables\n    - dos2unix"
 sed -i "/- doas/ a\\$insert_content_1" alpine.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
@@ -125,6 +131,7 @@ sed -i -e '/mappings:/i \ ' alpine.yaml
 rm -rf openwrt.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/openwrt.yaml
 chmod 777 openwrt.yaml
+# cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - iptables\n    - dos2unix"
 sed -i "/- sudo/ a\\$insert_content_1" openwrt.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)

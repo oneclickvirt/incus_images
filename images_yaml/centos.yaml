@@ -992,6 +992,8 @@ actions:
     # other config
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/sysconfig/selinux || true
     sed -i.bak '/^SELINUX=/cSELINUX=disabled' /etc/selinux/config || true
+    if [ -f "/etc/motd" ] && ! grep -q 'Related repo https://github.com/oneclickvirt/incus' /etc/motd && ! grep -q '--by https://t.me/spiritlhl' /etc/motd; then echo 'Related repo https://github.com/oneclickvirt/incus' >>/etc/motd; echo '--by https://t.me/spiritlhl' >>/etc/motd; fi  || true
+    if [ -f "/etc/banner" ] && ! grep -q 'Related repo https://github.com/oneclickvirt/incus' /etc/banner && ! grep -q '--by https://t.me/spiritlhl' /etc/banner; then echo 'Related repo https://github.com/oneclickvirt/incus' >>/etc/banner; echo '--by https://t.me/spiritlhl' >>/etc/banner; fi  || true
   types:
   - container
   variants:

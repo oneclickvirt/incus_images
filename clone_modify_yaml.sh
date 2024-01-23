@@ -49,7 +49,7 @@ sed -i -e '/mappings:/i \ ' kali.yaml
 rm -rf centos.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/centos.yaml
 chmod 777 centos.yaml
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - epel-relase\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" centos.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 cat centos.yaml > temp.yaml

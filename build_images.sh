@@ -6,8 +6,14 @@ opath=$(pwd)
 # 检查并安装依赖工具
 if command -v apt-get >/dev/null 2>&1; then
     # ubuntu debian kali
+    if ! command -v sudo >/dev/null 2>&1; then
+        apt-get install sudo -y
+    fi
     if ! command -v zip >/dev/null 2>&1; then
         sudo apt-get install zip -y
+    fi
+    if ! command -v jq >/dev/null 2>&1; then
+        sudo apt-get install jq -y
     fi
     uname_output=$(uname -a)
     if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then

@@ -20,6 +20,8 @@
     rc-update add sshd default || true
     /etc/init.d/cron enable || true
     /etc/init.d/cron start || true
+    if [ -f "/etc/motd" ] && ! grep -q 'Related repo https://github.com/oneclickvirt/incus' /etc/motd && ! grep -q '--by https://t.me/spiritlhl' /etc/motd; then echo 'Related repo https://github.com/oneclickvirt/incus' >>/etc/motd; echo '--by https://t.me/spiritlhl' >>/etc/motd; fi  || true
+    if [ -f "/etc/banner" ] && ! grep -q 'Related repo https://github.com/oneclickvirt/incus' /etc/banner && ! grep -q '--by https://t.me/spiritlhl' /etc/banner; then echo 'Related repo https://github.com/oneclickvirt/incus' >>/etc/banner; echo '--by https://t.me/spiritlhl' >>/etc/banner; fi  || true
   types:
   - container
   variants:

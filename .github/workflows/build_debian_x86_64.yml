@@ -1,8 +1,8 @@
 name: Build debian images x86_64
 
 on:
-  schedule:
-    - cron: '0 12 * * *'
+  # schedule:
+  #   - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:

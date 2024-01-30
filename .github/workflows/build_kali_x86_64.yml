@@ -1,8 +1,8 @@
 name: Build kali images x86_64
 
 on:
-  schedule:
-    - cron: '0 11 * * *'
+  # schedule:
+  #   - cron: '0 11 * * *'
   workflow_dispatch:
 
 jobs:

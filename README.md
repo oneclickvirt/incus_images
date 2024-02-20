@@ -24,6 +24,16 @@ incus delete -f test
 incus image delete myc
 ```
 
+## Sponsor
+
+Thanks to 
+
+<a href="https://ekire.net/" target="_blank">
+  <img src="https://ekire.net/assets/img/bl.png" alt="h501">
+</a>
+
+for providing support for images compilation.
+
 ## Thanks
 
 https://discuss.linuxcontainers.org/t/distrobuilder-how-to-compile-a-centos-container-image-in-an-ubuntu-environment-github-action/18709

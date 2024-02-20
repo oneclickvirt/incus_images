@@ -100,6 +100,13 @@ build_or_list_images() {
                         if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" && [ "${arch}" != "x86_64" ]; then
                             EXTRA_ARGS="-o source.url=http://ports.ubuntu.com/ubuntu-ports"
                         fi
+                    elif [[ "$run_funct" == "gentoo" ]]; then
+                        if [ "${variant}" = "cloud" ]; then
+                            variant="openrc"
+                        fi
+                    elif [[ "$run_funct" == "fedora" ]]; then
+                        [ "${arch}" = "amd64" ] && arch="x86_64"
+                        [ "${arch}" = "arm64" ] && arch="aarch64"
                     fi
                     if [[ "$run_funct" == "centos" ]]; then
                         manager="yum"
@@ -128,6 +135,14 @@ build_or_list_images() {
                             echo "Command succeeded"
                         fi
                     fi
+                    if [[ "$run_funct" == "gentoo" ]]; then
+                        if [ "${variant}" = "openrc" ]; then
+                            variant="cloud"
+                        fi
+                    elif [[ "$run_funct" == "fedora" ]]; then
+                        [ "${arch}" = "x86_64" ] && arch="amd64"
+                        [ "${arch}" = "aarch64" ] && arch="arm64"
+                    fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs
                         rm -rf incus.tar.xz rootfs.squashfs
@@ -144,6 +159,7 @@ build_or_list_images() {
 }
 
 # 不同发行版的配置
+# build_or_list_images 镜像名字 镜像版本号
 case "$run_funct" in
 debian)
     build_or_list_images "buster bullseye bookworm trixie" "10 11 12 13"
@@ -178,6 +194,12 @@ oracle)
     ;;
 archlinux)
     build_or_list_images "current" "current"
+    ;;
+gentoo)
+    build_or_list_images "current" "current"
+    ;;
+fedora)
+    build_or_list_images "37 38 39" "37 38 39"
     ;;
 *)
     echo "Invalid distribution specified."

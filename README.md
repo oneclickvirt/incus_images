@@ -29,7 +29,7 @@ incus image delete myc
 Thanks to 
 
 <a href="https://ekire.net/" target="_blank">
-  <img src="https://ekire.net/assets/img/bl.png" alt="h501">
+  <img src="https://ekire.net/assets/img/bl.png" alt="ekire">
 </a>
 
 for providing support for images compilation.

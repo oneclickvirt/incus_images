@@ -77,7 +77,7 @@ build_or_list_images() {
                     if [[ "$run_funct" == "oracle" && "$version" == "9" ]]; then
                         EXTRA_ARGS="-o source.url=https://yum.oracle.com/ISOS/OracleLinux"
                     elif [[ "$run_funct" == "centos" ]]; then
-                        if [ "$version" = "7" ] && [ "${architecture}" != "amd64" ]; then
+                        if [ "$version" = "7" ] && [ "${arch}" != "amd64" ] && [ "${arch}" != "x86_64" ]; then
                             EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
                         fi
                         if [ "$version" = "8-Stream" ] || [ "$version" = "9-Stream" ]; then

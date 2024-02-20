@@ -23,36 +23,36 @@ if command -v apt-get >/dev/null 2>&1; then
         if ! command -v distrobuilder >/dev/null 2>&1; then
             sudo snap install distrobuilder --classic
         fi
-    else
-        sudo apt-get install build-essential -y
-        export CGO_ENABLED=1
-        export CC=gcc
-        wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
-        chmod 777 go1.21.6.linux-arm64.tar.gz
-        rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
-        export GOROOT=/usr/local/go
-        export PATH=$GOROOT/bin:$PATH
-        export GOPATH=$HOME/goprojects/
-        go version
-        apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
-        git config --global user.name "daily-update"
-        git config --global user.email "tg@spiritlhl.top"
-        mkdir -p $HOME/go/src/github.com/lxc/
-        cd $HOME/go/src/github.com/lxc/
-        git clone https://github.com/lxc/distrobuilder
-        cd ./distrobuilder
-        make
-        export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
-        echo $PATH
-        find $HOME -name distrobuilder -type f 2>/dev/null
-        distrobuilder --version
-        $HOME/goprojects/bin/distrobuilder --version
     fi
+    # else
+    #     sudo apt-get install build-essential -y
+    #     export CGO_ENABLED=1
+    #     export CC=gcc
+    #     wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
+    #     chmod 777 go1.21.6.linux-arm64.tar.gz
+    #     rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
+    #     export GOROOT=/usr/local/go
+    #     export PATH=$GOROOT/bin:$PATH
+    #     export GOPATH=$HOME/goprojects/
+    #     go version
+    #     apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
+    #     git config --global user.name "daily-update"
+    #     git config --global user.email "tg@spiritlhl.top"
+    #     mkdir -p $HOME/go/src/github.com/lxc/
+    #     cd $HOME/go/src/github.com/lxc/
+    #     git clone https://github.com/lxc/distrobuilder
+    #     cd ./distrobuilder
+    #     make
+    #     export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
+    #     echo $PATH
+    #     find $HOME -name distrobuilder -type f 2>/dev/null
+    #     distrobuilder --version
+    #     $HOME/goprojects/bin/distrobuilder --version
+    # fi
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi
 fi
-
 run_funct="${1:-debian}"
 is_build_image="${2:-false}"
 build_arch="${3:-amd64}"
@@ -86,9 +86,6 @@ build_or_list_images() {
                         if [ "$version" = "9-Stream" ]; then
                             EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
                         fi
-                        # if [ "$version" = "7" ]; then
-                        #     EXTRA_ARGS="${EXTRA_ARGS} -o packages.manager=yum"
-                        # fi
                     elif [[ "$run_funct" == "archlinux" ]]; then
                         if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" && [ "${arch}" != "x86_64" ]; then
                             EXTRA_ARGS="-o source.url=http://os.archlinuxarm.org"
@@ -121,16 +118,12 @@ build_or_list_images() {
                         exit 1
                     fi
                     if [[ "$run_funct" != "archlinux" ]]; then
-                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
-                        # else
-                        #    sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
                         fi
                     else
-                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}; then
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
-                        # else
-                        #     sudo $HOME/goprojects/bin/distrobuilder "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager}  ${EXTRA_ARGS}
                         fi
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then

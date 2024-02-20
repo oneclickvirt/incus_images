@@ -1,12 +1,12 @@
-name: Build rockylinux images x86_64
+name: almalinux x86_64 images
 
 on:
   # schedule:
-  #   - cron: '0 8 * * *'
+  #   - cron: '0 16 * * *'
   workflow_dispatch:
 
 jobs:
-  build_rockylinux_images_x86_64:
+  almalinux_x86_64_images:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -22,8 +22,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("rockylinux")
-        # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
+        distros=("almalinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false x86_64 | tail -n 1))
             release_id=$(curl -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/$distro" | jq -r '.id')

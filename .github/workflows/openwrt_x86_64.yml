@@ -1,14 +1,13 @@
-name: Build ubuntu images x86_64
+name: openwrt x86_64 images
 
 on:
   # schedule:
-  #   - cron: '5 0 * * *'
+  #   - cron: '0 10 * * *'
   workflow_dispatch:
 
 jobs:
-  build_ubuntu_images_x86_64:
-    runs-on: self-hosted
-    # runs-on: ubuntu-latest
+  openwrt_x86_64_images:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 
@@ -23,7 +22,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("ubuntu")
+        distros=("openwrt")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false x86_64 | tail -n 1))
@@ -31,7 +30,7 @@ jobs:
             for file in "${zip_name_list[@]}"; do
                 echo "Building $distro and packge zips"
                 bash build_images.sh $distro true x86_64
-                if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 10485760 ]; then
+                if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 1048576 ]; then
                     echo "Checking if $file already exists in release..."
                     existing_asset_id=$(curl -s -H "Accept: application/vnd.github.v3+json" \
                       "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \

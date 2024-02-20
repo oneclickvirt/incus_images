@@ -1,12 +1,12 @@
-name: Build openwrt images x86_64
+name: archlinux x86_64 images
 
 on:
   # schedule:
-  #   - cron: '0 10 * * *'
+  #   - cron: '0 14 * * *'
   workflow_dispatch:
 
 jobs:
-  build_openwrt_images_x86_64:
+  archlinux_x86_64_images:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("openwrt")
+        distros=("archlinux")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false x86_64 | tail -n 1))

@@ -1,4 +1,4 @@
-name: Build centos images x86_64
+name: centos x86_64 images
 
 on:
   # schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_centos_images_amd64:
+  centos_x86_64_images:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

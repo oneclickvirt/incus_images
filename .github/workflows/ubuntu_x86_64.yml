@@ -1,13 +1,14 @@
-name: Build kali images x86_64
+name: ubuntu x86_64 images
 
 on:
   # schedule:
-  #   - cron: '0 11 * * *'
+  #   - cron: '5 0 * * *'
   workflow_dispatch:
 
 jobs:
-  build_kali_images_x86_64:
-    runs-on: ubuntu-latest
+  ubuntu_x86_64_images:
+    runs-on: self-hosted
+    # runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
 
@@ -22,7 +23,7 @@ jobs:
       
     - name: Build and Upload Images
       run: |
-        distros=("kali")
+        distros=("ubuntu")
         # ("debian" "ubuntu" "kali" "centos" "almalinux" "rockylinux" "alpine" "openwrt" "oracle" "archlinux")
         for distro in "${distros[@]}"; do
             zip_name_list=($(bash build_images.sh $distro false x86_64 | tail -n 1))

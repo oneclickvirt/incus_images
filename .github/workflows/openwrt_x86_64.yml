@@ -1,8 +1,8 @@
 name: openwrt x86_64
 
 on:
-  # schedule:
-  #   - cron: '0 10 * * *'
+  schedule:
+    - cron: '0 10 * * *'
   workflow_dispatch:
 
 jobs:

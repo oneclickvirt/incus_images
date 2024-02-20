@@ -1,8 +1,8 @@
 name: centos x86_64
 
 on:
-  # schedule:
-  #   - cron: '0 13 * * *'
+  schedule:
+    - cron: '0 13 * * *'
   workflow_dispatch:
 
 jobs:

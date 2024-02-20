@@ -1,8 +1,8 @@
 name: alpine x86_64
 
 on:
-  # schedule:
-  #   - cron: '0 15 * * *'
+  schedule:
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 jobs:

@@ -1,4 +1,4 @@
-name: rockylinux x86_64 images
+name: rockylinux x86_64
 
 on:
   # schedule:

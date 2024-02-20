@@ -1,4 +1,4 @@
-name: openwrt x86_64 images
+name: openwrt x86_64
 
 on:
   # schedule:

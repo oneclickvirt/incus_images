@@ -1,4 +1,4 @@
-name: oralce x86_64 images
+name: oralce x86_64
 
 on:
   # schedule:

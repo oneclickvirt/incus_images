@@ -1,4 +1,4 @@
-name: almalinux x86_64 images
+name: almalinux x86_64
 
 on:
   # schedule:

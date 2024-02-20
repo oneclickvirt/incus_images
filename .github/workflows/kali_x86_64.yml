@@ -1,4 +1,4 @@
-name: kali x86_64 images
+name: kali x86_64
 
 on:
   # schedule:

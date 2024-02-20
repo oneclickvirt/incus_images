@@ -1,4 +1,4 @@
-name: centos x86_64 images
+name: centos x86_64
 
 on:
   # schedule:

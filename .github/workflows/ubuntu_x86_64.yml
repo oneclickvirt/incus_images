@@ -1,4 +1,4 @@
-name: ubuntu x86_64 images
+name: ubuntu x86_64
 
 on:
   # schedule:

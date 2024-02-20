@@ -1,4 +1,4 @@
-name: alpine x86_64 images
+name: alpine x86_64
 
 on:
   # schedule:

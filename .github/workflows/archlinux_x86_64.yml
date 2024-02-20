@@ -1,4 +1,4 @@
-name: archlinux x86_64 images
+name: archlinux x86_64
 
 on:
   # schedule:

@@ -39,7 +39,7 @@ jobs:
     
     - name: Commit changes
       run: |
-        git commit -m "Update files"
+        git commit -m "Update files" | true
     
     - name: Push changes
       uses: ad-m/github-push-action@master

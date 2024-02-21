@@ -297,6 +297,7 @@ build_or_list_images() {
 
 # 不同发行版的配置
 # build_or_list_images 镜像名字 镜像版本号 variants的值
+build_arch="x86_64"
 run_funct="debian"
 build_or_list_images "jessie stretch buster bullseye bookworm trixie" "8 9 10 11 12 13" "default cloud"
 run_funct="ubuntu"

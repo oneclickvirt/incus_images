@@ -285,11 +285,12 @@ build_or_list_images() {
                     [ "${arch}" = "aarch64" ] && arch="arm64"
                 elif [[ "$run_funct" == "openeuler" ]]; then
                     [ "${arch}" = "aarch64" ] && arch="arm64"
-                zip_name_list+=("${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip")
                 fi
+                zip_name_list+=("${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip")
             done
         done
     done
+    echo "${zip_name_list[@]}"
     for zip_name in "${zip_name_list[@]}"; do
         echo "${zip_name}" >> fixed_images.txt
     done

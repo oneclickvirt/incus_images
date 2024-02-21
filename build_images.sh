@@ -108,6 +108,7 @@ build_or_list_images() {
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                         [ "${arch}" = "arm64" ] && arch="aarch64"
                     fi
+                    # apk apt dnf egoportage opkg pacman portage yum equo xbps zypper luet slackpkg
                     if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" ]]; then
                         manager="yum"
                     elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
@@ -121,7 +122,7 @@ build_or_list_images() {
                     elif [[ "$run_funct" == "openwrt" ]]; then
                         manager="opkg"
                     elif [[ "$run_funct" == "gentoo" ]]; then
-                        manager="emerge"
+                        manager="portage"
                     else
                         echo "Unsupported distribution: $run_funct"
                         exit 1
@@ -129,11 +130,6 @@ build_or_list_images() {
                     if [[ "$run_funct" != "archlinux" ]]; then
                         echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
-                            echo "Command succeeded"
-                        fi
-                    elif [[ "$run_funct" == "gentoo" ]]; then
-                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
-                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                         fi
                     else

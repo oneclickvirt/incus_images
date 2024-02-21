@@ -195,3 +195,4 @@ cat openeuler.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml openeuler.yaml
+

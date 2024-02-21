@@ -343,4 +343,4 @@ URL="https://raw.githubusercontent.com/lxc/lxc-ci/main/jenkins/jobs/image-openeu
 curl_output=$(curl -s "$URL" | awk '/name: release/{flag=1; next} /^$/{flag=0} flag && /^ *-/{if (!first) {printf "%s", $2; first=1} else {printf " %s", $2}}' | sed 's/"//g')
 build_or_list_images "$curl_output" "$curl_output" "default cloud"
 cat fixed_images.txt
-sort fixed_images.txt | uniq > fixed_images.txt
+cat fixed_images.txt | uniq > fixed_images.txt

@@ -110,9 +110,15 @@ build_or_list_images() {
                 elif [[ "$run_funct" == "fedora" ]]; then
                     [ "${arch}" = "amd64" ] && arch="x86_64"
                     [ "${arch}" = "arm64" ] && arch="aarch64"
+                elif [[ "$run_funct" == "opensuse" ]]; then
+                    [ "${arch}" = "amd64" ] && arch="x86_64"
+                    [ "${arch}" = "arm64" ] && arch="aarch64"
+                elif [[ "$run_funct" == "openeuler" ]]; then
+                    [ "${arch}" = "amd64" ] && arch="x86_64"
+                    [ "${arch}" = "arm64" ] && arch="aarch64"
                 fi
                 # apk apt dnf egoportage opkg pacman portage yum equo xbps zypper luet slackpkg
-                if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" ]]; then
+                if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" || "$run_funct" == "openeuler" ]]; then
                     manager="yum"
                 elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
                     manager="apt"
@@ -126,6 +132,8 @@ build_or_list_images() {
                     manager="opkg"
                 elif [[ "$run_funct" == "gentoo" ]]; then
                     manager="portage"
+                elif [[ "$run_funct" == "opensuse" ]]; then
+                    manager="zypper"
                 else
                     echo "Unsupported distribution: $run_funct"
                     exit 1
@@ -151,6 +159,10 @@ build_or_list_images() {
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                     elif [[ "$run_funct" == "fedora" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
+                    elif [[ "$run_funct" == "opensuse" ]]; then
+                        [ "${arch}" = "aarch64" ] && arch="arm64"
+                    elif [[ "$run_funct" == "openeuler" ]]; then
+                        [ "${arch}" = "aarch64" ] && arch="arm64"
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs
@@ -160,6 +172,10 @@ build_or_list_images() {
                     if [[ "$run_funct" == "gentoo" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                     elif [[ "$run_funct" == "fedora" ]]; then
+                        [ "${arch}" = "aarch64" ] && arch="arm64"
+                    elif [[ "$run_funct" == "opensuse" ]]; then
+                        [ "${arch}" = "aarch64" ] && arch="arm64"
+                    elif [[ "$run_funct" == "openeuler" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
                     fi
                     zip_name_list+=("${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip")
@@ -214,6 +230,12 @@ gentoo)
     ;;
 fedora)
     build_or_list_images "37 38 39" "37 38 39" "default cloud"
+    ;;
+opensuse)
+    build_or_list_images "15.4 15.5 tumbleweed" "15.4 15.5 tumbleweed" "default cloud"
+    ;;
+openeuler)
+    build_or_list_images "22.03 20.03 23.03" "22.03 20.03 23.03" "default cloud"
     ;;
 *)
     echo "Invalid distribution specified."

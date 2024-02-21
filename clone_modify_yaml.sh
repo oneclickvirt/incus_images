@@ -167,3 +167,31 @@ insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_con
 cat openwrt.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml openwrt.yaml
+
+# opensuse
+
+rm -rf opensuse.yaml
+wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/opensuse.yaml
+chmod 777 opensuse.yaml
+# cron 不可用
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
+sed -i "/- vim-minimal/ a\\$insert_content_1" opensuse.yaml
+insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+cat opensuse.yaml > temp.yaml
+echo "" >> temp.yaml
+echo "$insert_content_2" >> temp.yaml
+mv temp.yaml opensuse.yaml
+
+# openeuler
+
+rm -rf openeuler.yaml
+wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/openeuler.yaml
+chmod 777 openeuler.yaml
+# cron 不可用
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
+sed -i "/- vim-minimal/ a\\$insert_content_1" openeuler.yaml
+insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+cat openeuler.yaml > temp.yaml
+echo "" >> temp.yaml
+echo "$insert_content_2" >> temp.yaml
+mv temp.yaml openeuler.yaml

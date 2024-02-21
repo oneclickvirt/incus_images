@@ -211,88 +211,14 @@ build_or_list_images() {
         ver_num=${ver_nums[i]}
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
-                EXTRA_ARGS=""
-                if [[ "$run_funct" == "oracle" && "$version" == "9" ]]; then
-                    EXTRA_ARGS="-o source.url=https://yum.oracle.com/ISOS/OracleLinux"
-                elif [[ "$run_funct" == "centos" ]]; then
-                    if [ "$version" = "7" ] && [ "${arch}" != "amd64" ] && [ "${arch}" != "x86_64" ]; then
-                        EXTRA_ARGS="-o source.url=http://mirror.math.princeton.edu/pub/centos-altarch/ -o source.skip_verification=true"
-                    fi
-                    if [ "$version" = "8-Stream" ] || [ "$version" = "9-Stream" ]; then
-                        EXTRA_ARGS="${EXTRA_ARGS} -o source.variant=boot"
-                    fi
-                    if [ "$version" = "9-Stream" ]; then
-                        EXTRA_ARGS="${EXTRA_ARGS} -o source.url=https://mirror1.hs-esslingen.de/pub/Mirrors/centos-stream"
-                    fi
-                elif [[ "$run_funct" == "archlinux" ]]; then
-                    if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" ] && [ "${arch}" != "x86_64" ]; then
-                        EXTRA_ARGS="-o source.url=http://os.archlinuxarm.org"
-                    fi
-                elif [[ "$run_funct" == "alpine" ]]; then
-                    EXTRA_ARGS="-o source.same_as=3.19"
-                elif [[ "$run_funct" == "rockylinux" ]]; then
-                    EXTRA_ARGS="-o source.variant=boot"
-                elif [[ "$run_funct" == "almalinux" ]]; then
-                    EXTRA_ARGS="-o source.variant=boot"
-                elif [[ "$run_funct" == "ubuntu" ]]; then
-                    if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" ] && [ "${arch}" != "x86_64" ]; then
-                        EXTRA_ARGS="-o source.url=http://ports.ubuntu.com/ubuntu-ports"
-                    fi
-                elif [[ "$run_funct" == "gentoo" ]]; then
-                    if [ "${variant}" = "cloud" ]; then
-                        EXTRA_ARGS="-o source.variant=openrc"
-                    else
-                        EXTRA_ARGS="-o source.variant=${variant}"
-                    fi
-                    [ "${arch}" = "x86_64" ] && arch="amd64"
-                elif [[ "$run_funct" == "fedora" ]]; then
-                    [ "${arch}" = "amd64" ] && arch="x86_64"
-                    [ "${arch}" = "arm64" ] && arch="aarch64"
-                elif [[ "$run_funct" == "opensuse" ]]; then
-                    [ "${arch}" = "amd64" ] && arch="x86_64"
-                    [ "${arch}" = "arm64" ] && arch="aarch64"
-                elif [[ "$run_funct" == "openeuler" ]]; then
-                    [ "${arch}" = "amd64" ] && arch="x86_64"
-                    [ "${arch}" = "arm64" ] && arch="aarch64"
-                fi
-                # apk apt dnf egoportage opkg pacman portage yum equo xbps zypper luet slackpkg
-                if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" || "$run_funct" == "openeuler" ]]; then
-                    manager="yum"
-                elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
-                    manager="apt"
-                elif [[ "$run_funct" == "almalinux" || "$run_funct" == "rockylinux" || "$run_funct" == "oracle" ]]; then
-                    manager="dnf"
-                elif [[ "$run_funct" == "archlinux" ]]; then
-                    manager="pacman"
-                elif [[ "$run_funct" == "alpine" ]]; then
-                    manager="apk"
-                elif [[ "$run_funct" == "openwrt" ]]; then
-                    manager="opkg"
-                elif [[ "$run_funct" == "gentoo" ]]; then
-                    manager="portage"
-                elif [[ "$run_funct" == "opensuse" ]]; then
-                    manager="zypper"
+                local url="https://github.com/oneclickvirt/incus_images/releases/download/${run_funct}/${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip"
+                if curl --output /dev/null --silent --head --fail "$url"; then
+                    echo "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" >> fixed_images.txt
                 else
-                    echo "Unsupported distribution: $run_funct"
-                    exit 1
+                    echo "File not found: $url"
                 fi
-                # 仅生成名字
-                if [[ "$run_funct" == "gentoo" ]]; then
-                    [ "${arch}" = "amd64" ] && arch="x86_64"
-                elif [[ "$run_funct" == "fedora" ]]; then
-                    [ "${arch}" = "aarch64" ] && arch="arm64"
-                elif [[ "$run_funct" == "opensuse" ]]; then
-                    [ "${arch}" = "aarch64" ] && arch="arm64"
-                elif [[ "$run_funct" == "openeuler" ]]; then
-                    [ "${arch}" = "aarch64" ] && arch="arm64"
-                fi
-                zip_name_list+=("${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip")
             done
         done
-    done
-    # echo "${zip_name_list[@]}"
-    for zip_name in "${zip_name_list[@]}"; do
-        echo "${zip_name}" >> fixed_images.txt
     done
 }
 
@@ -345,7 +271,6 @@ curl_output=$(curl -s "$URL" | awk '/name: release/{flag=1; next} /^$/{flag=0} f
 build_or_list_images "$curl_output" "$curl_output" "default cloud"
 declare -A seen_lines
 while IFS= read -r line; do
-    # 如果当前行不在关联数组中，则输出它，并将其添加到关联数组中
     if [[ ! -v seen_lines["$line"] ]]; then
         echo "$line"
         seen_lines["$line"]=1

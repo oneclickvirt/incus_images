@@ -271,13 +271,11 @@ curl_output=$(curl -s "$URL" | awk '/name: release/{flag=1; next} /^$/{flag=0} f
 build_or_list_images "$curl_output" "$curl_output" "default cloud"
 # 去除重复行
 remove_duplicate_lines() {
-    chattr -i "$1"
     # 预处理：去除行尾空格和制表符
     sed -i 's/[ \t]*$//' "$1"
     # 去除重复行并跳过空行和注释行
     if [ -f "$1" ]; then
         awk '{ line = $0; gsub(/^[ \t]+/, "", line); gsub(/[ \t]+/, " ", line); if (!NF || !seen[line]++) print $0 }' "$1" >"$1.tmp" && mv -f "$1.tmp" "$1"
     fi
-    chattr +i "$1"
 }
 remove_duplicate_lines "fixed_images.txt"

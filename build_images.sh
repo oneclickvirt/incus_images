@@ -128,14 +128,14 @@ build_or_list_images() {
                         echo "Unsupported distribution: $run_funct"
                         exit 1
                     fi
-                    if [[ "$run_funct" != "archlinux" ]]; then
-                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
-                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
-                            echo "Command succeeded"
-                        fi
-                    elif [[ "$run_funct" == "gentoo" ]]; then
+                    if [[ "$run_funct" == "gentoo" ]]; then
                         echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
+                            echo "Command succeeded"
+                        fi
+                    elif [[ "$run_funct" != "archlinux" ]]; then
+                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                         fi
                     else

@@ -120,12 +120,13 @@ chmod 777 gentoo.yaml
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - openssh-server\n    - sshpass\n    - iptables\n    - dos2unix"
 sed -i "/- sudo/ a\\$insert_content_1" gentoo.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
-line_number=$(($(wc -l < gentoo.yaml) - 8))
+line_number=$(($(wc -l < gentoo.yaml) - 7))
 head -n $line_number gentoo.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
-tail -n 8 gentoo.yaml >> temp.yaml
+tail -n 7 gentoo.yaml >> temp.yaml
 mv temp.yaml gentoo.yaml
 sed -i -e '/environment:/i \ ' gentoo.yaml
+sed -i 's/- default/- openrc/g' gentoo.yaml
 
 # fedora
 rm -rf fedora.yaml

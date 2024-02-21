@@ -102,7 +102,9 @@ build_or_list_images() {
                         fi
                     elif [[ "$run_funct" == "gentoo" ]]; then
                         if [ "${variant}" = "cloud" ]; then
-                            variant="openrc"
+                            EXTRA_ARGS="-o source.variant=openrc"
+                        else
+                            EXTRA_ARGS="-o source.variant=${variant}"
                         fi
                         [ "${arch}" = "x86_64" ] && arch="amd64"
                     elif [[ "$run_funct" == "fedora" ]]; then
@@ -129,8 +131,8 @@ build_or_list_images() {
                         exit 1
                     fi
                     if [[ "$run_funct" == "gentoo" ]]; then
-                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
-                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
+                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                         fi
                     elif [[ "$run_funct" != "archlinux" ]]; then

@@ -62,10 +62,11 @@ zip_name_list=()
 build_or_list_images() {
     local versions=()
     local ver_nums=()
+    local variants=()
     read -ra versions <<< "$1"
     read -ra ver_nums <<< "$2"
+    read -ra variants <<< "$3"
     local architectures=("$build_arch")
-    local variants=("default" "cloud")
     local len=${#versions[@]}
     for ((i = 0; i < len; i++)); do
         version=${versions[i]}
@@ -171,47 +172,47 @@ build_or_list_images() {
 }
 
 # 不同发行版的配置
-# build_or_list_images 镜像名字 镜像版本号
+# build_or_list_images 镜像名字 镜像版本号 variants的值
 case "$run_funct" in
 debian)
-    build_or_list_images "buster bullseye bookworm trixie" "10 11 12 13"
-    # "jessie stretch " "8 9"
-    # "buster bullseye bookworm trixie" "10 11 12 13"
+    build_or_list_images "buster bullseye bookworm trixie" "10 11 12 13" "default cloud"
+    # "jessie stretch " "8 9" "default cloud"
+    # "buster bullseye bookworm trixie" "10 11 12 13" "default cloud"
     ;;
 ubuntu)
-    build_or_list_images "mantic noble" "23.10 24.04"
-    # "bionic focal jammy lunar" "18.04 20.04 22.04 23.04"
-    # "mantic noble" "23.10 24.04"
+    build_or_list_images "mantic noble" "23.10 24.04" "default cloud"
+    # "bionic focal jammy lunar" "18.04 20.04 22.04 23.04" "default cloud"
+    # "mantic noble" "23.10 24.04" "default cloud"
     ;;
 kali)
-    build_or_list_images "kali-rolling" "latest"
+    build_or_list_images "kali-rolling" "latest" "default cloud"
     ;;
 centos)
-    build_or_list_images "7 8-Stream 9-Stream" "7 8 9"
+    build_or_list_images "7 8-Stream 9-Stream" "7 8 9" "default cloud"
     ;;
 almalinux)
-    build_or_list_images "8 9" "8 9"
+    build_or_list_images "8 9" "8 9" "default cloud"
     ;;
 rockylinux)
-    build_or_list_images "8 9" "8 9"
+    build_or_list_images "8 9" "8 9" "default cloud"
     ;;
 alpine)
-    build_or_list_images "3.17 3.18 3.19 edge" "3.17 3.18 3.19 edge"
+    build_or_list_images "3.17 3.18 3.19 edge" "3.17 3.18 3.19 edge" "default cloud"
     ;;
 openwrt)
-    build_or_list_images "snapshot 21.02 22.03 23.05" "snapshot 21.02 22.03 23.05"
+    build_or_list_images "snapshot 21.02 22.03 23.05" "snapshot 21.02 22.03 23.05" "default cloud"
     ;;
 oracle)
-    build_or_list_images "7 8 9" "7 8 9"
+    build_or_list_images "7 8 9" "7 8 9" "default cloud"
     ;;
 archlinux)
-    build_or_list_images "current" "current"
+    build_or_list_images "current" "current" "default cloud"
     ;;
 gentoo)
-    build_or_list_images "current" "current"
+    build_or_list_images "current" "current" "cloud systemd openrc"
     ;;
 fedora)
-    build_or_list_images "37 38 39" "37 38 39"
+    build_or_list_images "37 38 39" "37 38 39" "default cloud"
     ;;
 *)
     echo "Invalid distribution specified."

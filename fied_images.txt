@@ -1,1 +1,0 @@
-kali_latest_kali-rolling_x86_64_cloud.zip

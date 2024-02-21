@@ -269,11 +269,15 @@ run_funct="openeuler"
 URL="https://raw.githubusercontent.com/lxc/lxc-ci/main/jenkins/jobs/image-openeuler.yaml"
 curl_output=$(curl -s "$URL" | awk '/name: release/{flag=1; next} /^$/{flag=0} flag && /^ *-/{if (!first) {printf "%s", $2; first=1} else {printf " %s", $2}}' | sed 's/"//g')
 build_or_list_images "$curl_output" "$curl_output" "default cloud"
-declare -A seen_lines
-while IFS= read -r line; do
-    if [[ ! -v seen_lines["$line"] ]]; then
-        echo "$line"
-        seen_lines["$line"]=1
+# 去除重复行
+remove_duplicate_lines() {
+    chattr -i "$1"
+    # 预处理：去除行尾空格和制表符
+    sed -i 's/[ \t]*$//' "$1"
+    # 去除重复行并跳过空行和注释行
+    if [ -f "$1" ]; then
+        awk '{ line = $0; gsub(/^[ \t]+/, "", line); gsub(/[ \t]+/, " ", line); if (!NF || !seen[line]++) print $0 }' "$1" >"$1.tmp" && mv -f "$1.tmp" "$1"
     fi
-done < "fixed_images.txt" > "fixed_images_unique.txt"
-mv fixed_images_unique.txt fixed_images.txt
+    chattr +i "$1"
+}
+remove_duplicate_lines "fixed_images.txt"

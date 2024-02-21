@@ -694,6 +694,7 @@ actions:
     systemctl enable systemd-networkd
   variants:
   - systemd
+
 - trigger: post-files
   action: |-
     #!/bin/sh
@@ -731,8 +732,7 @@ actions:
   - container
   variants:
   - cloud
-  - default
-
+  - openrc
  
 environment:
   variables:

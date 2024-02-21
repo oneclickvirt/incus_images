@@ -290,7 +290,7 @@ build_or_list_images() {
             done
         done
     done
-    echo "${zip_name_list[@]}"
+    # echo "${zip_name_list[@]}"
     for zip_name in "${zip_name_list[@]}"; do
         echo "${zip_name}" >> fixed_images.txt
     done
@@ -343,5 +343,12 @@ run_funct="openeuler"
 URL="https://raw.githubusercontent.com/lxc/lxc-ci/main/jenkins/jobs/image-openeuler.yaml"
 curl_output=$(curl -s "$URL" | awk '/name: release/{flag=1; next} /^$/{flag=0} flag && /^ *-/{if (!first) {printf "%s", $2; first=1} else {printf " %s", $2}}' | sed 's/"//g')
 build_or_list_images "$curl_output" "$curl_output" "default cloud"
-cat fixed_images.txt
-cat fixed_images.txt | uniq > fixed_images.txt
+declare -A seen_lines
+while IFS= read -r line; do
+    # 如果当前行不在关联数组中，则输出它，并将其添加到关联数组中
+    if [[ ! -v seen_lines["$line"] ]]; then
+        echo "$line"
+        seen_lines["$line"]=1
+    fi
+done < "fixed_images.txt" > "fixed_images_unique.txt"
+mv fixed_images_unique.txt fixed_images.txt

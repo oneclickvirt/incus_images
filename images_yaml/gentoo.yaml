@@ -694,12 +694,6 @@ actions:
     systemctl enable systemd-networkd
   variants:
   - systemd
-
-environment:
-  variables:
-  - key: RSYNC_MIRROR
-    value: rsync://rsync.ca.gentoo.org/gentoo-portage/
-
 - trigger: post-files
   action: |-
     #!/bin/sh
@@ -738,6 +732,12 @@ environment:
   variants:
   - cloud
   - default
+
  
+environment:
+  variables:
+  - key: RSYNC_MIRROR
+    value: rsync://rsync.ca.gentoo.org/gentoo-portage/
+
 mappings:
   architecture_map: gentoo

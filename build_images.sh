@@ -104,6 +104,7 @@ build_or_list_images() {
                         if [ "${variant}" = "cloud" ]; then
                             variant="openrc"
                         fi
+                        [ "${arch}" = "x86_64" ] && arch="amd64"
                     elif [[ "$run_funct" == "fedora" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                         [ "${arch}" = "arm64" ] && arch="aarch64"
@@ -132,6 +133,11 @@ build_or_list_images() {
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                         fi
+                    elif [[ "$run_funct" == "gentoo" ]]; then
+                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
+                            echo "Command succeeded"
+                        fi
                     else
                         echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
@@ -142,6 +148,7 @@ build_or_list_images() {
                         if [ "${variant}" = "openrc" ]; then
                             variant="cloud"
                         fi
+                        [ "${arch}" = "amd64" ] && arch="x86_64"
                     elif [[ "$run_funct" == "fedora" ]]; then
                         [ "${arch}" = "x86_64" ] && arch="amd64"
                         [ "${arch}" = "aarch64" ] && arch="arm64"

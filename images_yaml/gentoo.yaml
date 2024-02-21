@@ -453,7 +453,6 @@ packages:
     - wget
     - bash
     - lsof
-    - openssh-server
     - sshpass
     - iptables
     - dos2unix

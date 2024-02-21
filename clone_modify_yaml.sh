@@ -292,7 +292,7 @@ build_or_list_images() {
     done
     for zip_name in "${zip_name_list[@]}"; do
         echo "${zip_name}" >> fixed_images.txt
-    fi
+    done
 }
 
 # 不同发行版的配置

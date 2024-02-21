@@ -131,6 +131,11 @@ build_or_list_images() {
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                         fi
+                    elif [[ "$run_funct" == "gentoo" ]]; then
+                        echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
+                        if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then
+                            echo "Command succeeded"
+                        fi
                     else
                         echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
                         if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then

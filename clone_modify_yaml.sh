@@ -117,7 +117,7 @@ rm -rf gentoo.yaml
 wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/gentoo.yaml
 chmod 777 gentoo.yaml
 # cronie 不可用 cron 不可用
-insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - openssh-server\n    - sshpass\n    - iptables\n    - dos2unix"
+insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - iptables\n    - dos2unix"
 sed -i "/- sudo/ a\\$insert_content_1" gentoo.yaml
 insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
 line_number=$(($(wc -l < gentoo.yaml) - 7))

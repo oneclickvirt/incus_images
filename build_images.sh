@@ -108,7 +108,7 @@ build_or_list_images() {
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                         [ "${arch}" = "arm64" ] && arch="aarch64"
                     fi
-                    if [[ "$run_funct" == "centos" ]]; then
+                    if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" ]]; then
                         manager="yum"
                     elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
                         manager="apt"
@@ -120,6 +120,8 @@ build_or_list_images() {
                         manager="apk"
                     elif [[ "$run_funct" == "openwrt" ]]; then
                         manager="opkg"
+                    elif [[ "$run_funct" == "gentoo" ]]; then
+                        manager="emerge"
                     else
                         echo "Unsupported distribution: $run_funct"
                         exit 1

@@ -1,4 +1,4 @@
-name: Clone yaml
+name: clone yaml
 
 on:
   schedule:

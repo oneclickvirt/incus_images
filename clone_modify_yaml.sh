@@ -279,4 +279,4 @@ remove_duplicate_lines() {
     fi
 }
 remove_duplicate_lines "fixed_images.txt"
-sed '/^$/d' "fixed_images.txt" > "fixed_images.txt"
+sed -i '/^$/d' "fixed_images.txt"

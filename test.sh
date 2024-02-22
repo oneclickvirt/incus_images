@@ -28,9 +28,9 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         chmod 777 "$image_name"
         unzip "$image_name"
         rm -rf "$image_name"
-        incus image import incus.tar.xz rootfs.squashfs --alias "$image_name"
+        incus image import incus.tar.xz rootfs.squashfs --alias myc
         rm -rf incus.tar.xz rootfs.squashfs
-        incus init "$image_name" test -c limits.cpu=1 -c limits.memory=1024MiB
+        incus init myc test -c limits.cpu=1 -c limits.memory=1024MiB
         incus start test
         sleep 5
         res1=$(incus exec test -- lsof -i:22)
@@ -69,7 +69,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         fi
         incus stop test
         incus delete -f test
-        incus image delete $image_name
+        incus image delete myc
         echo "------------------------------------------" >>log
     done
 done

@@ -74,10 +74,16 @@ incus image delete myc
 
 ## Sponsor
 
-Thanks to 
+Thanks to [dartnode](https://dartnode.com/?via=server) for providing support for images compiling.
 
 <a href="https://dartnode.com/?via=server" target="_blank">
   <img src="https://snaju.com/assets/img/logo_dark.svg" alt="ekire">
+</a>
+
+Thanks to 
+
+<a href="https://ekire.net/" target="_blank">
+  <img src="https://ekire.net/assets/img/bl.png" alt="ekire">
 </a>
 
 for providing support for images test.

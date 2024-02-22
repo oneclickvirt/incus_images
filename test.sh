@@ -8,8 +8,8 @@ date=$(date)
 echo "$date" >>log
 echo "------------------------------------------" >>log
 release_names=("ubuntu" "debian" "kali" "centos" "almalinux" "rockylinux" "fedora" "opensuse" "alpine" "archlinux" "gentoo" "openwrt" "oracle" "openeuler")
-response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/fixed_images.txt")
 system_names=()
+response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/fixed_images.txt")
 if [ $? -eq 0 ] && [ -n "$response" ]; then
     system_names+=($(echo "$response"))
 fi
@@ -32,7 +32,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         rm -rf incus.tar.xz rootfs.squashfs
         incus init myc test
         incus start test
-        sleep 5
+        sleep 3
         res1=$(incus exec test -- lsof -i:22)
         if [[ $res1 == *"command not found"* ]]; then
             echo "no lsof" >>log
@@ -57,13 +57,18 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         else
             echo "no public network" >>log
         fi
+        sleep 5
         incus stop test
-        incus start test
-        sleep 10
-        echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf
-        res5=$(incus exec test -- curl -lk https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
-        if [[ $res5 == *"success"* ]]; then
-            echo "reboot success"
+        if [ $? -eq 0 ]; then
+            incus start test
+            sleep 10
+            echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf
+            res5=$(incus exec test -- curl -lk https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
+            if [[ $res5 == *"success"* ]]; then
+                echo "reboot success"
+            else
+                echo "reboot failed" >>log
+            fi
         else
             echo "reboot failed" >>log
         fi

@@ -66,7 +66,13 @@ incus image delete myc
 
 ## Sponsor
 
-Thanks to [dartnode](https://dartnode.com/?via=server) for test support.
+Thanks to 
+
+<a href="https://dartnode.com/?via=server" target="_blank">
+  <img src="https://app.dartnode.com/assets/dash/images/brand/logo.png" alt="ekire">
+</a>
+
+for providing support for images test.
 
 ## Thanks
 

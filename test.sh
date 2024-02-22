@@ -30,7 +30,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         rm -rf "$image_name"
         incus image import incus.tar.xz rootfs.squashfs --alias myc
         rm -rf incus.tar.xz rootfs.squashfs
-        incus init myc test -c limits.cpu=1 -c limits.memory=1024MiB
+        incus init myc test
         incus start test
         sleep 5
         res1=$(incus exec test -- lsof -i:22)

@@ -47,6 +47,11 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         res1=$(incus exec test -- lsof -i:22)
         if [[ $res1 == *"ssh"* ]]; then
             echo "ssh config correct"
+        else
+            if [ "$delete_status" = false ];then
+                delete_status=true
+                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+            fi
         fi
         res2=$(incus exec test -- curl --version)
         if [[ $res2 == *"command not found"* ]]; then

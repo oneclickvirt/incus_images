@@ -1,4 +1,4 @@
-Fri Feb 23 01:51:22 UTC 2024
+Fri Feb 23 03:57:14 UTC 2024
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,7 +31,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -119,7 +118,6 @@ alpine_3.16_3.16_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
@@ -144,6 +142,7 @@ no public network
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
+no public network
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_cloud.zip
 ------------------------------------------

@@ -29,7 +29,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
     for image_name in "${temp_images[@]}"; do
         echo "$image_name"
         echo "$image_name" >>log
-        echo "$image" >>fixed_images.txt
+        echo "$image_name" >>fixed_images.txt
         delete_status=false
         chmod 777 "$image_name"
         unzip "$image_name"

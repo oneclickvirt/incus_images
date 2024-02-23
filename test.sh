@@ -1,15 +1,16 @@
 #!/bin/bash
 # by https://github.com/oneclickvirt/incus_images
-# 2024.02.22
+# 2024.02.23
 # curl -L https://raw.githubusercontent.com/oneclickvirt/incus_images/main/test.sh -o test.sh && chmod +x test.sh && ./test.sh
 
 rm -rf log
+rm -rf fixed_images.txt
 date=$(date)
 echo "$date" >>log
 echo "------------------------------------------" >>log
 release_names=("ubuntu" "debian" "kali" "centos" "almalinux" "rockylinux" "fedora" "opensuse" "alpine" "archlinux" "gentoo" "openwrt" "oracle" "openeuler")
 system_names=()
-response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/fixed_images.txt")
+response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/all_images.txt")
 if [ $? -eq 0 ] && [ -n "$response" ]; then
     system_names+=($(echo "$response"))
 fi
@@ -28,6 +29,8 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
     for image_name in "${temp_images[@]}"; do
         echo "$image_name"
         echo "$image_name" >>log
+        echo "$image" >>fixed_images.txt
+        delete_status=false
         chmod 777 "$image_name"
         unzip "$image_name"
         rm -rf "$image_name"
@@ -59,6 +62,10 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
             echo "network is public"
         else
             echo "no public network" >>log
+            if [ "$delete_status" = false ];then
+                delete_status=true
+                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+            fi
         fi
         sleep 5
         incus stop test

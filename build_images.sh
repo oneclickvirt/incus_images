@@ -204,23 +204,23 @@ if command -v distrobuilder >/dev/null 2>&1; then
                             fi
                         fi
                     fi
-                    if [[ "$run_funct" == "gentoo" ]]; then
+                    # 强制设置架构名字
+                    if [[ "$run_funct" == "gentoo" || "$run_funct" == "debian" || "$run_funct" == "ubuntu" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
                     elif [[ "$run_funct" == "fedora" || "$run_funct" == "openeuler" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
                     elif [[ "$run_funct" == "almalinux" || "$run_funct" == "centos" || "$run_funct" == "rockylinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
-                    elif [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" ]]; then
-                        [ "${arch}" = "amd64" ] && arch="x86_64"
                     fi
                     if [ -f incus.tar.xz ] && [ -f rootfs.squashfs ]; then
                         zip "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" incus.tar.xz rootfs.squashfs
                         rm -rf incus.tar.xz rootfs.squashfs
                     fi
                 else
+                    # 强制设置架构名字
                     if [[ "$run_funct" == "gentoo" || "$run_funct" == "debian" || "$run_funct" == "ubuntu" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
-                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "openeuler" || "$run_funct" == "opensuse" ]]; then
+                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "openeuler" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
                     elif [[ "$run_funct" == "almalinux" || "$run_funct" == "centos" || "$run_funct" == "rockylinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"

@@ -38,7 +38,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         rm -rf incus.tar.xz rootfs.squashfs
         incus init myc test
         incus start test
-        sleep 3
+        sleep 5
         res1=$(incus exec test -- lsof -i:22)
         if [[ $res1 == *"command not found"* ]]; then
             echo "no lsof" >>log

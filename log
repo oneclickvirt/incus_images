@@ -1,4 +1,4 @@
-Tue Feb 27 01:32:56 UTC 2024
+Wed Feb 28 01:34:30 UTC 2024
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -118,6 +118,7 @@ archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
@@ -133,9 +134,10 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
-no public network
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
 ------------------------------------------

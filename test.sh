@@ -1,6 +1,6 @@
 #!/bin/bash
 # by https://github.com/oneclickvirt/incus_images
-# 2024.02.23
+# 2024.03.01
 # curl -L https://raw.githubusercontent.com/oneclickvirt/incus_images/main/test.sh -o test.sh && chmod +x test.sh && ./test.sh
 
 rm -rf log
@@ -83,9 +83,17 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
                 echo "reboot success"
             else
                 echo "reboot failed" >>log
+                if [ "$delete_status" = false ];then
+                    delete_status=true
+                    head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+                fi
             fi
         else
             echo "reboot failed" >>log
+            if [ "$delete_status" = false ];then
+                delete_status=true
+                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+            fi
         fi
         incus stop test
         incus delete -f test

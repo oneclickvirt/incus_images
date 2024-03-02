@@ -1,4 +1,4 @@
-Fri Mar  1 01:39:46 UTC 2024
+Sat Mar  2 01:32:01 UTC 2024
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,6 +31,7 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
+no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -107,8 +108,6 @@ alpine_3.17_3.17_x86_64_cloud.zip
 alpine_3.18_3.18_x86_64_cloud.zip
 ------------------------------------------
 alpine_3.19_3.19_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 alpine_edge_edge_x86_64_cloud.zip
 ------------------------------------------

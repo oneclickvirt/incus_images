@@ -1,4 +1,4 @@
-Thu Mar 14 01:33:57 UTC 2024
+Fri Mar 15 01:35:26 UTC 2024
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -115,6 +115,7 @@ alpine_3.16_3.16_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
+no public network
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
@@ -133,6 +134,7 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
+no public network
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------

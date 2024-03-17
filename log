@@ -1,4 +1,4 @@
-Sat Mar 16 01:32:24 UTC 2024
+Sun Mar 17 01:37:59 UTC 2024
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,7 +31,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -123,7 +122,6 @@ no public network
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
-no public network
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
 ------------------------------------------

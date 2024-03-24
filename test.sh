@@ -1,6 +1,6 @@
 #!/bin/bash
 # by https://github.com/oneclickvirt/incus_images
-# 2024.03.01
+# 2024.03.24
 # curl -L https://raw.githubusercontent.com/oneclickvirt/incus_images/main/test.sh -o test.sh && chmod +x test.sh && ./test.sh
 
 rm -rf log
@@ -11,6 +11,9 @@ echo "------------------------------------------" >>log
 release_names=("ubuntu" "debian" "kali" "centos" "almalinux" "rockylinux" "fedora" "opensuse" "alpine" "archlinux" "gentoo" "openwrt" "oracle" "openeuler")
 system_names=()
 response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/all_images.txt")
+if [ $? -ne 0 ]; then
+    response=$(curl -slk -m 6 "https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/all_images.txt")
+fi
 if [ $? -eq 0 ] && [ -n "$response" ]; then
     system_names+=($(echo "$response"))
 fi
@@ -62,7 +65,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
             echo "no wget" >>log
         fi
         echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf
-        res4=$(incus exec test -- curl -lk https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
+        res4=$(incus exec test -- curl -lk https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
         if [[ $res4 == *"success"* ]]; then
             echo "network is public"
         else
@@ -78,7 +81,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
             incus start test
             sleep 10
             echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf
-            res5=$(incus exec test -- curl -lk https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
+            res5=$(incus exec test -- curl -lk https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
             if [[ $res5 == *"success"* ]]; then
                 echo "reboot success"
             else

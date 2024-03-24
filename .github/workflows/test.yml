@@ -18,7 +18,7 @@ jobs:
       
     - name: test images
       run: |
-        bash test.sh
+        sudo ./test.sh
         
     - name: Configure Git
       run: |

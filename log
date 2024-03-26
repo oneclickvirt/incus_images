@@ -1,4 +1,4 @@
-Mon 25 Mar 2024 01:36:34 AM UTC
+Tue 26 Mar 2024 01:36:54 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,7 +31,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -62,6 +61,7 @@ centos_9_9-Stream_x86_64_default.zip
 centos_9_9-Stream_x86_64_cloud.zip
 ------------------------------------------
 almalinux_8_8_x86_64_default.zip
+no public network
 ------------------------------------------
 almalinux_8_8_x86_64_cloud.zip
 ------------------------------------------
@@ -136,13 +136,13 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 oracle_8_8_x86_64_cloud.zip
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
+no public network
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_cloud.zip
 ------------------------------------------
 openeuler_20.03_20.03_x86_64_default.zip
-no public network
 ------------------------------------------
 openeuler_20.03_20.03_x86_64_cloud.zip
 ------------------------------------------

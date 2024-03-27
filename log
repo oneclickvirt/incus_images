@@ -1,4 +1,4 @@
-Tue 26 Mar 2024 01:36:54 AM UTC
+Wed 27 Mar 2024 01:35:09 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -61,7 +61,6 @@ centos_9_9-Stream_x86_64_default.zip
 centos_9_9-Stream_x86_64_cloud.zip
 ------------------------------------------
 almalinux_8_8_x86_64_default.zip
-no public network
 ------------------------------------------
 almalinux_8_8_x86_64_cloud.zip
 ------------------------------------------
@@ -119,8 +118,11 @@ archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
+no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
 no public network
@@ -137,8 +139,11 @@ oracle_8_8_x86_64_cloud.zip
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 no public network
+reboot failed
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_cloud.zip
 ------------------------------------------

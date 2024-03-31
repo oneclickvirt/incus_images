@@ -1,4 +1,4 @@
-Sat 30 Mar 2024 01:31:52 AM UTC
+Sun 31 Mar 2024 01:41:06 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,7 +31,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -64,6 +63,7 @@ centos_9_9-Stream_x86_64_cloud.zip
 almalinux_8_8_x86_64_default.zip
 ------------------------------------------
 almalinux_8_8_x86_64_cloud.zip
+reboot failed
 ------------------------------------------
 almalinux_9_9_x86_64_default.zip
 ------------------------------------------
@@ -72,6 +72,7 @@ almalinux_9_9_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
 ------------------------------------------
 rockylinux_8_8_x86_64_cloud.zip
+no public network
 ------------------------------------------
 rockylinux_9_9_x86_64_default.zip
 ------------------------------------------
@@ -102,6 +103,7 @@ no public network
 opensuse_tumbleweed_tumbleweed_x86_64_default.zip
 ------------------------------------------
 opensuse_tumbleweed_tumbleweed_x86_64_cloud.zip
+no public network
 ------------------------------------------
 alpine_3.17_3.17_x86_64_cloud.zip
 ------------------------------------------
@@ -119,7 +121,6 @@ archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
-reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
@@ -135,7 +136,6 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
 no public network
-reboot failed
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------

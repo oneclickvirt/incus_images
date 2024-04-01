@@ -1,4 +1,4 @@
-Sun 31 Mar 2024 01:41:06 AM UTC
+Mon 01 Apr 2024 01:42:32 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -55,6 +55,7 @@ reboot failed
 centos_8_8-Stream_x86_64_default.zip
 ------------------------------------------
 centos_8_8-Stream_x86_64_cloud.zip
+no public network
 ------------------------------------------
 centos_9_9-Stream_x86_64_default.zip
 ------------------------------------------
@@ -63,7 +64,6 @@ centos_9_9-Stream_x86_64_cloud.zip
 almalinux_8_8_x86_64_default.zip
 ------------------------------------------
 almalinux_8_8_x86_64_cloud.zip
-reboot failed
 ------------------------------------------
 almalinux_9_9_x86_64_default.zip
 ------------------------------------------
@@ -72,7 +72,6 @@ almalinux_9_9_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
 ------------------------------------------
 rockylinux_8_8_x86_64_cloud.zip
-no public network
 ------------------------------------------
 rockylinux_9_9_x86_64_default.zip
 ------------------------------------------
@@ -85,17 +84,20 @@ fedora_37_37_x86_64_cloud.zip
 fedora_38_38_x86_64_default.zip
 ------------------------------------------
 fedora_38_38_x86_64_cloud.zip
+no public network
 ------------------------------------------
 fedora_39_39_x86_64_default.zip
 ------------------------------------------
 fedora_39_39_x86_64_cloud.zip
 ------------------------------------------
 opensuse_15.4_15.4_x86_64_default.zip
+no public network
 ------------------------------------------
 opensuse_15.4_15.4_x86_64_cloud.zip
 no public network
 ------------------------------------------
 opensuse_15.5_15.5_x86_64_default.zip
+no public network
 ------------------------------------------
 opensuse_15.5_15.5_x86_64_cloud.zip
 no public network
@@ -135,7 +137,6 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
-no public network
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------
@@ -152,6 +153,7 @@ openeuler_23.03_23.03_x86_64_default.zip
 openeuler_23.03_23.03_x86_64_cloud.zip
 ------------------------------------------
 openeuler_23.09_23.09_x86_64_default.zip
+reboot failed
 ------------------------------------------
 openeuler_23.09_23.09_x86_64_cloud.zip
 no public network

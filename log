@@ -1,4 +1,4 @@
-Sat Apr 20 01:36:12 UTC 2024
+Sun 21 Apr 2024 01:41:37 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -31,7 +31,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -46,8 +45,12 @@ kali_latest_kali-rolling_x86_64_default.zip
 kali_latest_kali-rolling_x86_64_cloud.zip
 ------------------------------------------
 centos_7_7_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 centos_7_7_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 centos_8_8-Stream_x86_64_default.zip
 ------------------------------------------
@@ -129,7 +132,6 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
 no public network
-reboot failed
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------

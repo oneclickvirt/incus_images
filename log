@@ -1,4 +1,4 @@
-Sun 21 Apr 2024 01:41:37 AM UTC
+Mon 22 Apr 2024 01:40:01 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -15,6 +15,8 @@ ubuntu_22.04_jammy_x86_64_cloud.zip
 ubuntu_23.04_lunar_x86_64_default.zip
 ------------------------------------------
 ubuntu_23.04_lunar_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 ubuntu_23.10_mantic_x86_64_default.zip
 ------------------------------------------

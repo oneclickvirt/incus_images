@@ -1,4 +1,4 @@
-Sat 27 Apr 2024 01:36:45 AM UTC
+Sun 28 Apr 2024 01:42:23 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -102,6 +102,7 @@ no public network
 opensuse_tumbleweed_tumbleweed_x86_64_default.zip
 ------------------------------------------
 opensuse_tumbleweed_tumbleweed_x86_64_cloud.zip
+no public network
 ------------------------------------------
 alpine_3.17_3.17_x86_64_cloud.zip
 ------------------------------------------
@@ -110,7 +111,6 @@ alpine_3.18_3.18_x86_64_cloud.zip
 alpine_3.19_3.19_x86_64_cloud.zip
 ------------------------------------------
 alpine_edge_edge_x86_64_cloud.zip
-no public network
 ------------------------------------------
 alpine_3.16_3.16_x86_64_cloud.zip
 ------------------------------------------
@@ -119,6 +119,8 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
@@ -133,7 +135,6 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
-no public network
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------

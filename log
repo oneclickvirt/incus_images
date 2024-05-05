@@ -1,4 +1,4 @@
-Sat 04 May 2024 01:36:57 AM UTC
+Sun 05 May 2024 01:42:48 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -17,6 +17,8 @@ ubuntu_23.04_lunar_x86_64_default.zip
 ubuntu_23.04_lunar_x86_64_cloud.zip
 ------------------------------------------
 ubuntu_23.10_mantic_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 ubuntu_23.10_mantic_x86_64_cloud.zip
 ------------------------------------------
@@ -31,6 +33,8 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -105,7 +109,6 @@ no public network
 opensuse_tumbleweed_tumbleweed_x86_64_default.zip
 ------------------------------------------
 opensuse_tumbleweed_tumbleweed_x86_64_cloud.zip
-no public network
 ------------------------------------------
 alpine_3.17_3.17_x86_64_cloud.zip
 ------------------------------------------
@@ -123,7 +126,6 @@ archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network
-reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

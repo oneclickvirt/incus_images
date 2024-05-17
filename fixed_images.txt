@@ -53,7 +53,6 @@ openwrt_snapshot_snapshot_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
-oracle_8_8_x86_64_cloud.zip
 openeuler_22.03_22.03_x86_64_default.zip
 openeuler_22.03_22.03_x86_64_cloud.zip
 openeuler_20.03_20.03_x86_64_default.zip

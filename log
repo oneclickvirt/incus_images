@@ -1,4 +1,4 @@
-Sat 25 May 2024 01:40:26 AM UTC
+Sun 26 May 2024 01:46:52 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -110,12 +110,13 @@ alpine_edge_edge_x86_64_cloud.zip
 ------------------------------------------
 alpine_3.16_3.16_x86_64_cloud.zip
 ------------------------------------------
+alpine_3.20_3.20_x86_64_cloud.zip
+------------------------------------------
 archlinux_current_current_x86_64_default.zip
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

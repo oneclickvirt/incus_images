@@ -72,3 +72,4 @@ openeuler_23.09_23.09_x86_64_default.zip
 openeuler_23.09_23.09_x86_64_cloud.zip
 fedora_40_40_x86_64_default.zip
 fedora_40_40_x86_64_cloud.zip
+alpine_3.20_3.20_x86_64_cloud.zip

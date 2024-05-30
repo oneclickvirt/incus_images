@@ -22,6 +22,7 @@ centos_7_7_x86_64_default.zip
 centos_7_7_x86_64_cloud.zip
 centos_8_8-Stream_x86_64_default.zip
 centos_8_8-Stream_x86_64_cloud.zip
+centos_9_9-Stream_x86_64_default.zip
 centos_9_9-Stream_x86_64_cloud.zip
 almalinux_8_8_x86_64_default.zip
 almalinux_8_8_x86_64_cloud.zip

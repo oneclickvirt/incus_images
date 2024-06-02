@@ -1,4 +1,4 @@
-Sat 01 Jun 2024 01:47:02 AM UTC
+Sun 02 Jun 2024 01:47:17 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -121,6 +121,7 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
+no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
@@ -144,6 +145,8 @@ openeuler_22.03_22.03_x86_64_default.zip
 openeuler_22.03_22.03_x86_64_cloud.zip
 ------------------------------------------
 openeuler_20.03_20.03_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 openeuler_20.03_20.03_x86_64_cloud.zip
 ------------------------------------------

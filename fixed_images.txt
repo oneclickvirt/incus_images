@@ -13,6 +13,7 @@ ubuntu_24.04_noble_x86_64_cloud.zip
 debian_10_buster_x86_64_default.zip
 debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
+debian_11_bullseye_x86_64_cloud.zip
 debian_12_bookworm_x86_64_default.zip
 debian_12_bookworm_x86_64_cloud.zip
 kali_latest_kali-rolling_x86_64_default.zip
@@ -39,6 +40,7 @@ fedora_39_39_x86_64_default.zip
 fedora_39_39_x86_64_cloud.zip
 fedora_40_40_x86_64_default.zip
 fedora_40_40_x86_64_cloud.zip
+alpine_3.17_3.17_x86_64_cloud.zip
 alpine_3.18_3.18_x86_64_cloud.zip
 alpine_3.19_3.19_x86_64_cloud.zip
 alpine_edge_edge_x86_64_cloud.zip
@@ -53,7 +55,6 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 oracle_8_8_x86_64_cloud.zip
 openeuler_22.03_22.03_x86_64_default.zip
 openeuler_22.03_22.03_x86_64_cloud.zip
-openeuler_20.03_20.03_x86_64_default.zip
 openeuler_20.03_20.03_x86_64_cloud.zip
 openeuler_23.03_23.03_x86_64_default.zip
 openeuler_23.03_23.03_x86_64_cloud.zip

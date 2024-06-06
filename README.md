@@ -84,14 +84,6 @@ Thanks to [dartnode](https://dartnode.com/?via=server) for providing support for
   <img src="https://snaju.com/assets/img/logo_dark.svg" alt="ekire">
 </a>
 
-Thanks to 
-
-<a href="https://ekire.net/" target="_blank">
-  <img src="https://ekire.net/assets/img/bl.png" alt="ekire">
-</a>
-
-for providing support for images test.
-
 ## Thanks
 
 https://discuss.linuxcontainers.org/t/distrobuilder-how-to-compile-a-centos-container-image-in-an-ubuntu-environment-github-action/18709

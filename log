@@ -1,4 +1,4 @@
-Fri 07 Jun 2024 01:45:55 AM UTC
+Sat 08 Jun 2024 01:43:29 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -121,12 +121,12 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
 no public network
+reboot failed
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
 ------------------------------------------
@@ -139,6 +139,8 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 oracle_8_8_x86_64_cloud.zip
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
 ------------------------------------------

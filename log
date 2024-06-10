@@ -1,40 +1,24 @@
-Sun 09 Jun 2024 01:54:13 AM UTC
+Mon 10 Jun 2024 01:47:24 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_cloud.zip
 ------------------------------------------
 ubuntu_20.04_focal_x86_64_default.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_20.04_focal_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_22.04_jammy_x86_64_default.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_22.04_jammy_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_23.04_lunar_x86_64_default.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_23.04_lunar_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_23.10_mantic_x86_64_default.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_23.10_mantic_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 ubuntu_24.04_noble_x86_64_default.zip
 ------------------------------------------
@@ -93,6 +77,7 @@ rockylinux_9_9_x86_64_default.zip
 rockylinux_9_9_x86_64_cloud.zip
 ------------------------------------------
 fedora_37_37_x86_64_default.zip
+no public network
 ------------------------------------------
 fedora_37_37_x86_64_cloud.zip
 ------------------------------------------
@@ -140,24 +125,23 @@ gentoo_current_current_x86_64_cloud.zip
 no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
-no public network
-reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
 no public network
-reboot failed
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 openwrt_23.05_23.05_x86_64_default.zip
 ------------------------------------------
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
-no public network
-reboot failed
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
 ------------------------------------------

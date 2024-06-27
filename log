@@ -1,4 +1,4 @@
-Wed 26 Jun 2024 01:45:11 AM UTC
+Thu 27 Jun 2024 01:45:33 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -75,6 +75,8 @@ rockylinux_8_8_x86_64_cloud.zip
 rockylinux_9_9_x86_64_default.zip
 ------------------------------------------
 rockylinux_9_9_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 fedora_37_37_x86_64_default.zip
 ------------------------------------------
@@ -121,6 +123,7 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
+no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
@@ -136,8 +139,12 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 ------------------------------------------
 oracle_8_8_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 oracle_9_9_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 openeuler_22.03_22.03_x86_64_default.zip
 ------------------------------------------

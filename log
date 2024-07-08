@@ -1,4 +1,4 @@
-Sun 07 Jul 2024 01:52:26 AM UTC
+Mon 08 Jul 2024 01:48:39 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -129,8 +129,6 @@ archlinux_current_current_x86_64_cloud.zip
 gentoo_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
-no public network
-reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
 ------------------------------------------

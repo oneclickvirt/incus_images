@@ -1,4 +1,4 @@
-Thu 18 Jul 2024 01:47:17 AM UTC
+Fri 19 Jul 2024 01:47:40 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -7,10 +7,14 @@ ubuntu_18.04_bionic_x86_64_cloud.zip
 ubuntu_20.04_focal_x86_64_default.zip
 ------------------------------------------
 ubuntu_20.04_focal_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 ubuntu_22.04_jammy_x86_64_default.zip
 ------------------------------------------
 ubuntu_22.04_jammy_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 ubuntu_23.04_lunar_x86_64_default.zip
 no public network
@@ -33,6 +37,7 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
+no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -131,7 +136,6 @@ gentoo_current_current_x86_64_cloud.zip
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
-no public network
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
 ------------------------------------------

@@ -1,4 +1,4 @@
-Thu 25 Jul 2024 01:48:05 AM UTC
+Fri 26 Jul 2024 01:47:46 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -125,8 +125,11 @@ alpine_3.20_3.20_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
+no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

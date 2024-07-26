@@ -46,7 +46,6 @@ alpine_edge_edge_x86_64_cloud.zip
 alpine_3.16_3.16_x86_64_cloud.zip
 alpine_3.20_3.20_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
-archlinux_current_current_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_23.05_23.05_x86_64_default.zip

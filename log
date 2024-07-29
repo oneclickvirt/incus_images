@@ -1,4 +1,4 @@
-Sun 28 Jul 2024 01:56:58 AM UTC
+Mon 29 Jul 2024 01:51:17 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -127,12 +127,10 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
-no public network
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
 ------------------------------------------

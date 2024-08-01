@@ -1,4 +1,4 @@
-Wed 31 Jul 2024 01:31:15 AM UTC
+Thu 01 Aug 2024 01:59:54 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -103,8 +103,12 @@ opensuse_15.5_15.5_x86_64_default.zip
 opensuse_15.5_15.5_x86_64_cloud.zip
 ------------------------------------------
 opensuse_tumbleweed_tumbleweed_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 opensuse_tumbleweed_tumbleweed_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 opensuse_15.6_15.6_x86_64_default.zip
 ------------------------------------------
@@ -127,7 +131,6 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

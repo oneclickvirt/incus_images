@@ -39,6 +39,7 @@ fedora_39_39_x86_64_default.zip
 fedora_39_39_x86_64_cloud.zip
 fedora_40_40_x86_64_default.zip
 fedora_40_40_x86_64_cloud.zip
+alpine_3.17_3.17_x86_64_cloud.zip
 alpine_3.18_3.18_x86_64_cloud.zip
 alpine_3.19_3.19_x86_64_cloud.zip
 alpine_edge_edge_x86_64_cloud.zip

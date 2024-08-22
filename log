@@ -1,4 +1,4 @@
-Wed 21 Aug 2024 01:50:04 AM UTC
+Thu 22 Aug 2024 01:52:12 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -33,7 +33,6 @@ debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
 ------------------------------------------
 debian_11_bullseye_x86_64_cloud.zip
-no public network
 ------------------------------------------
 debian_12_bookworm_x86_64_default.zip
 ------------------------------------------
@@ -132,7 +131,6 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

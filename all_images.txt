@@ -75,3 +75,7 @@ fedora_40_40_x86_64_cloud.zip
 alpine_3.20_3.20_x86_64_cloud.zip
 opensuse_15.6_15.6_x86_64_default.zip
 opensuse_15.6_15.6_x86_64_cloud.zip
+openwrt_21.02_21.02_x86_64_default.zip
+openwrt_21.02_21.02_x86_64_cloud.zip
+openwrt_22.03_22.03_x86_64_default.zip
+openwrt_22.03_22.03_x86_64_cloud.zip

@@ -4,7 +4,7 @@
 # curl -L https://raw.githubusercontent.com/oneclickvirt/incus_images/main/test.sh -o test.sh && chmod +x test.sh && ./test.sh
 
 rm -rf log
-rm -rf fixed_images.txt
+rm -rf x86_64_fixed_images.txt
 date=$(date)
 echo "$date" >>log
 echo "------------------------------------------" >>log
@@ -32,7 +32,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
     for image_name in "${temp_images[@]}"; do
         echo "$image_name"
         echo "$image_name" >>log
-        echo "$image_name" >>fixed_images.txt
+        echo "$image_name" >>x86_64_fixed_images.txt
         delete_status=false
         chmod 777 "$image_name"
         unzip "$image_name"
@@ -53,7 +53,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         else
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
             fi
         fi
         res2=$(incus exec test -- curl --version)
@@ -72,7 +72,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
             echo "no public network" >>log
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
             fi
         fi
         sleep 5
@@ -88,14 +88,14 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
                 echo "reboot failed" >>log
                 if [ "$delete_status" = false ];then
                     delete_status=true
-                    head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+                    head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
                 fi
             fi
         else
             echo "reboot failed" >>log
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 fixed_images.txt > temp.txt && mv temp.txt fixed_images.txt
+                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
             fi
         fi
         incus stop test

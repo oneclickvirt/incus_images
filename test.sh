@@ -10,9 +10,9 @@ echo "$date" >>log
 echo "------------------------------------------" >>log
 release_names=("ubuntu" "debian" "kali" "centos" "almalinux" "rockylinux" "fedora" "opensuse" "alpine" "archlinux" "gentoo" "openwrt" "oracle" "openeuler")
 system_names=()
-response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/all_images.txt")
+response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt")
 if [ $? -ne 0 ]; then
-    response=$(curl -slk -m 6 "https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/all_images.txt")
+    response=$(curl -slk -m 6 "https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt")
 fi
 if [ $? -eq 0 ] && [ -n "$response" ]; then
     system_names+=($(echo "$response"))

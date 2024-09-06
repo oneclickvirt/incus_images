@@ -1,4 +1,4 @@
-Thu 05 Sep 2024 02:00:07 AM UTC
+Fri 06 Sep 2024 02:00:16 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -135,6 +135,7 @@ archlinux_current_current_x86_64_default.zip
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
+no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------

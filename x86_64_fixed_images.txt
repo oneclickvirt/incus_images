@@ -12,7 +12,6 @@ ubuntu_24.04_noble_x86_64_cloud.zip
 debian_10_buster_x86_64_default.zip
 debian_10_buster_x86_64_cloud.zip
 debian_11_bullseye_x86_64_default.zip
-debian_11_bullseye_x86_64_cloud.zip
 debian_12_bookworm_x86_64_default.zip
 debian_12_bookworm_x86_64_cloud.zip
 kali_latest_kali-rolling_x86_64_default.zip
@@ -62,3 +61,5 @@ openeuler_20.03_20.03_x86_64_cloud.zip
 openeuler_23.03_23.03_x86_64_default.zip
 openeuler_23.03_23.03_x86_64_cloud.zip
 openeuler_23.09_23.09_x86_64_default.zip
+openeuler_24.03_24.03_x86_64_default.zip
+openeuler_24.03_24.03_x86_64_cloud.zip

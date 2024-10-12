@@ -1,4 +1,4 @@
-Fri 11 Oct 2024 02:05:22 AM UTC
+Sat 12 Oct 2024 02:03:18 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -136,6 +136,7 @@ no public network
 gentoo_current_current_x86_64_systemd.zip
 ------------------------------------------
 gentoo_current_current_x86_64_openrc.zip
+no public network
 ------------------------------------------
 openwrt_snapshot_snapshot_x86_64_default.zip
 ------------------------------------------

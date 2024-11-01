@@ -1,4 +1,4 @@
-Thu 31 Oct 2024 02:08:18 AM UTC
+Fri 01 Nov 2024 02:14:06 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -125,6 +125,8 @@ alpine_3.16_3.16_x86_64_cloud.zip
 alpine_3.20_3.20_x86_64_cloud.zip
 ------------------------------------------
 archlinux_current_current_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
 ------------------------------------------

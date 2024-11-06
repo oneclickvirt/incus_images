@@ -1,10 +1,12 @@
-Tue 05 Nov 2024 02:04:12 AM UTC
+Wed 06 Nov 2024 02:03:42 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_cloud.zip
 ------------------------------------------
 ubuntu_20.04_focal_x86_64_default.zip
+no public network
+reboot failed
 ------------------------------------------
 ubuntu_20.04_focal_x86_64_cloud.zip
 ------------------------------------------
@@ -133,6 +135,8 @@ no public network
 reboot failed
 ------------------------------------------
 archlinux_current_current_x86_64_cloud.zip
+no public network
+reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
 no public network

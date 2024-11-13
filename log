@@ -1,4 +1,4 @@
-Tue 12 Nov 2024 02:02:56 AM UTC
+Wed 13 Nov 2024 02:05:06 AM UTC
 ------------------------------------------
 ubuntu_18.04_bionic_x86_64_default.zip
 ------------------------------------------
@@ -137,7 +137,6 @@ no public network
 reboot failed
 ------------------------------------------
 gentoo_current_current_x86_64_cloud.zip
-no public network
 ------------------------------------------
 gentoo_current_current_x86_64_systemd.zip
 no public network

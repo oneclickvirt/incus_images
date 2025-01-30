@@ -1,29 +1,23 @@
 name: test images
-
 on:
   schedule:
-    - cron: '45 0 * * *'
+    - cron: '45 0 * * *'  # 修正了 cron 表达式
   workflow_dispatch:
-
 jobs:
   test_images:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-
+    
     - name: check path
       run: |
         pwd
-
+        
     - name: build environment
       run: |
         sudo apt update -y
         sudo apt-get install -y btrfs-progs
-        export noninteractive=true
-        sudo curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh
-        sudo chmod +x incus_install.sh
-        sudo bash incus_install.sh
+        sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
         
     - name: test images
       run: |

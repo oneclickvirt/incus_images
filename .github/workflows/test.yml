@@ -1,0 +1,163 @@
+name: Image Validation Pipeline
+
+on:
+  schedule:
+    - cron: '45 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  image-validation:
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+    runs-on: |
+      ${{ 
+        contains(matrix.arch, 'x86_64') && 'ubuntu-latest' || 
+        contains(matrix.arch, 'arm64') && 'self-hosted-arm64' 
+      }}
+    steps:
+    - name: Setup Environment
+      run: |
+        sudo apt update -y
+        sudo apt-get install -y btrfs-progs
+        sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+
+    - name: Fetch Image List
+      env:
+        ARCH: ${{ matrix.arch }}
+      run: |
+        FILE_URL="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
+        ALT_URL="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
+        
+        if ! curl -sSLk -m 20 -o images.txt "$FILE_URL"; then
+          curl -sSLk -m 20 -o images.txt "$ALT_URL"
+        fi
+        
+        # 分类存储镜像列表
+        declare -A release_map=(
+          ["ubuntu"]=1 ["debian"]=2 ["kali"]=3 ["centos"]=4 
+          ["almalinux"]=5 ["rockylinux"]=6 ["fedora"]=7 
+          ["opensuse"]=8 ["alpine"]=9 ["archlinux"]=10 
+          ["gentoo"]=11 ["openwrt"]=12 ["oracle"]=13 ["openeuler"]=14
+        )
+        
+        while read -r image; do
+          for key in "${!release_map[@]}"; do
+            if [[ $image == $key* ]]; then
+              echo $image >> ${release_map[$key]}.list
+              break
+            fi
+          done
+        done < images.txt
+
+    - name: Image Processing
+      env:
+        ARCH: ${{ matrix.arch }}
+      run: |
+        set -eo pipefail
+        valid_images="${ARCH}_valid_images.txt"
+        echo "Validation Report - $(date)" > validation.log
+        
+        process_image() {
+          local image=$1
+          echo "Processing $image..." | tee -a validation.log
+          
+          # 下载并解压镜像
+          if ! curl -m 600 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image"; then
+            curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image"
+          fi
+          
+          unzip -q "$image"
+          rm "$image"
+          
+          # 导入镜像
+          incus image import incus.tar.xz rootfs.squashfs --alias temp-image
+          rm incus.tar.xz rootfs.squashfs
+          
+          # 容器测试
+          incus init temp-image test-container
+          incus start test-container
+          sleep 10
+          
+          # SSH 检查
+          if ! incus exec test-container -- lsof -i:22 | grep -q ssh; then
+            echo "SSH check failed for $image" | tee -a validation.log
+            return 1
+          fi
+          
+          # 网络检查
+          incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
+          if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
+            echo "Network check failed for $image" | tee -a validation.log
+            return 2
+          fi
+          
+          # 重启测试
+          incus restart test-container
+          sleep 15
+          if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
+            echo "Reboot test failed for $image" | tee -a validation.log
+            return 3
+          fi
+          
+          echo "$image" >> "$valid_images"
+          echo "Validation passed: $image" | tee -a validation.log
+          return 0
+        }
+        
+        export -f process_image
+        
+        # 并行处理不同发行版
+        for list_file in *.list; do
+          echo "Processing ${list_file%.*} images..."
+          cat $list_file | xargs -P 2 -I {} bash -c 'process_image "$@"' _ {}
+        done
+        
+        # 清理资源
+        incus delete -f test-container 2>/dev/null || true
+        incus image delete temp-image 2>/dev/null || true
+
+    - name: Archive Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.arch }}-validation
+        path: |
+          validation.log
+          ${{ matrix.arch }}_valid_images.txt
+
+  report-generation:
+    needs: image-validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        
+    - name: Generate Summary
+      run: |
+        mkdir -p report
+        # 合并验证结果
+        find artifacts -name '*_valid_images.txt' -exec cat {} + | sort -u > report/validated_images.txt
+        # 生成统计报告
+        echo "# Validation Summary" > report/README.md
+        echo "## Valid Images Count" >> report/README.md
+        wc -l report/validated_images.txt | awk '{print "Total: "$1}' >> report/README.md
+        echo "## Per Architecture Results" >> report/README.md
+        find artifacts -name 'validation.log' -exec sh -c 'echo "### {}"; cat {}' \; >> report/README.md
+        
+    - name: Publish Report
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./report
+        keep_files: true
+
+    - name: Update Repository
+      run: |
+        git config --global user.name "Image Validator"
+        git config --global user.email "validator@incus"
+        git pull
+        git add .
+        git commit -m "Update validation results [$(date +%Y%m%d)]" || true
+        git push

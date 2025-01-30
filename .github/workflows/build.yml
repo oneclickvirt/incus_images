@@ -8,6 +8,7 @@ on:
 jobs:
   build-images:
     strategy:
+      max-parallel: 4
       matrix:
         distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
                 "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 

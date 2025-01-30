@@ -1,7 +1,7 @@
 name: test images
 on:
   schedule:
-    - cron: '45 0 * * *'  # 修正了 cron 表达式
+    - cron: '45 0 * * *'
   workflow_dispatch:
 jobs:
   test_images:

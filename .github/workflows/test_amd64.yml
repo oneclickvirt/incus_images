@@ -1,4 +1,4 @@
-name: test images
+name: test x86_64 images
 on:
   schedule:
     - cron: '45 0 * * *'
@@ -22,7 +22,7 @@ jobs:
     - name: test images
       run: |
         chmod 777 test.sh
-        sudo bash test.sh
+        sudo bash test.sh x86_64
         
     - name: Configure Git
       run: |

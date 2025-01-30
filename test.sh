@@ -1,18 +1,34 @@
 #!/bin/bash
 # by https://github.com/oneclickvirt/incus_images
-# 2024.03.24
+# 2025.01.30
 # curl -L https://raw.githubusercontent.com/oneclickvirt/incus_images/main/test.sh -o test.sh && chmod +x test.sh && ./test.sh
 
+# 获取命令行参数
+arch="$1"
+# 根据输入来选择文件
+if [[ "$arch" == "x86_64" ]]; then
+    file_url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt"
+    alt_file_url="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt"
+    fixed_images_file="x86_64_fixed_images.txt"
+elif [[ "$arch" == "arm64" ]]; then
+    file_url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt"
+    alt_file_url="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt"
+    fixed_images_file="arm64_fixed_images.txt"
+else
+    echo "无效的架构类型"
+    exit 1
+fi
+
 rm -rf log
-rm -rf x86_64_fixed_images.txt
+rm -rf "$fixed_images_file"
 date=$(date)
 echo "$date" >>log
 echo "------------------------------------------" >>log
 release_names=("ubuntu" "debian" "kali" "centos" "almalinux" "rockylinux" "fedora" "opensuse" "alpine" "archlinux" "gentoo" "openwrt" "oracle" "openeuler")
 system_names=()
-response=$(curl -slk -m 6 "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt")
+response=$(curl -slk -m 6 "$file_url")
 if [ $? -ne 0 ]; then
-    response=$(curl -slk -m 6 "https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt")
+    response=$(curl -slk -m 6 "$alt_file_url")
 fi
 if [ $? -eq 0 ] && [ -n "$response" ]; then
     system_names+=($(echo "$response"))
@@ -32,7 +48,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
     for image_name in "${temp_images[@]}"; do
         echo "$image_name"
         echo "$image_name" >>log
-        echo "$image_name" >>x86_64_fixed_images.txt
+        echo "$image_name" >>"$fixed_images_file"
         delete_status=false
         chmod 777 "$image_name"
         unzip "$image_name"
@@ -53,7 +69,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         else
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
+                head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
             fi
         fi
         res2=$(incus exec test -- curl --version)
@@ -72,7 +88,7 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
             echo "no public network" >>log
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
+                head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
             fi
         fi
         sleep 5
@@ -88,14 +104,14 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
                 echo "reboot failed" >>log
                 if [ "$delete_status" = false ];then
                     delete_status=true
-                    head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
+                    head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
                 fi
             fi
         else
             echo "reboot failed" >>log
             if [ "$delete_status" = false ];then
                 delete_status=true
-                head -n -1 x86_64_fixed_images.txt > temp.txt && mv temp.txt x86_64_fixed_images.txt
+                head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
             fi
         fi
         incus stop test

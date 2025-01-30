@@ -1,6 +1,7 @@
 #!/bin/bash
 # from https://github.com/oneclickvirt/incus_images
 # Thanks https://github.com/lxc/lxc-ci/tree/main/images
+# 2025.01.30
 
 cd /home/runner/work/incus_images/incus_images/images_yaml/
 
@@ -213,7 +214,11 @@ build_or_list_images() {
             for variant in "${variants[@]}"; do
                 local url="https://github.com/oneclickvirt/incus_images/releases/download/${run_funct}/${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip"
                 if curl --output /dev/null --silent --head --fail "$url"; then
-                    echo "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" >> x86_64_all_images.txt
+                    if [[ "$arch" == "x86_64" || "$arch" == "amd64" ]]; then
+                        echo "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" >> x86_64_all_images.txt
+                    elif [[ "$arch" == "aarch64" || "$arch" == "arm64" ]]; then
+                        echo "${run_funct}_${ver_num}_${version}_${arch}_${variant}.zip" >> arm64_all_images.txt
+                    fi
                 else
                     echo "File not found: $url"
                 fi
@@ -280,3 +285,5 @@ remove_duplicate_lines() {
 }
 remove_duplicate_lines "x86_64_all_images.txt"
 sed -i '/^$/d' "x86_64_all_images.txt"
+remove_duplicate_lines "arm64_all_images.txt"
+sed -i '/^$/d' "arm64_all_images.txt"

@@ -17,12 +17,12 @@ jobs:
             runner: ubuntu-latest
           - name: arm64
             runner: ubuntu-24.04-arm
-        exclude:
-          # 排除已知不兼容的组合（根据实际情况调整）
-          - distro: oracle
-            arch: arm64
-          - distro: openeuler
-            arch: arm64
+        # exclude:
+        #   # 排除已知不兼容的组合（根据实际情况调整）
+        #   - distro: oracle
+        #     arch: arm64
+        #   - distro: openeuler
+        #     arch: arm64
     runs-on: ${{ matrix.arch.runner }}
     timeout-minutes: 120
 

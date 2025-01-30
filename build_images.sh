@@ -82,7 +82,14 @@ if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi
 fi
-
+if [ "${build_arch}" == "x86_64" ] || [ "${build_arch}" == "amd64" ]; then
+    build_arch="x86_64"
+elif [ "${build_arch}" == "aarch64" ] || [ "${build_arch}" == "arm64" ]; then
+    build_arch="arm64"
+else
+    echo "不支持的架构: ${build_arch}"
+    exit 1
+fi
 # 构建或列出不同发行版的镜像
 build_or_list_images() {
     local versions=()

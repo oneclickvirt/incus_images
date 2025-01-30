@@ -66,14 +66,14 @@ if command -v apt-get >/dev/null 2>&1; then
             sudo git config --global user.name "daily-update"
             sudo git config --global user.email "tg@spiritlhl.top"
             sudo mkdir -p $HOME/go/src/github.com/lxc/
-            sudo cd $HOME/go/src/github.com/lxc/
+            cd $HOME/go/src/github.com/lxc/
             sudo git clone https://github.com/lxc/distrobuilder
-            sudo cd ./distrobuilder
+            cd ./distrobuilder
             sudo make
             export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
-            sudo echo $PATH
-            sudo find $HOME -name distrobuilder -type f 2>/dev/null
-            sudo $HOME/goprojects/bin/distrobuilder --version
+            echo $PATH
+            find $HOME -name distrobuilder -type f 2>/dev/null
+            $HOME/goprojects/bin/distrobuilder --version
         fi
         # wget https://api.ilolicon.com/distrobuilder.deb
         # dpkg -i distrobuilder.deb

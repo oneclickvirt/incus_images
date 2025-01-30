@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo apt update -y
         sudo apt-get install -y btrfs-progs
-        sudo export noninteractive=true
+        export noninteractive=true
         sudo curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh
         sudo chmod +x incus_install.sh
         sudo bash incus_install.sh

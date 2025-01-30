@@ -54,26 +54,26 @@ if command -v apt-get >/dev/null 2>&1; then
             fi
             GO_VERSION="1.22.7"
             GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
-            wget $GO_URL
-            chmod 777 go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
-            rm -rf /usr/local/go && tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
-            go version
+            sudo wget $GO_URL
+            sudo chmod 777 go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+            sudo go version
             export GOROOT=/usr/local/go
             export PATH=$GOROOT/bin:$PATH
             export GOPATH=$HOME/goprojects/
-            go version
-            apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
-            git config --global user.name "daily-update"
-            git config --global user.email "tg@spiritlhl.top"
-            mkdir -p $HOME/go/src/github.com/lxc/
-            cd $HOME/go/src/github.com/lxc/
-            git clone https://github.com/lxc/distrobuilder
-            cd ./distrobuilder
-            make
+            sudo go version
+            sudo apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
+            sudo git config --global user.name "daily-update"
+            sudo git config --global user.email "tg@spiritlhl.top"
+            sudo mkdir -p $HOME/go/src/github.com/lxc/
+            sudo cd $HOME/go/src/github.com/lxc/
+            sudo git clone https://github.com/lxc/distrobuilder
+            sudo cd ./distrobuilder
+            sudo make
             export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
-            echo $PATH
-            find $HOME -name distrobuilder -type f 2>/dev/null
-            $HOME/goprojects/bin/distrobuilder --version
+            sudo echo $PATH
+            sudo find $HOME -name distrobuilder -type f 2>/dev/null
+            sudo $HOME/goprojects/bin/distrobuilder --version
         fi
         # wget https://api.ilolicon.com/distrobuilder.deb
         # dpkg -i distrobuilder.deb

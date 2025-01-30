@@ -1,0 +1,10 @@
+debian_10_buster_arm64_default.zip
+debian_10_buster_arm64_cloud.zip
+debian_11_bullseye_arm64_default.zip
+debian_11_bullseye_arm64_cloud.zip
+debian_12_bookworm_arm64_default.zip
+debian_12_bookworm_arm64_cloud.zip
+almalinux_8_8_arm64_default.zip
+almalinux_8_8_arm64_cloud.zip
+almalinux_9_9_arm64_default.zip
+almalinux_9_9_arm64_cloud.zip

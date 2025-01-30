@@ -44,9 +44,20 @@ if command -v apt-get >/dev/null 2>&1; then
             sudo apt-get install build-essential -y
             export CGO_ENABLED=1
             export CC=gcc
-            wget https://go.dev/dl/go1.21.6.linux-arm64.tar.gz
-            chmod 777 go1.21.6.linux-arm64.tar.gz
-            rm -rf /usr/local/go && tar -C /usr/local -xzf go1.21.6.linux-arm64.tar.gz
+            if [ "${build_arch}" == "x86_64" ] || [ "${build_arch}" == "amd64" ]; then
+                GO_ARCH="amd64"
+            elif [ "${build_arch}" == "aarch64" ] || [ "${build_arch}" == "arm64" ]; then
+                GO_ARCH="arm64"
+            else
+                echo "不支持的架构: ${build_arch}"
+                exit 1
+            fi
+            GO_VERSION="1.22.7"
+            GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
+            wget $GO_URL
+            chmod 777 go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+            rm -rf /usr/local/go && tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+            go version
             export GOROOT=/usr/local/go
             export PATH=$GOROOT/bin:$PATH
             export GOPATH=$HOME/goprojects/

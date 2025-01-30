@@ -1,6 +1,6 @@
 # incus_images
 
-[![clone yaml](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml) [![test](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml) 
+[![clone yaml](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml) [![Multi-Distro Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml) [![Image Validation Pipeline](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml)
 
 ## 说明
 

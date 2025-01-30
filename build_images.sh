@@ -21,63 +21,63 @@ if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get install jq -y
     fi
     uname_output=$(uname -a)
-    if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
-        if ! command -v snap >/dev/null 2>&1; then
-            sudo apt-get install snapd -y
-        fi
-        sudo systemctl start snapd
-        if ! command -v distrobuilder >/dev/null 2>&1; then
-            sudo snap install distrobuilder --classic
-        fi
-    else
-        # if ! command -v snap >/dev/null 2>&1; then
-        #     sudo apt-get install snapd -y
-        # fi
-        # sudo systemctl start snapd
-        # if ! command -v distrobuilder >/dev/null 2>&1; then
-        #     sudo snap install distrobuilder --classic
-        # fi
-        if ! command -v distrobuilder >/dev/null 2>&1; then
-            $HOME/goprojects/bin/distrobuilder --version
-        fi
-        if [ $? -ne 0 ]; then
-            sudo apt-get install build-essential -y
-            export CGO_ENABLED=1
-            export CC=gcc
-            if [ "${build_arch}" == "x86_64" ] || [ "${build_arch}" == "amd64" ]; then
-                GO_ARCH="amd64"
-            elif [ "${build_arch}" == "aarch64" ] || [ "${build_arch}" == "arm64" ]; then
-                GO_ARCH="arm64"
-            else
-                echo "不支持的架构: ${build_arch}"
-                exit 1
-            fi
-            GO_VERSION="1.22.7"
-            GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
-            sudo wget $GO_URL
-            sudo chmod 777 go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
-            sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
-            sudo go version
-            export GOROOT=/usr/local/go
-            export PATH=$GOROOT/bin:$PATH
-            export GOPATH=$HOME/goprojects/
-            sudo go version
-            sudo apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
-            sudo git config --global user.name "daily-update"
-            sudo git config --global user.email "tg@spiritlhl.top"
-            sudo mkdir -p $HOME/go/src/github.com/lxc/
-            cd $HOME/go/src/github.com/lxc/
-            sudo git clone https://github.com/lxc/distrobuilder
-            cd ./distrobuilder
-            sudo make
-            export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
-            echo $PATH
-            find $HOME -name distrobuilder -type f 2>/dev/null
-            $HOME/goprojects/bin/distrobuilder --version
-        fi
-        # wget https://api.ilolicon.com/distrobuilder.deb
-        # dpkg -i distrobuilder.deb
+    # if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
+    if ! command -v snap >/dev/null 2>&1; then
+        sudo apt-get install snapd -y
     fi
+    sudo systemctl start snapd
+    if ! command -v distrobuilder >/dev/null 2>&1; then
+        sudo snap install distrobuilder --classic
+    fi
+    # else
+    #     # if ! command -v snap >/dev/null 2>&1; then
+    #     #     sudo apt-get install snapd -y
+    #     # fi
+    #     # sudo systemctl start snapd
+    #     # if ! command -v distrobuilder >/dev/null 2>&1; then
+    #     #     sudo snap install distrobuilder --classic
+    #     # fi
+    #     if ! command -v distrobuilder >/dev/null 2>&1; then
+    #         $HOME/goprojects/bin/distrobuilder --version
+    #     fi
+    #     if [ $? -ne 0 ]; then
+    #         sudo apt-get install build-essential -y
+    #         export CGO_ENABLED=1
+    #         export CC=gcc
+    #         if [ "${build_arch}" == "x86_64" ] || [ "${build_arch}" == "amd64" ]; then
+    #             GO_ARCH="amd64"
+    #         elif [ "${build_arch}" == "aarch64" ] || [ "${build_arch}" == "arm64" ]; then
+    #             GO_ARCH="arm64"
+    #         else
+    #             echo "不支持的架构: ${build_arch}"
+    #             exit 1
+    #         fi
+    #         GO_VERSION="1.22.7"
+    #         GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
+    #         sudo wget $GO_URL
+    #         sudo chmod 777 go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+    #         sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-${GO_ARCH}.tar.gz
+    #         sudo go version
+    #         export GOROOT=/usr/local/go
+    #         export PATH=$GOROOT/bin:$PATH
+    #         export GOPATH=$HOME/goprojects/
+    #         sudo go version
+    #         sudo apt-get install -q -y debootstrap rsync gpg squashfs-tools git make
+    #         sudo git config --global user.name "daily-update"
+    #         sudo git config --global user.email "tg@spiritlhl.top"
+    #         sudo mkdir -p $HOME/go/src/github.com/lxc/
+    #         cd $HOME/go/src/github.com/lxc/
+    #         sudo git clone https://github.com/lxc/distrobuilder
+    #         cd ./distrobuilder
+    #         sudo make
+    #         export PATH=$HOME/goprojects/bin/distrobuilder:$PATH
+    #         echo $PATH
+    #         find $HOME -name distrobuilder -type f 2>/dev/null
+    #         $HOME/goprojects/bin/distrobuilder --version
+    #     fi
+    #     # wget https://api.ilolicon.com/distrobuilder.deb
+    #     # dpkg -i distrobuilder.deb
+    # fi
     if ! command -v debootstrap >/dev/null 2>&1; then
         sudo apt-get install debootstrap -y
     fi

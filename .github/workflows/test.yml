@@ -13,7 +13,7 @@ jobs:
     runs-on: |
       ${{ 
         contains(matrix.arch, 'x86_64') && 'ubuntu-latest' || 
-        contains(matrix.arch, 'arm64') && 'self-hosted-arm64' 
+        contains(matrix.arch, 'arm64') && 'ubuntu-24.04-arm' 
       }}
     steps:
     - name: Setup Environment

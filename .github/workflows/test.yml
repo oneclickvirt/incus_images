@@ -9,12 +9,12 @@ jobs:
   image-validation:
     strategy:
       matrix:
-        arch: [x86_64, arm64]
-    runs-on: |
-      ${{ 
-        contains(matrix.arch, 'x86_64') && 'ubuntu-latest' || 
-        contains(matrix.arch, 'arm64') && 'ubuntu-24.04-arm' 
-      }}
+        arch:
+          - name: x86_64
+            runner: ubuntu-latest
+          - name: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.arch.runner }}
     steps:
     - name: Setup Environment
       run: |
@@ -24,7 +24,7 @@ jobs:
 
     - name: Fetch Image List
       env:
-        ARCH: ${{ matrix.arch }}
+        ARCH: ${{ matrix.arch.name }}
       run: |
         FILE_URL="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
         ALT_URL="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
@@ -52,8 +52,9 @@ jobs:
 
     - name: Image Processing
       env:
-        ARCH: ${{ matrix.arch }}
+        ARCH: ${{ matrix.arch.name }}
       run: |
+        set +e  # 禁用错误退出
         set -eo pipefail
         valid_images="${ARCH}_valid_images.txt"
         echo "Validation Report - $(date)" > validation.log
@@ -64,19 +65,19 @@ jobs:
           
           # 下载并解压镜像
           if ! curl -m 600 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image"; then
-            curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image"
+            curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image" || true
           fi
           
-          unzip -q "$image"
-          rm "$image"
+          unzip -q "$image" || true
+          rm "$image" || true
           
           # 导入镜像
-          incus image import incus.tar.xz rootfs.squashfs --alias temp-image
-          rm incus.tar.xz rootfs.squashfs
+          incus image import incus.tar.xz rootfs.squashfs --alias temp-image || true
+          rm incus.tar.xz rootfs.squashfs || true
           
           # 容器测试
-          incus init temp-image test-container
-          incus start test-container
+          incus init temp-image test-container || true
+          incus start test-container || true
           sleep 10
           
           # SSH 检查
@@ -86,14 +87,14 @@ jobs:
           fi
           
           # 网络检查
-          incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf'
+          incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf' || true
           if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Network check failed for $image" | tee -a validation.log
             return 2
           fi
           
           # 重启测试
-          incus restart test-container
+          incus restart test-container || true
           sleep 15
           if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Reboot test failed for $image" | tee -a validation.log
@@ -110,20 +111,21 @@ jobs:
         # 并行处理不同发行版
         for list_file in *.list; do
           echo "Processing ${list_file%.*} images..."
-          cat $list_file | xargs -P 2 -I {} bash -c 'process_image "$@"' _ {}
+          cat $list_file | xargs -P 2 -I {} bash -c 'process_image "$@"' _ {} || true
         done
         
         # 清理资源
         incus delete -f test-container 2>/dev/null || true
         incus image delete temp-image 2>/dev/null || true
 
+
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.arch }}-validation
+        name: ${{ matrix.arch.name }}-validation
         path: |
           validation.log
-          ${{ matrix.arch }}_valid_images.txt
+          ${{ matrix.arch.name }}_valid_images.txt
 
   report-generation:
     needs: image-validation

@@ -68,7 +68,7 @@ jobs:
         echo "测试镜像: ${{ matrix.image }}"
         touch ${{ matrix.output }}
         
-        # 备份宿主机 resolv.conf，防止 DNS 解析失效
+        # 备份 DNS 解析文件，避免影响后续任务
         sudo cp /etc/resolv.conf /etc/resolv.conf.backup
         
         if sudo bash test.sh "${{ matrix.image }}"; then
@@ -79,7 +79,7 @@ jobs:
           exit 1
         fi
 
-        # 还原宿主机 resolv.conf，避免影响后续任务
+        # 还原 DNS 配置，避免网络解析问题
         sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
     - name: Move Results to Workspace
@@ -98,21 +98,22 @@ jobs:
         mkdir -p /tmp/test-results
         cp -r /tmp/test-results/* . || true
         
-        if [[ -f x86_64_fixed_images.txt ]]; then
-          cat x86_64_fixed_images.txt >> all_fixed_images.txt
+        # 确保单独存储 x86_64 和 arm64 的测试结果
+        if [[ -f /tmp/test-results/x86_64_fixed_images.txt ]]; then
+          cat /tmp/test-results/x86_64_fixed_images.txt >> x86_64_fixed_images.txt
         fi
-        if [[ -f arm64_fixed_images.txt ]]; then
-          cat arm64_fixed_images.txt >> all_fixed_images.txt
+        if [[ -f /tmp/test-results/arm64_fixed_images.txt ]]; then
+          cat /tmp/test-results/arm64_fixed_images.txt >> arm64_fixed_images.txt
         fi
 
     - name: Push Results
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [[ -f all_fixed_images.txt ]]; then
+        if [[ -f x86_64_fixed_images.txt || -f arm64_fixed_images.txt ]]; then
           echo "推送测试结果..."
           git pull origin main
-          git add all_fixed_images.txt
+          git add x86_64_fixed_images.txt arm64_fixed_images.txt
           git commit -m "更新镜像测试结果"
           git push
         fi

@@ -143,6 +143,6 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         incus delete -f test
         incus image delete myc
         echo "------------------------------------------" >>log
-        curl ip.sb
+        curl ip.sb || echo "nameserver 8.8.8.8" >> /etc/resolv.conf >/dev/null 2>&1
     done
 done

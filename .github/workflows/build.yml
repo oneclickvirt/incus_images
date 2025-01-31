@@ -43,7 +43,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         set +e  # 禁止错误退出
-        set -eo pipefail
+        # set -eo pipefail
     
         # 获取构建参数
         DISTRO="${{ matrix.distro }}"

@@ -72,6 +72,10 @@ jobs:
         # 执行实际构建
         echo "Building $DISTRO and packaging zips for $ARCH"
         sudo bash build_images.sh $DISTRO true $ARCH || true
+        echo "------------"
+        pwd
+        ls
+        echo "------------"
         # 处理构建产物
         for file in "${zip_name_list[@]}"; do
           if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 10485760 ]; then

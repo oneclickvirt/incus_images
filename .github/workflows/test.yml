@@ -8,11 +8,11 @@ on:
 jobs:
   image-validation:
     strategy:
-      max-parallel: 4
+      max-parallel: 1
       matrix:
-        distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
+        distro: ["kali", "centos", "almalinux", "rockylinux", 
                 "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
-                "oracle", "openeuler"]
+                "oracle", "openeuler", "ubuntu", "debian"]
         arch:
           - name: x86_64
             runner: ubuntu-latest
@@ -30,6 +30,7 @@ jobs:
         sudo apt install -y jq
         sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
         sudo usermod -aG lxd $USER
+        incus launch images:ubuntu/22.04
 
     - name: Fetch Image List
       env:

@@ -8,13 +8,19 @@ on:
 jobs:
   image-validation:
     strategy:
+      max-parallel: 4
       matrix:
+        distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
+                "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
+                "oracle", "openeuler"]
         arch:
           - name: x86_64
             runner: ubuntu-latest
           - name: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.arch.runner }}
+    timeout-minutes: 120
+    
     steps:
     - name: Setup Environment
       run: |
@@ -28,6 +34,7 @@ jobs:
     - name: Fetch Image List
       env:
         ARCH: ${{ matrix.arch.name }}
+        DISTRO: ${{ matrix.distro }}
       run: |
         FILE_URL="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
         ALT_URL="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
@@ -36,99 +43,75 @@ jobs:
           curl -sSLk -m 20 -o images.txt "$ALT_URL"
         fi
         
-        # 分类存储镜像列表
-        declare -A release_map=(
-          ["ubuntu"]=1 ["debian"]=2 ["kali"]=3 ["centos"]=4 
-          ["almalinux"]=5 ["rockylinux"]=6 ["fedora"]=7 
-          ["opensuse"]=8 ["alpine"]=9 ["archlinux"]=10 
-          ["gentoo"]=11 ["openwrt"]=12 ["oracle"]=13 ["openeuler"]=14
-        )
-        
-        while read -r image; do
-          for key in "${!release_map[@]}"; do
-            if [[ $image == $key* ]]; then
-              echo $image >> ${release_map[$key]}.list
-              break
-            fi
-          done
-        done < images.txt
+        # Filter images for specific distro
+        grep "^${DISTRO}" images.txt > distro_images.txt || true
 
     - name: Image Processing
       env:
         ARCH: ${{ matrix.arch.name }}
+        DISTRO: ${{ matrix.distro }}
       run: |
-        set +e  # 禁用错误退出
-        # set -eo pipefail
-        valid_images="${ARCH}_valid_images.txt"
-        echo "Validation Report - $(date)" > validation.log
+        set +e  # Disable error exit
+        valid_images="${ARCH}_${DISTRO}_valid_images.txt"
+        echo "Validation Report - $(date) - ${DISTRO}" > validation.log
         
-        process_image() {
-          local image=$1
+        while read -r image; do
           echo "Processing $image..." | tee -a validation.log
           
-          # 下载并解压镜像
-          if ! curl -m 600 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image"; then
-            curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image%%_*}/$image" || true
+          # Download and extract image
+          if ! curl -m 600 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${DISTRO}/$image"; then
+            curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${DISTRO}/$image" || true
           fi
           
           unzip -q "$image" || true
           rm "$image" || true
           
-          # 导入镜像
+          # Import image
           incus image import incus.tar.xz rootfs.squashfs --alias temp-image || true
           rm incus.tar.xz rootfs.squashfs || true
           
-          # 容器测试
+          # Container test
           incus init temp-image test-container || true
           incus start test-container || true
           sleep 10
           
-          # SSH 检查
+          # SSH check
           if ! incus exec test-container -- lsof -i:22 | grep -q ssh; then
             echo "SSH check failed for $image" | tee -a validation.log
-            return 1
+            continue
           fi
           
-          # 网络检查
+          # Network check
           incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf' || true
           if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Network check failed for $image" | tee -a validation.log
-            return 2
+            continue
           fi
           
-          # 重启测试
+          # Reboot test
           incus restart test-container || true
           sleep 15
           if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Reboot test failed for $image" | tee -a validation.log
-            return 3
+            continue
           fi
           
           echo "$image" >> "$valid_images"
           echo "Validation passed: $image" | tee -a validation.log
-          return 0
-        }
-        
-        export -f process_image
-        
-        # 并行处理不同发行版
-        for list_file in *.list; do
-          echo "Processing ${list_file%.*} images..."
-          cat $list_file | xargs -P 2 -I {} bash -c 'process_image "$@"' _ {} || true
-        done
-        
-        # 清理资源
-        incus delete -f test-container 2>/dev/null || true
-        incus image delete temp-image 2>/dev/null || true
-
+          
+          # Cleanup
+          incus delete -f test-container 2>/dev/null || true
+          incus image delete temp-image 2>/dev/null || true
+          
+        done < distro_images.txt
 
     - name: Archive Results
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.arch.name }}-validation
+        name: ${{ matrix.arch.name }}-${{ matrix.distro }}-validation
         path: |
           validation.log
-          ${{ matrix.arch.name }}_valid_images.txt
+          ${{ matrix.arch.name }}_${{ matrix.distro }}_valid_images.txt
 
   report-generation:
     needs: image-validation
@@ -142,13 +125,13 @@ jobs:
     - name: Generate Summary
       run: |
         mkdir -p report
-        # 合并验证结果
+        # Merge validation results
         find artifacts -name '*_valid_images.txt' -exec cat {} + | sort -u > report/validated_images.txt
-        # 生成统计报告
+        # Generate statistics report
         echo "# Validation Summary" > report/README.md
         echo "## Valid Images Count" >> report/README.md
         wc -l report/validated_images.txt | awk '{print "Total: "$1}' >> report/README.md
-        echo "## Per Architecture Results" >> report/README.md
+        echo "## Per Distribution and Architecture Results" >> report/README.md
         find artifacts -name 'validation.log' -exec sh -c 'echo "### {}"; cat {}' \; >> report/README.md
         
     - name: Publish Report

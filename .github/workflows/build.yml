@@ -9,11 +9,11 @@ jobs:
   build-images:
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 1
       matrix:
-        distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
+        distro: ["debian", "kali", "centos", "almalinux", "rockylinux", 
                 "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
-                "oracle", "openeuler"]
+                "oracle", "openeuler", "ubuntu"]
         arch:
           - name: amd64
             runner: ubuntu-latest

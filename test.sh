@@ -2,11 +2,16 @@
 # by https://github.com/oneclickvirt/incus_images
 # 2025.01.31
 
+# 设置错误处理
+set -e
+trap 'echo "发生错误，行号: $LINENO, 命令: $BASH_COMMAND"' ERR
+
 # 获取命令行参数
 if [[ $# -ne 1 ]]; then
     echo "用法: $0 <完整镜像名称>"
     exit 1
 fi
+
 image_name="$1"
 
 # 根据镜像名称识别架构
@@ -21,111 +26,173 @@ fi
 
 # 初始化日志
 date=$(date)
-echo "$date" >> log
-echo "------------------------------------------" >> log
-echo "测试镜像: $image_name" >> log
+{
+    echo "$date"
+    echo "------------------------------------------"
+    echo "测试镜像: $image_name"
+} >> log
+
+# 创建临时文件来跟踪测试状态
+test_status_file=$(mktemp)
+echo "success" > "$test_status_file"
+
+cleanup() {
+    local exit_code=$?
+    echo "清理资源..."
+    
+    # 停止并删除容器（如果存在）
+    incus stop test 2>/dev/null || true
+    incus delete -f test 2>/dev/null || true
+    
+    # 删除镜像（如果存在）
+    incus image delete myc 2>/dev/null || true
+    
+    # 清理临时文件
+    rm -f "$test_status_file"
+    rm -f incus.tar.xz rootfs.squashfs "$image_name"
+    
+    # 添加分隔线到日志
+    echo "------------------------------------------" >> log
+    
+    # 如果测试失败，从固定镜像列表中删除
+    if [[ "$(cat "$test_status_file")" != "success" ]]; then
+        echo "测试失败，从列表中移除镜像"
+        sed -i "/$image_name/d" "$fixed_images_file"
+    fi
+    
+    exit $exit_code
+}
+
+trap cleanup EXIT
 
 # 下载和解压镜像
-delete_status=false
-echo "$image_name" >> "$fixed_images_file"
 echo "开始下载镜像..."
-curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"
-if [ $? -ne 0 ]; then
+if ! curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"; then
     echo "主下载失败，尝试备用下载源..."
-    curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"
+    if ! curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"; then
+        echo "错误：所有下载源均失败" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
 fi
 
-if [ ! -f "$image_name" ]; then
-    echo "错误：镜像下载失败"
-    head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
+# 验证文件存在和大小
+if [ ! -f "$image_name" ] || [ ! -s "$image_name" ]; then
+    echo "错误：镜像文件不存在或为空" | tee -a log
+    echo "fail" > "$test_status_file"
     exit 1
 fi
 
 chmod 777 "$image_name"
-unzip "$image_name"
-if [ $? -ne 0 ]; then
-    echo "错误：解压失败"
-    head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
+
+# 解压镜像
+if ! unzip -q "$image_name"; then
+    echo "错误：解压失败" | tee -a log
+    echo "fail" > "$test_status_file"
     exit 1
 fi
-rm -rf "$image_name"
+
+# 添加镜像到固定列表
+echo "$image_name" >> "$fixed_images_file"
 
 # 导入镜像
-incus image import incus.tar.xz rootfs.squashfs --alias myc
-rm -rf incus.tar.xz rootfs.squashfs
+if ! incus image import incus.tar.xz rootfs.squashfs --alias myc; then
+    echo "错误：镜像导入失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
 
-# 创建测试容器
-incus init myc test || { echo "容器初始化失败"; exit 1; }
-incus start test
+# 创建和启动容器
+if ! incus init myc test; then
+    echo "错误：容器初始化失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
+
+if ! incus start test; then
+    echo "错误：容器启动失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
+
+# 等待容器完全启动
 sleep 10
 
-# 测试SSH服务
+# SSH服务测试函数
 ssh_test() {
-    retries=0
-    max_retries=5
+    local retries=0
+    local max_retries=5
+    
     while [ $retries -lt $max_retries ]; do
-        res=$(incus exec test -- lsof -i:22 2>/dev/null | grep ssh)
-        if [[ -n "$res" ]]; then
-            echo "SSH服务正常"
+        if incus exec test -- lsof -i:22 2>/dev/null | grep -q ssh; then
+            echo "SSH服务正常" | tee -a log
             return 0
         fi
+        echo "等待SSH服务启动，尝试 $((retries + 1))/$max_retries..." | tee -a log
         sleep $((2**retries))
         ((retries++))
     done
-    echo "SSH服务异常"
+    
+    echo "SSH服务异常" | tee -a log
     return 1
 }
 
-# 测试网络连通性
+# 网络连通性测试函数
 network_test() {
-    incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak
-    echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf >/dev/null
-    res=$(incus exec test -- curl -m 10 -skL https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
-    incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
+    # 备份原始resolv.conf
+    incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak || true
     
-    if [[ "$res" == *"success"* ]]; then
-        echo "网络连通正常"
+    # 配置DNS
+    echo "nameserver 8.8.8.8" | incus exec test -- tee /etc/resolv.conf >/dev/null
+    
+    # 执行网络测试
+    if incus exec test -- curl -m 10 -skL https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test | grep -q "success"; then
+        echo "网络连通正常" | tee -a log
+        # 恢复原始resolv.conf
+        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf 2>/dev/null || true
         return 0
     else
-        echo "网络连接失败"
+        echo "网络连接失败" | tee -a log
+        # 恢复原始resolv.conf
+        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf 2>/dev/null || true
         return 1
     fi
 }
 
-# 执行测试用例
+# 执行测试
 if ! ssh_test; then
-    echo "SSH测试失败" >> log
-    delete_status=true
+    echo "fail" > "$test_status_file"
+    exit 1
 fi
 
 if ! network_test; then
-    echo "网络测试失败" >> log
-    delete_status=true
+    echo "fail" > "$test_status_file"
+    exit 1
 fi
 
 # 重启测试
-incus stop test
-if incus start test; then
-    sleep 15
-    if ! network_test; then
-        echo "重启后网络测试失败" >> log
-        delete_status=true
-    fi
-else
-    echo "容器重启失败" >> log
-    delete_status=true
+echo "执行重启测试..." | tee -a log
+if ! incus stop test; then
+    echo "错误：容器停止失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
 fi
 
-# 清理资源
-incus stop test
-incus delete -f test
-incus image delete myc
-
-# 处理测试结果
-if [ "$delete_status" = true ]; then
-    echo "镜像未通过测试，从列表移除"
-    sed -i "/$image_name/d" "$fixed_images_file"
+if ! incus start test; then
+    echo "错误：容器重启失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
 fi
 
-echo "------------------------------------------" >> log
+# 等待容器重启
+sleep 15
+
+# 重启后网络测试
+if ! network_test; then
+    echo "重启后网络测试失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
+
+echo "所有测试通过" | tee -a log
 exit 0

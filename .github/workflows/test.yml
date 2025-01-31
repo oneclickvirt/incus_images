@@ -53,7 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
-    runs-on: ${{ contains(matrix.image, 'x86_64') && 'ubuntu-latest' || 'arm64' }}
+    runs-on: ubuntu-latest  # 修改为始终使用 ubuntu-latest
     timeout-minutes: 120
 
     steps:
@@ -64,7 +64,7 @@ jobs:
       run: |
         # 安装必要组件
         sudo apt-get update
-        sudo apt-get install -y zfsutils-linux snapd
+        sudo apt-get install -y zfsutils-linux snapd curl jq
         sudo snap install --channel=latest/stable incus
         
         # 初始化 Incus
@@ -76,34 +76,49 @@ jobs:
         incus --version
 
     - name: Execute Validation Test
+      id: test
       run: |
+        # 确保测试脚本存在
+        if [ ! -f "test.sh" ]; then
+          echo "::error::测试脚本不存在"
+          exit 1
+        fi
+        
+        # 给脚本执行权限
+        chmod +x test.sh
+        
         # 生成安全文件名
         safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
         result_file="${safe_name}_validation.txt"
         
-        # 执行测试脚本
-        if sudo ./test.sh "${{ matrix.image }}"; then
-          echo "${{ matrix.image }}" > "$result_file"
+        # 执行测试脚本并捕获输出
+        if sudo ./test.sh "${{ matrix.image }}" > >(tee -a "$result_file") 2>&1; then
           echo "✅ 验证成功：${{ matrix.image }}"
+          echo "${{ matrix.image }}" > "$result_file"
         else
-          echo "❌ 验证失败：${{ matrix.image }}" | tee "$result_file"
+          echo "❌ 验证失败：${{ matrix.image }}"
           exit 1
         fi
-
-      # 超时后自动清理
       timeout-minutes: 30
 
     - name: Preserve Test Artifacts
+      if: always()  # 无论成功失败都保存结果
       uses: actions/upload-artifact@v4
       with:
         name: validation-${{ matrix.image }}
-        path: ${{ matrix.image }}_validation.txt
+        path: |
+          *_validation.txt
+          log
         retention-days: 3
 
   aggregate_results:
     needs: validate_images
+    if: always()  # 确保即使有失败的测试也会运行
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
     - name: Collect Artifacts
       uses: actions/download-artifact@v4
       with:
@@ -111,29 +126,47 @@ jobs:
 
     - name: Generate Consolidated Report
       run: |
-        # 合并有效镜像列表
-        find artifacts -name '*validation.txt' -exec cat {} \; | grep -v '❌' | sort -u > valid_images.txt
-        
-        # 按架构分类
+        # 创建输出目录
         mkdir -p results
-        grep 'x86_64' valid_images.txt > results/x86_64_valid.txt || echo "无 x86_64 有效镜像" > results/x86_64_valid.txt
-        grep 'arm64' valid_images.txt > results/arm64_valid.txt || echo "无 arm64 有效镜像" > results/arm64_valid.txt
+        
+        # 初始化结果文件
+        touch results/x86_64_valid.txt results/arm64_valid.txt
+        
+        # 合并有效镜像列表
+        find artifacts -name '*validation.txt' -type f | while read -r file; do
+          if ! grep -q '❌' "$file"; then
+            cat "$file" | grep -v '^$' >> valid_images.tmp
+          fi
+        done
+        
+        if [ -f valid_images.tmp ]; then
+          sort -u valid_images.tmp > valid_images.txt
+          # 按架构分类
+          grep 'x86_64' valid_images.txt > results/x86_64_valid.txt || true
+          grep 'arm64' valid_images.txt > results/arm64_valid.txt || true
+          rm valid_images.tmp
+        fi
         
         # 生成 Markdown 报告
-        echo "# 每日镜像验证报告" > REPORT.md
-        echo "生成时间: $(date +'%Y-%m-%d %H:%M:%S %Z')" >> REPORT.md
-        echo "## 有效镜像统计" >> REPORT.md
-        echo "- x86_64 镜像数量: $(wc -l < results/x86_64_valid.txt)" >> REPORT.md
-        echo "- arm64 镜像数量: $(wc -l < results/arm64_valid.txt)" >> REPORT.md
-        echo "## 详细列表" >> REPORT.md
-        echo "### x86_64 有效镜像" >> REPORT.md
-        echo '```' >> REPORT.md
-        cat results/x86_64_valid.txt >> REPORT.md
-        echo '```' >> REPORT.md
-        echo "### arm64 有效镜像" >> REPORT.md
-        echo '```' >> REPORT.md
-        cat results/arm64_valid.txt >> REPORT.md
-        echo '```' >> REPORT.md
+        {
+          echo "# 每日镜像验证报告"
+          echo "生成时间: $(date +'%Y-%m-%d %H:%M:%S %Z')"
+          echo
+          echo "## 有效镜像统计"
+          echo "- x86_64 镜像数量: $(wc -l < results/x86_64_valid.txt)"
+          echo "- arm64 镜像数量: $(wc -l < results/arm64_valid.txt)"
+          echo
+          echo "## 详细列表"
+          echo "### x86_64 有效镜像"
+          echo '```'
+          cat results/x86_64_valid.txt
+          echo '```'
+          echo
+          echo "### arm64 有效镜像"
+          echo '```'
+          cat results/arm64_valid.txt
+          echo '```'
+        } > REPORT.md
 
     - name: Upload Validation Results
       uses: actions/upload-artifact@v4
@@ -142,6 +175,7 @@ jobs:
         path: |
           results/*
           REPORT.md
+          log
 
     - name: Commit to Repository
       uses: stefanzweifel/git-auto-commit-action@v4

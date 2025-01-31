@@ -56,7 +56,12 @@ jobs:
         ARCH="${{ matrix.arch.name }}"
         echo "Processing $DISTRO for $ARCH architecture"
         # 首次运行获取文件名列表
-        mapfile -t zip_name_list < <(bash build_images.sh $DISTRO false $ARCH || true | tail -n 1)
+        mapfile -t zip_name_list < <(bash build_images.sh $DISTRO false $ARCH | tail -n 1)
+        echo "---zip_name_list---"
+        for item in "${zip_name_list[@]}"; do
+          echo "$item"
+        done
+        echo "-------"
         # 获取或创建Release
         release_response=$(curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
           -H "Accept: application/vnd.github.v3+json" \

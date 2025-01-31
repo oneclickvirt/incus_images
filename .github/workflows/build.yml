@@ -56,7 +56,9 @@ jobs:
         ARCH="${{ matrix.arch.name }}"
         echo "Processing $DISTRO for $ARCH architecture"
         # 首次运行获取文件名列表
-        mapfile -t zip_name_list < <(bash build_images.sh $DISTRO false $ARCH | tail -n 1)
+        echo "---zip_name_list---"
+        output=$(bash build_images.sh $DISTRO false $ARCH | tail -n 1)
+        zip_name_list=($output)  # 让shell自动按空格分割
         echo "---zip_name_list---"
         for item in "${zip_name_list[@]}"; do
           echo "$item"

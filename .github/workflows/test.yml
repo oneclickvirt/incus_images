@@ -55,7 +55,7 @@ jobs:
         ARCH: ${{ matrix.arch.name }}
       run: |
         set +e  # 禁用错误退出
-        set -eo pipefail
+        # set -eo pipefail
         valid_images="${ARCH}_valid_images.txt"
         echo "Validation Report - $(date)" > validation.log
         

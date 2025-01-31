@@ -1,0 +1,94 @@
+name: Multi-Arch Image Testing
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  test_images:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
+                "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
+                "oracle", "openeuler"]
+        arch:
+          - name: x86_64
+            runner: ubuntu-latest
+          - name: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.arch.runner }}
+    timeout-minutes: 120
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Incus
+      run: |
+        sudo apt update -y
+        sudo apt-get install -y btrfs-progs
+        sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+
+    - name: Run Tests
+      run: |
+        chmod +x test.sh
+        sudo ./test.sh ${{ matrix.arch.name }} ${{ matrix.distro }}
+        # 重命名结果文件避免冲突
+        mv log ${matrix.distro}_${matrix.arch.name}_log
+        if [ -f "${{ matrix.arch.name }}_fixed_images.txt" ]; then
+          mv ${{ matrix.arch.name }}_fixed_images.txt ${matrix.distro}_${matrix.arch.name}_fixed.txt
+        fi
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.distro }}-${{ matrix.arch.name }}-results
+        path: |
+          ${matrix.distro}_${matrix.arch.name}_log
+          ${matrix.distro}_${matrix.arch.name}_fixed.txt
+
+  aggregate_results:
+    needs: test_images
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Merge Results
+      run: |
+        # 合并日志
+        find artifacts -name "*_log" -exec cat {} \; > combined_log
+        # 按架构合并镜像列表
+        for arch in x86_64 arm64; do
+          > ${arch}_fixed_images.txt
+          find artifacts -name "*_${arch}_fixed.txt" -exec cat {} \; >> ${arch}_fixed_images.txt
+          sort -u ${arch}_fixed_images.txt | grep -v "^$" > ${arch}_fixed_images_sorted.txt
+          mv ${arch}_fixed_images_sorted.txt ${arch}_fixed_images.txt
+        done
+
+        # 生成最终报告
+        echo "# Test Results $(date)" > FINAL_REPORT.md
+        echo "## Log Summary" >> FINAL_REPORT.md
+        echo "\`\`\`" >> FINAL_REPORT.md
+        tail -n 50 combined_log >> FINAL_REPORT.md
+        echo "\`\`\`" >> FINAL_REPORT.md
+        
+        echo "## Valid Images" >> FINAL_REPORT.md
+        for arch in x86_64 arm64; do
+          echo "### ${arch} Images" >> FINAL_REPORT.md
+          echo "\`\`\`" >> FINAL_REPORT.md
+          cat ${arch}_fixed_images.txt >> FINAL_REPORT.md
+          echo "\`\`\`" >> FINAL_REPORT.md
+        done
+
+    - name: Commit Results
+      run: |
+        git config --global user.name "CI Updater"
+        git config --global user.email "ci@example.com"
+        git add combined_log *_fixed_images.txt FINAL_REPORT.md
+        git commit -m "Update test results $(date +'%Y-%m-%d')" || true
+        git push

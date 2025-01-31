@@ -2,7 +2,7 @@ name: clone yaml
 
 on:
   schedule:
-    - cron: '55 15 * * *'
+    - cron: '55 1 1-31/2 * *'
   workflow_dispatch:
 
 jobs:

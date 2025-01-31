@@ -72,6 +72,7 @@ jobs:
         sudo cp /etc/resolv.conf /etc/resolv.conf.backup
         
         if sudo bash test.sh "${{ matrix.image }}"; then
+          echo "${{ matrix.image }}" >> ${{ matrix.output }}
           echo "测试通过: ${{ matrix.image }}"
         else
           echo "测试失败: ${{ matrix.image }}"
@@ -80,51 +81,38 @@ jobs:
 
         # 还原宿主机 resolv.conf，避免影响后续任务
         sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
-        
-    - name: Upload Test Results
-      if: success()
-      uses: actions/upload-artifact@v4
-      with:
-        name: fixed-images-results
-        path: ${{ matrix.output }}
-        retention-days: 7
 
-    - name: Upload Test Logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-logs-${{ matrix.arch }}-${{ matrix.image }}
-        path: log
-        retention-days: 7
-
+    - name: Move Results to Workspace
+      run: |
+        mkdir -p /tmp/test-results
+        mv ${{ matrix.output }} /tmp/test-results/
+    
   results-updater:
     needs: test-single-image
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    
-    - name: Download Test Results
-      uses: actions/download-artifact@v4
-      with:
-        name: fixed-images-results
-        path: .
+
+    - name: Aggregate Test Results
+      run: |
+        mkdir -p /tmp/test-results
+        cp -r /tmp/test-results/* . || true
+        
+        if [[ -f x86_64_fixed_images.txt ]]; then
+          cat x86_64_fixed_images.txt >> all_fixed_images.txt
+        fi
+        if [[ -f arm64_fixed_images.txt ]]; then
+          cat arm64_fixed_images.txt >> all_fixed_images.txt
+        fi
 
     - name: Push Results
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [[ -f x86_64_fixed_images.txt ]] || [[ -f arm64_fixed_images.txt ]]; then
+        if [[ -f all_fixed_images.txt ]]; then
           echo "推送测试结果..."
           git pull origin main
-          
-          if [[ -f x86_64_fixed_images.txt ]]; then
-            git add x86_64_fixed_images.txt
-          fi
-          
-          if [[ -f arm64_fixed_images.txt ]]; then
-            git add arm64_fixed_images.txt
-          fi
-          
+          git add all_fixed_images.txt
           git commit -m "更新镜像测试结果"
           git push
         fi

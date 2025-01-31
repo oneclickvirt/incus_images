@@ -1,11 +1,11 @@
 name: test arm64 images
 on:
   schedule:
-    - cron: '45 0 * * *'
+    - cron: '5 1 * * *'
   workflow_dispatch:
 jobs:
   test_images:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
     - uses: actions/checkout@v2
     

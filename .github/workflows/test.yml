@@ -16,45 +16,38 @@ jobs:
     
     - id: set-matrix
       run: |
-        # 下载测试文件
         curl -o x86_64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt
         curl -o arm64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt
         
-        # 构建测试矩阵
         echo "构建测试矩阵..."
-        matrix_json="{"
-        matrix_json+="\"include\":["
+        matrix_json="{\"include\":["
         
-        # 处理 x86_64 镜像
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
             matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\",\"output\":\"x86_64_fixed_images.txt\"},"
           fi
         done < x86_64_all_images.txt
         
-        # 处理 arm64 镜像
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
             matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\",\"output\":\"arm64_fixed_images.txt\"},"
           fi
         done < arm64_all_images.txt
         
-        # 移除最后一个逗号并关闭 JSON
         matrix_json=${matrix_json%,}
         matrix_json+="]}"
         
-        # 输出矩阵
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   test-single-image:
     needs: prepare-matrix
     strategy:
-      fail-fast: false  # 一个测试失败不影响其他测试
-      max-parallel: 1   # 最多同时运行1个测试
+      fail-fast: false
+      max-parallel: 1
       matrix: ${{fromJson(needs.prepare-matrix.outputs.test-matrix)}}
     
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 10  # 每个镜像测试限时10分钟
+    timeout-minutes: 10
     
     steps:
     - uses: actions/checkout@v4
@@ -73,30 +66,29 @@ jobs:
     - name: Test Image
       run: |
         echo "测试镜像: ${{ matrix.image }}"
-        # 确保输出文件存在
         touch ${{ matrix.output }}
+        
+        # 备份宿主机 resolv.conf，防止 DNS 解析失效
+        sudo cp /etc/resolv.conf /etc/resolv.conf.backup
+        
         if sudo bash test.sh "${{ matrix.image }}"; then
           echo "测试通过: ${{ matrix.image }}"
         else
           echo "测试失败: ${{ matrix.image }}"
           exit 1
         fi
+
+        # 还原宿主机 resolv.conf，避免影响后续任务
+        sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
         
-    - name: Push Results
+    - name: Upload Test Results
       if: success()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        if [[ -f ${{ matrix.output }} ]]; then
-          echo "推送测试结果..."
-          # 拉取最新更改
-          git pull origin main
-          git add ${{ matrix.output }}
-          git commit -m "更新 ${{ matrix.arch }} 架构镜像 ${{ matrix.image }} 的测试结果"
-          git push
-        fi
-      continue-on-error: true
-      
+      uses: actions/upload-artifact@v4
+      with:
+        name: fixed-images-results
+        path: ${{ matrix.output }}
+        retention-days: 7
+
     - name: Upload Test Logs
       if: always()
       uses: actions/upload-artifact@v4
@@ -105,8 +97,41 @@ jobs:
         path: log
         retention-days: 7
 
-  cleanup:
+  results-updater:
     needs: test-single-image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download Test Results
+      uses: actions/download-artifact@v4
+      with:
+        name: fixed-images-results
+        path: .
+
+    - name: Push Results
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [[ -f x86_64_fixed_images.txt ]] || [[ -f arm64_fixed_images.txt ]]; then
+          echo "推送测试结果..."
+          git pull origin main
+          
+          if [[ -f x86_64_fixed_images.txt ]]; then
+            git add x86_64_fixed_images.txt
+          fi
+          
+          if [[ -f arm64_fixed_images.txt ]]; then
+            git add arm64_fixed_images.txt
+          fi
+          
+          git commit -m "更新镜像测试结果"
+          git push
+        fi
+      continue-on-error: true
+
+  cleanup:
+    needs: results-updater
     if: always()
     runs-on: ubuntu-latest
     steps:

@@ -8,6 +8,7 @@ on:
 jobs:
   image-validation:
     strategy:
+      fail-fast: false
       max-parallel: 2
       matrix:
         distro: ["kali", "centos", "almalinux", "rockylinux", 
@@ -37,11 +38,9 @@ jobs:
       run: |
         FILE_URL="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
         ALT_URL="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${ARCH}_all_images.txt"
-        
         if ! curl -sSLk -m 20 -o images.txt "$FILE_URL"; then
           curl -sSLk -m 20 -o images.txt "$ALT_URL"
         fi
-        
         # Filter images for specific distro
         grep "^${DISTRO}" images.txt > distro_images.txt || true
 
@@ -53,7 +52,6 @@ jobs:
         set +e  # Disable error exit
         valid_images="${ARCH}_${DISTRO}_valid_images.txt"
         echo "Validation Report - $(date) - ${DISTRO}" > validation.log
-        
         while read -r image; do
           echo "Processing $image..." | tee -a validation.log
           # Download and extract image
@@ -93,6 +91,7 @@ jobs:
           sudo incus delete -f test-container 2>/dev/null || true
           sudo incus image delete temp-image 2>/dev/null || true
         done < distro_images.txt
+        continue-on-error: true
 
     - name: Archive Results
       uses: actions/upload-artifact@v4

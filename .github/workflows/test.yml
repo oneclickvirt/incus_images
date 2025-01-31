@@ -15,18 +15,19 @@ jobs:
       run: |
         arch_list=("x86_64" "arm64")
         declare -A images_map
-        
-        for arch in ${arch_list[@]}; do
+        # 获取镜像列表
+        for arch in "${arch_list[@]}"; do
           url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt"
-          curl -sL $url -o ${arch}.txt
+          curl -sL "$url" -o "${arch}.txt"
           while IFS= read -r line; do
             if [[ -n "$line" ]]; then
-              images_map["$line"]=1
+              # 对镜像名称进行转义，确保 JSON 格式正确
+              escaped_line=$(echo "$line" | sed 's/"/\\"/g')
+              images_map["$escaped_line"]=1
             fi
-          done < ${arch}.txt
+          done < "${arch}.txt"
         done
-
-        # 生成JSON数组
+        # 生成 JSON 数组
         echo "[" > matrix.json
         first=true
         for image in "${!images_map[@]}"; do
@@ -35,14 +36,19 @@ jobs:
           else
             echo "," >> matrix.json
           fi
+          # 确保每个镜像名称被双引号包裹
           echo -n "{\"image\": \"$image\"}" >> matrix.json
         done
         echo "" >> matrix.json
         echo "]" >> matrix.json
-
-        # 设置输出
-        matrix_content=$(cat matrix.json)
-        echo "matrix=$matrix_content" >> $GITHUB_OUTPUT
+        # 验证 JSON 格式
+        if ! jq empty matrix.json 2>/dev/null; then
+          echo "错误：生成的 JSON 格式无效"
+          exit 1
+        fi
+        # 设置 GitHub Actions 输出
+        matrix_content=$(cat matrix.json | jq -c .)
+        echo "matrix=$matrix_content" >> "$GITHUB_OUTPUT"
 
     - id: set-matrix
       run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT

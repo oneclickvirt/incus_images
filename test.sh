@@ -95,33 +95,43 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         if [[ $res3 == *"command not found"* ]]; then
             echo "no wget" >>log
         fi
+        incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak
         echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf >/dev/null 2>&1
+        # 运行测试
         res4=$(incus exec test -- curl -lk https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test 2>/dev/null)
         if [[ $res4 == *"success"* ]]; then
             echo "network is public"
         else
-            echo "no public network" >>log
-            if [ "$delete_status" = false ];then
+            echo "no public network" >> log
+            if [ "$delete_status" = false ]; then
                 delete_status=true
                 head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
             fi
         fi
+        # 测试完成后恢复 DNS 配置
+        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
         sleep 5
         incus stop test
         if [ $? -eq 0 ]; then
             incus start test
             sleep 10
+            # 备份原始 DNS 配置
+            incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak
+            # 临时添加 Google DNS
             echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf >/dev/null 2>&1
+            # 进行测试
             res5=$(incus exec test -- curl -lk https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test 2>/dev/null)
             if [[ $res5 == *"success"* ]]; then
                 echo "reboot success"
             else
                 echo "reboot failed" >>log
-                if [ "$delete_status" = false ];then
+                if [ "$delete_status" = false ]; then
                     delete_status=true
                     head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
                 fi
             fi
+            # 恢复原始 DNS 配置，确保环境不受影响
+            incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
         else
             echo "reboot failed" >>log
             if [ "$delete_status" = false ];then

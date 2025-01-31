@@ -143,5 +143,6 @@ for ((i = 0; i < ${#release_names[@]}; i++)); do
         incus delete -f test
         incus image delete myc
         echo "------------------------------------------" >>log
+        curl ip.sb
     done
 done

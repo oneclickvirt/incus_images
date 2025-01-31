@@ -9,7 +9,7 @@ jobs:
   generate_matrix:
     runs-on: ubuntu-latest
     outputs:
-      images: ${{ steps.set-matrix.outputs.images }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
     - name: Generate Image List
       id: set-matrix
@@ -19,10 +19,14 @@ jobs:
           curl -sL "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt" >> all_images.txt || echo "下载 $arch 列表失败"
         done
         
-        # 过滤空行并去重
+        # 过滤空行并格式化为简单的 JSON 数组
         if [ -f all_images.txt ]; then
-          images=$(grep -v '^$' all_images.txt | sort -u | tr '\n' ',' | sed 's/,$//')
-          echo "images=${images}" >> $GITHUB_OUTPUT
+          # 使用简单的文本处理创建 JSON
+          echo -n '{"image":['  > matrix.json
+          grep -v '^$' all_images.txt | sort -u | sed 's/.*/"&"/' | paste -sd "," >> matrix.json
+          echo -n ']}' >> matrix.json
+          
+          echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
         else
           echo "::error::未能获取镜像列表"
           exit 1
@@ -30,11 +34,9 @@ jobs:
 
   validate_images:
     needs: generate_matrix
-    if: needs.generate_matrix.outputs.images != ''
     strategy:
       fail-fast: false
-      matrix:
-        image: ${{ split(needs.generate_matrix.outputs.images, ',') }}
+      matrix: ${{fromJson(needs.generate_matrix.outputs.matrix)}}
     runs-on: ubuntu-latest
     timeout-minutes: 120
 

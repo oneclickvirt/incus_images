@@ -100,3 +100,4 @@ jobs:
             [ -f "$file" ] && rm -vf "$file"
           fi
         done
+      continue-on-error: true

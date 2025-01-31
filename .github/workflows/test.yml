@@ -9,7 +9,7 @@ jobs:
   test_images:
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 1
       matrix:
         distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
                 "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 

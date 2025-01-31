@@ -22,20 +22,16 @@ jobs:
             echo "::error::无法下载 $arch 镜像列表"
             exit 1
           fi
-          
           # 读取并过滤有效镜像
           while IFS= read -r image; do
             [[ -n "$image" ]] && unique_images["$image"]=1
           done < "${arch}.txt"
         done
-
         # 生成 JSON 数组文件
         echo "生成矩阵配置文件..."
         jq -nc '$ARGS.positional' --args "${!unique_images[@]}" > matrix_raw.json
-        
         # 转换为标准矩阵格式
         jq -c 'map({image: .})' matrix_raw.json > matrix.json
-
     - name: Validate and Set Matrix
       id: generate
       run: |
@@ -44,14 +40,12 @@ jobs:
           echo "::error::生成的矩阵内容为空"
           exit 1
         fi
-
         # 设置 GitHub Actions 输出
         matrix_content=$(< matrix.json)
         if [[ ${#matrix_content} -gt 65536 ]]; then
           echo "::error::矩阵内容超过 64KB 限制"
           exit 1
         fi
-        
         echo "matrix=$matrix_content" >> $GITHUB_OUTPUT
 
   validate_images:

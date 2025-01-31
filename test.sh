@@ -1,198 +1,131 @@
 #!/bin/bash
-# https://github.com/oneclickvirt/incus_images
+# by https://github.com/oneclickvirt/incus_images
+# 2025.01.31
 
-set -eo pipefail
-
-# 配置参数
-MAX_RETRIES=3
-DOWNLOAD_TIMEOUT=1800
-SSH_TEST_RETRIES=5
-NETWORK_TEST_URL="https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test"
-TEMP_FILES=()
-
-# 日志函数
-log() {
-    local level=$1
-    local message=$2
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $message" | tee -a validation.log
-}
-
-# 清理函数
-cleanup() {
-    log "INFO" "开始清理资源..."
-    
-    # 删除临时文件
-    for file in "${TEMP_FILES[@]}"; do
-        if [[ -f "$file" ]]; then
-            rm -f "$file"
-            log "DEBUG" "已删除临时文件: $file"
-        fi
-    done
-
-    # 停止并删除测试容器
-    if incus list -c n --format csv | grep -q '^test$'; then
-        incus stop test --force 2>/dev/null || true
-        incus delete test --force 2>/dev/null || true
-        log "DEBUG" "已删除测试容器"
-    fi
-
-    # 删除测试镜像
-    if incus image list -c f --format csv | grep -q '^myc$'; then
-        incus image delete myc --force 2>/dev/null || true
-        log "DEBUG" "已删除测试镜像"
-    fi
-}
-
-# 错误处理
-trap 'cleanup; log "ERROR" "脚本异常退出"; exit 1' ERR INT TERM
-
-# 参数检查
+# 获取命令行参数
 if [[ $# -ne 1 ]]; then
-    log "ERROR" "用法: $0 <完整镜像名称>"
+    echo "用法: $0 <完整镜像名称>"
     exit 1
 fi
-
 image_name="$1"
-log "INFO" "开始验证镜像: $image_name"
 
-# 确定架构
+# 根据镜像名称识别架构
 if [[ "$image_name" == *"x86_64"* ]]; then
     fixed_images_file="x86_64_fixed_images.txt"
 elif [[ "$image_name" == *"arm64"* ]]; then
     fixed_images_file="arm64_fixed_images.txt"
 else
-    log "ERROR" "无法识别镜像架构"
+    echo "错误：无法识别镜像架构"
     exit 1
 fi
 
-# 初始化结果文件
+# 初始化日志
+date=$(date)
+echo "$date" >> log
+echo "------------------------------------------" >> log
+echo "测试镜像: $image_name" >> log
+
+# 下载和解压镜像
+delete_status=false
 echo "$image_name" >> "$fixed_images_file"
-TEMP_FILES+=("$fixed_images_file")
+echo "开始下载镜像..."
+curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"
+if [ $? -ne 0 ]; then
+    echo "主下载失败，尝试备用下载源..."
+    curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"
+fi
 
-# 下载镜像
-download_image() {
-    local url="https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"
-    local retries=0
-
-    while ((retries < MAX_RETRIES)); do
-        log "INFO" "尝试下载镜像 (第 $((retries+1)) 次)"
-        if curl -m "$DOWNLOAD_TIMEOUT" -LO "$url"; then
-            log "INFO" "镜像下载成功"
-            return 0
-        fi
-
-        ((retries++))
-        log "WARN" "下载失败，尝试备用源..."
-        url="https://cdn.spiritlhl.net/$url"
-    done
-
-    log "ERROR" "镜像下载失败"
-    return 1
-}
-
-if ! download_image; then
-    sed -i "/$image_name/d" "$fixed_images_file"
+if [ ! -f "$image_name" ]; then
+    echo "错误：镜像下载失败"
+    head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
     exit 1
 fi
 
-TEMP_FILES+=("$image_name")
-
-# 解压镜像
-log "INFO" "开始解压镜像..."
-if ! unzip -q "$image_name"; then
-    log "ERROR" "解压失败"
-    sed -i "/$image_name/d" "$fixed_images_file"
+chmod 777 "$image_name"
+unzip "$image_name"
+if [ $? -ne 0 ]; then
+    echo "错误：解压失败"
+    head -n -1 "$fixed_images_file" > temp.txt && mv temp.txt "$fixed_images_file"
     exit 1
 fi
-rm -f "$image_name"
-
-TEMP_FILES+=(incus.tar.xz rootfs.squashfs)
+rm -rf "$image_name"
 
 # 导入镜像
-log "INFO" "导入镜像..."
-if ! incus image import incus.tar.xz rootfs.squashfs --alias myc; then
-    log "ERROR" "镜像导入失败"
-    sed -i "/$image_name/d" "$fixed_images_file"
-    exit 1
-fi
+incus image import incus.tar.xz rootfs.squashfs --alias myc
+rm -rf incus.tar.xz rootfs.squashfs
 
 # 创建测试容器
-log "INFO" "创建测试容器..."
-if ! incus init myc test; then
-    log "ERROR" "容器初始化失败"
-    exit 1
-fi
+incus init myc test || { echo "容器初始化失败"; exit 1; }
+incus start test
+sleep 10
 
-if ! incus start test; then
-    log "ERROR" "容器启动失败"
-    exit 1
-fi
-
-# 等待容器初始化
-sleep 15
-
-# SSH服务测试
+# 测试SSH服务
 ssh_test() {
-    local retries=0
-    while ((retries < SSH_TEST_RETRIES)); do
-        if incus exec test -- lsof -i:22 2>/dev/null | grep -q ssh; then
-            log "INFO" "SSH服务正常"
+    retries=0
+    max_retries=5
+    while [ $retries -lt $max_retries ]; do
+        res=$(incus exec test -- lsof -i:22 2>/dev/null | grep ssh)
+        if [[ -n "$res" ]]; then
+            echo "SSH服务正常"
             return 0
         fi
         sleep $((2**retries))
         ((retries++))
     done
-    log "ERROR" "SSH服务异常"
+    echo "SSH服务异常"
     return 1
 }
 
-# 网络连通性测试
+# 测试网络连通性
 network_test() {
     incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak
     echo "nameserver 8.8.8.8" | incus exec test -- tee -a /etc/resolv.conf >/dev/null
+    res=$(incus exec test -- curl -m 10 -skL https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test)
+    incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
     
-    if incus exec test -- curl -m 10 -skL "$NETWORK_TEST_URL" | grep -q success; then
-        log "INFO" "网络连通正常"
-        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
+    if [[ "$res" == *"success"* ]]; then
+        echo "网络连通正常"
         return 0
     else
-        log "ERROR" "网络连接失败"
-        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf
+        echo "网络连接失败"
         return 1
     fi
 }
 
-# 执行测试
-test_passed=true
+# 执行测试用例
 if ! ssh_test; then
-    test_passed=false
+    echo "SSH测试失败" >> log
+    delete_status=true
 fi
 
 if ! network_test; then
-    test_passed=false
+    echo "网络测试失败" >> log
+    delete_status=true
 fi
 
 # 重启测试
-log "INFO" "执行重启测试..."
-if incus stop test && incus start test; then
+incus stop test
+if incus start test; then
     sleep 15
     if ! network_test; then
-        log "ERROR" "重启后网络测试失败"
-        test_passed=false
+        echo "重启后网络测试失败" >> log
+        delete_status=true
     fi
 else
-    log "ERROR" "容器重启失败"
-    test_passed=false
-fi
-
-# 处理测试结果
-if ! $test_passed; then
-    log "WARN" "镜像未通过测试，从列表移除"
-    sed -i "/$image_name/d" "$fixed_images_file"
+    echo "容器重启失败" >> log
+    delete_status=true
 fi
 
 # 清理资源
-cleanup
+incus stop test
+incus delete -f test
+incus image delete myc
 
-log "INFO" "验证流程完成"
+# 处理测试结果
+if [ "$delete_status" = true ]; then
+    echo "镜像未通过测试，从列表移除"
+    sed -i "/$image_name/d" "$fixed_images_file"
+fi
+
+echo "------------------------------------------" >> log
 exit 0

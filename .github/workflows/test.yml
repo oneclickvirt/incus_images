@@ -1,4 +1,4 @@
-name: Multi-Arch Image Testing
+name: Image Validation Pipeline
 
 on:
   schedule:
@@ -6,51 +6,98 @@ on:
   workflow_dispatch:
 
 jobs:
-  test_images:
+  generate_matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+    - name: Fetch Images List
+      run: |
+        arch_list=("x86_64" "arm64")
+        declare -A images_map
+        
+        for arch in ${arch_list[@]}; do
+          url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt"
+          curl -sL $url -o ${arch}.txt
+          while IFS= read -r line; do
+            if [[ -n "$line" ]]; then
+              images_map["$line"]=1
+            fi
+          done < ${arch}.txt
+        done
+
+        # 生成JSON数组
+        echo "[" > matrix.json
+        first=true
+        for image in "${!images_map[@]}"; do
+          if [ "$first" = true ]; then
+            first=false
+          else
+            echo "," >> matrix.json
+          fi
+          echo -n "{\"image\": \"$image\"}" >> matrix.json
+        done
+        echo "" >> matrix.json
+        echo "]" >> matrix.json
+
+        # 设置输出
+        matrix_content=$(cat matrix.json)
+        echo "matrix=$matrix_content" >> $GITHUB_OUTPUT
+
+    - id: set-matrix
+      run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+
+  validate_images:
+    needs: generate_matrix
     strategy:
       fail-fast: false
-      max-parallel: 1
-      matrix:
-        distro: ["ubuntu", "debian", "kali", "centos", "almalinux", "rockylinux", 
-                "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
-                "oracle", "openeuler"]
-        arch:
-          - name: x86_64
-            runner: ubuntu-latest
-          - name: arm64
-            runner: ubuntu-24.04-arm
-    runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 120
+      matrix: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
+    runs-on: ${{ contains(matrix.image, 'x86_64') && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
+    timeout-minutes: 90
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Incus
+    - name: Setup Incus Environment
       run: |
         sudo apt update -y
-        sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+        sudo DEBIAN_FRONTEND=noninteractive apt install -y zfsutils-linux
+        sudo snap install incus
+        sudo incus admin init --auto
+        sudo incus network set incusbr0 ipv6.address none
 
-    - name: Run Tests
+    - name: Run Validation Tests
       run: |
-        chmod +x test.sh
-        sudo ./test.sh ${{ matrix.arch.name }} ${{ matrix.distro }}
-        mv log "${{ matrix.distro }}_${{ matrix.arch.name }}_log" || echo "No log file generated"
-        if [ -f "${{ matrix.arch.name }}_fixed_images.txt" ]; then
-          mv "${{ matrix.arch.name }}_fixed_images.txt" "${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt"
+        sudo chmod +x test.sh
+        if sudo ./test.sh "${{ matrix.image }}"; then
+          echo "测试完成"
         else
-          echo "No valid images" > "${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt"
+          echo "测试流程出错"
         fi
 
-    - name: Upload Artifacts
+        # 生成唯一文件名
+        safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
+        mv log "${safe_name}_validation.log" 2>/dev/null || echo "未生成日志文件"
+        
+        # 处理结果文件
+        if [[ -f "*_fixed_images.txt" ]]; then
+          results_file="${safe_name}_results.txt"
+          grep "${{ matrix.image }}" *_fixed_images.txt > "${results_file}" || echo "未通过测试" > "${results_file}"
+          rm -f *_fixed_images.txt
+        else
+          echo "测试未生成结果" > "${safe_name}_results.txt"
+        fi
+
+    - name: Upload Test Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.distro }}-${{ matrix.arch.name }}-results
+        name: ${{ matrix.image }}_results
         path: |
-          ${{ matrix.distro }}_${{ matrix.arch.name }}_log
-          ${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt
+          ${{ matrix.image }}_validation.log
+          ${{ matrix.image }}_results.txt
 
   aggregate_results:
-    needs: test_images
+    needs: validate_images
     runs-on: ubuntu-latest
     steps:
     - name: Download All Artifacts
@@ -58,37 +105,68 @@ jobs:
       with:
         path: artifacts
 
-    - name: Merge Results
+    - name: Process Results
       run: |
-        # 合并日志
-        find artifacts -name "*_log" -exec cat {} \; > combined_log
-        # 按架构合并镜像列表
-        for arch in x86_64 arm64; do
-          > ${arch}_fixed_images.txt
-          find artifacts -name "*_${arch}_fixed.txt" -exec cat {} \; >> ${arch}_fixed_images.txt
-          sort -u ${arch}_fixed_images.txt | grep -v "^$" > ${arch}_fixed_images_sorted.txt
-          mv ${arch}_fixed_images_sorted.txt ${arch}_fixed_images.txt
+        # 合并有效镜像列表
+        declare -A valid_images
+        
+        # 遍历所有结果文件
+        for result_file in artifacts/*_results.txt; do
+          while IFS= read -r line; do
+            if [[ "$line" == *"x86_64"* ]]; then
+              valid_images["x86_64"]+="$line"$'\n'
+            elif [[ "$line" == *"arm64"* ]]; then
+              valid_images["arm64"]+="$line"$'\n'
+            fi
+          done < "$result_file"
         done
 
-        # 生成最终报告
-        echo "# Test Results $(date)" > FINAL_REPORT.md
-        echo "## Log Summary" >> FINAL_REPORT.md
-        echo "\`\`\`" >> FINAL_REPORT.md
-        tail -n 50 combined_log >> FINAL_REPORT.md
-        echo "\`\`\`" >> FINAL_REPORT.md
-        
-        echo "## Valid Images" >> FINAL_REPORT.md
+        # 生成最终文件
         for arch in x86_64 arm64; do
-          echo "### ${arch} Images" >> FINAL_REPORT.md
-          echo "\`\`\`" >> FINAL_REPORT.md
-          cat ${arch}_fixed_images.txt >> FINAL_REPORT.md
-          echo "\`\`\`" >> FINAL_REPORT.md
+          if [ -n "${valid_images[$arch]}" ]; then
+            echo "${valid_images[$arch]}" | sort -u > ${arch}_valid_images.txt
+          else
+            echo "无有效${arch}镜像" > ${arch}_valid_images.txt
+          fi
         done
+
+        # 生成汇总报告
+        echo "# 镜像验证报告 ($(date +%Y-%m-%d))" > REPORT.md
+        echo "## 验证结果概览" >> REPORT.md
+        echo "### x86_64 有效镜像" >> REPORT.md
+        echo '```' >> REPORT.md
+        cat x86_64_valid_images.txt >> REPORT.md
+        echo '```' >> REPORT.md
+        
+        echo "### arm64 有效镜像" >> REPORT.md
+        echo '```' >> REPORT.md
+        cat arm64_valid_images.txt >> REPORT.md
+        echo '```' >> REPORT.md
+
+        echo "## 详细日志" >> REPORT.md
+        find artifacts -name "*_validation.log" | while read log; do
+          echo "### ${log##*/}" >> REPORT.md
+          echo '```' >> REPORT.md
+          head -n 20 "$log" >> REPORT.md
+          echo "...完整日志请查看附件" >> REPORT.md
+          echo '```' >> REPORT.md
+        done
+
+    - name: Upload Final Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: validation_report
+        path: |
+          x86_64_valid_images.txt
+          arm64_valid_images.txt
+          REPORT.md
 
     - name: Commit Results
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git config --global user.name "CI Updater"
-        git config --global user.email "ci@example.com"
-        git add combined_log *_fixed_images.txt FINAL_REPORT.md
-        git commit -m "Update test results $(date +'%Y-%m-%d')" || true
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add x86_64_valid_images.txt arm64_valid_images.txt
+        git commit -m "更新验证结果 $(date +'%Y-%m-%d %H:%M')"
         git push

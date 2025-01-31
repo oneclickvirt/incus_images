@@ -36,7 +36,8 @@ jobs:
     - name: Build environment
       run: |
         sudo apt update -y
-        sudo apt install -y polkit jq
+        sudo apt install -y polkit || sudo apt install -y policykit-1
+        sudo apt install -y jq
         
     - name: Configure Git Identity
       run: |

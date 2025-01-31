@@ -8,7 +8,7 @@ on:
 jobs:
   image-validation:
     strategy:
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         distro: ["kali", "centos", "almalinux", "rockylinux", 
                 "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", 
@@ -29,7 +29,6 @@ jobs:
         sudo apt install -y jq
         sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
         sudo usermod -aG lxd $USER
-        sudo incus launch images:ubuntu/22.04
 
     - name: Fetch Image List
       env:
@@ -57,52 +56,42 @@ jobs:
         
         while read -r image; do
           echo "Processing $image..." | tee -a validation.log
-          
           # Download and extract image
           if ! curl -m 600 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${DISTRO}/$image"; then
             curl -m 600 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${DISTRO}/$image" || true
           fi
-          
-          unzip -q "$image" || true
-          rm "$image" || true
-          
+          sudo unzip -q "$image" || true
+          sudo rm "$image" || true
           # Import image
-          incus image import incus.tar.xz rootfs.squashfs --alias temp-image || true
-          rm incus.tar.xz rootfs.squashfs || true
-          
+          sudo incus image import incus.tar.xz rootfs.squashfs --alias temp-image || true
+          sudo rm incus.tar.xz rootfs.squashfs || true
           # Container test
-          incus init temp-image test-container || true
-          incus start test-container || true
+          sudo incus init temp-image test-container || true
+          sudo incus start test-container || true
           sleep 10
-          
           # SSH check
-          if ! incus exec test-container -- lsof -i:22 | grep -q ssh; then
+          if ! sudo incus exec test-container -- lsof -i:22 | grep -q ssh; then
             echo "SSH check failed for $image" | tee -a validation.log
             continue
           fi
-          
           # Network check
-          incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf' || true
-          if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
+          sudo incus exec test-container -- sh -c 'echo "nameserver 8.8.8.8" >> /etc/resolv.conf' || true
+          if ! sudo incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Network check failed for $image" | tee -a validation.log
             continue
           fi
-          
           # Reboot test
-          incus restart test-container || true
+          sudo incus restart test-container || true
           sleep 15
-          if ! incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
+          if ! sudo incus exec test-container -- curl -m 10 -sk https://cdn.spiritlhl.net/ok | grep -q success; then
             echo "Reboot test failed for $image" | tee -a validation.log
             continue
           fi
-          
           echo "$image" >> "$valid_images"
           echo "Validation passed: $image" | tee -a validation.log
-          
           # Cleanup
-          incus delete -f test-container 2>/dev/null || true
-          incus image delete temp-image 2>/dev/null || true
-          
+          sudo incus delete -f test-container 2>/dev/null || true
+          sudo incus image delete temp-image 2>/dev/null || true
         done < distro_images.txt
 
     - name: Archive Results

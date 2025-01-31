@@ -2,6 +2,8 @@
 
 [![clone yaml](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml) [![Multi-Distro Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml) [![Image Validation Pipeline](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/test.yml)
 
+[<img src="https://api.gitsponsors.com/api/badge/img?id=742666760" height="20">](https://api.gitsponsors.com/api/badge/link?p=8FA2daTvkFAKAbFhHWhR1VPuwuszgE7y0D6bxsKFdbAF06TWRHEFKNLTODesZe8K+wuxjnuVAKRvuJ1/lpZsrI5/ed7m6GmS7msTZVkXrkub58iAw+75eGjQqOgId/0+wDaXMK4NZMJBzbFgsrUyAA==)
+
 ## 说明
 
 Releases中的镜像(每日拉取镜像进行自动修补和更新)：

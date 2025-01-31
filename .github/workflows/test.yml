@@ -1,154 +1,84 @@
-name: Image Validation Pipeline
+name: Test Incus Images
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+    - cron: '0 16 * * *'  # 每天UTC 16:00运行
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
-  generate_matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-    - name: Generate Image List
-      id: set-matrix
-      run: |
-        # 下载镜像列表
-        for arch in x86_64 arm64; do
-          curl -sL "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt" >> all_images.txt || echo "下载 $arch 列表失败"
-        done
-        
-        # 过滤空行并格式化为简单的 JSON 数组
-        if [ -f all_images.txt ]; then
-          # 使用简单的文本处理创建 JSON
-          echo -n '{"image":['  > matrix.json
-          grep -v '^$' all_images.txt | sort -u | sed 's/.*/"&"/' | paste -sd "," >> matrix.json
-          echo -n ']}' >> matrix.json
-          
-          echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
-        else
-          echo "::error::未能获取镜像列表"
-          exit 1
-        fi
-
-  validate_images:
-    needs: generate_matrix
+  test-images:
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate_matrix.outputs.matrix)}}
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
+      matrix:
+        arch:
+          - name: amd64
+            runner: ubuntu-latest
+            file: x86_64_all_images.txt
+            output: x86_64_fixed_images.txt
+          - name: arm64
+            runner: ubuntu-24.04-arm
+            file: arm64_all_images.txt
+            output: arm64_fixed_images.txt
+    
+    runs-on: ${{ matrix.arch.runner }}
+    timeout-minutes: 180  # 设置超时时间为3小时
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Initialize Incus Environment
+    - uses: actions/checkout@v4
+      
+    - name: Setup Environment
       run: |
-        sudo apt-get update
-        sudo apt-get install -y zfsutils-linux snapd curl
-        sudo snap install --channel=latest/stable incus
-        sudo incus admin init --auto --storage-backend=dir
-        sudo incus network set incusbr0 ipv6.address=none
-        incus --version
-
-    - name: Execute Validation Test
-      id: test
+        sudo apt update -y
+        sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+        
+    - name: Configure Git
       run: |
-        if [ ! -f "test.sh" ]; then
-          echo "::error::测试脚本不存在"
-          exit 1
-        fi
+        git config --global user.name "daily-test"
+        git config --global user.email "test@spiritlhl.top"
         
-        chmod +x test.sh
-        safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
-        result_file="${safe_name}_validation.txt"
+    - name: Download Test Lists
+      run: |
+        curl -o ${{ matrix.arch.file }} https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${{ matrix.arch.file }}
+        touch ${{ matrix.arch.output }}  # 创建输出文件
         
-        if sudo ./test.sh "${{ matrix.image }}" > >(tee -a "$result_file") 2>&1; then
-          echo "✅ 验证成功：${{ matrix.image }}"
-          echo "${{ matrix.image }}" > "$result_file"
+    - name: Test Images
+      run: |
+        while IFS= read -r image; do
+          if [[ -z "$image" ]]; then
+            continue
+          fi
+          
+          echo "Testing image: $image"
+          if sudo bash test.sh "$image"; then
+            echo "Test passed for $image"
+          else
+            echo "Test failed for $image"
+            # 测试失败的镜像不会被添加到fixed文件中，因为测试脚本会处理这个
+          fi
+        done < ${{ matrix.arch.file }}
+        
+    - name: Push Results
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [[ -f ${{ matrix.arch.output }} ]]; then
+          if [[ -s ${{ matrix.arch.output }} ]]; then
+            echo "Pushing test results..."
+            git add ${{ matrix.arch.output }}
+            git commit -m "更新 ${{ matrix.arch.name }} 架构已测试镜像列表 $(date +%Y-%m-%d)"
+            git push
+          else
+            echo "No images passed testing"
+          fi
         else
-          echo "❌ 验证失败：${{ matrix.image }}"
-          exit 1
+          echo "Output file not found"
         fi
-      timeout-minutes: 30
+      continue-on-error: true
 
-    - name: Preserve Test Artifacts
+    - name: Upload Test Logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: validation-${{ matrix.image }}
-        path: |
-          *_validation.txt
-          log
-        retention-days: 3
-
-  aggregate_results:
-    needs: validate_images
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Collect Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        path: artifacts
-
-    - name: Generate Consolidated Report
-      run: |
-        mkdir -p results
-        touch results/x86_64_valid.txt results/arm64_valid.txt
-        
-        find artifacts -name '*validation.txt' -type f | while read -r file; do
-          if ! grep -q '❌' "$file"; then
-            cat "$file" | grep -v '^$' >> valid_images.tmp
-          fi
-        done
-        
-        if [ -f valid_images.tmp ]; then
-          sort -u valid_images.tmp > valid_images.txt
-          grep 'x86_64' valid_images.txt > results/x86_64_valid.txt || true
-          grep 'arm64' valid_images.txt > results/arm64_valid.txt || true
-          rm valid_images.tmp
-        fi
-        
-        {
-          echo "# 每日镜像验证报告"
-          echo "生成时间: $(date +'%Y-%m-%d %H:%M:%S %Z')"
-          echo
-          echo "## 有效镜像统计"
-          echo "- x86_64 镜像数量: $(wc -l < results/x86_64_valid.txt)"
-          echo "- arm64 镜像数量: $(wc -l < results/arm64_valid.txt)"
-          echo
-          echo "## 详细列表"
-          echo "### x86_64 有效镜像"
-          echo '```'
-          cat results/x86_64_valid.txt
-          echo '```'
-          echo
-          echo "### arm64 有效镜像"
-          echo '```'
-          cat results/arm64_valid.txt
-          echo '```'
-        } > REPORT.md
-
-    - name: Upload Validation Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: validation-results
-        path: |
-          results/*
-          REPORT.md
-          log
-
-    - name: Commit to Repository
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: "自动更新验证结果 [skip ci]"
-        file_pattern: |
-          results/*_valid.txt
-          REPORT.md
-        branch: main
+        name: test-logs-${{ matrix.arch.name }}
+        path: log
+        retention-days: 7

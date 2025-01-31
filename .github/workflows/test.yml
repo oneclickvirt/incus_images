@@ -2,32 +2,66 @@ name: Test Incus Images
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # 每天UTC 16:00运行
-  workflow_dispatch:  # 允许手动触发
+    - cron: '0 16 * * *'
+  workflow_dispatch:
 
 jobs:
-  test-images:
-    strategy:
-      fail-fast: false
-      matrix:
-        arch:
-          - name: amd64
-            runner: ubuntu-latest
-            file: x86_64_all_images.txt
-            output: x86_64_fixed_images.txt
-          - name: arm64
-            runner: ubuntu-24.04-arm
-            file: arm64_all_images.txt
-            output: arm64_fixed_images.txt
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      test-matrix: ${{ steps.set-matrix.outputs.matrix }}
     
-    runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 180  # 设置超时时间为3小时
-
     steps:
     - uses: actions/checkout@v4
-      
-    - name: Setup Environment
+    
+    - id: set-matrix
       run: |
+        # 下载测试文件
+        curl -o x86_64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt
+        curl -o arm64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt
+        
+        # 构建测试矩阵
+        echo "构建测试矩阵..."
+        matrix_json="{"
+        matrix_json+="\"include\":["
+        
+        # 处理 x86_64 镜像
+        while IFS= read -r image; do
+          if [[ -n "$image" ]]; then
+            matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\",\"output\":\"x86_64_fixed_images.txt\"},"
+          fi
+        done < x86_64_all_images.txt
+        
+        # 处理 arm64 镜像
+        while IFS= read -r image; do
+          if [[ -n "$image" ]]; then
+            matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\",\"output\":\"arm64_fixed_images.txt\"},"
+          fi
+        done < arm64_all_images.txt
+        
+        # 移除最后一个逗号并关闭 JSON
+        matrix_json=${matrix_json%,}
+        matrix_json+="]}"
+        
+        # 输出矩阵
+        echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+
+  test-single-image:
+    needs: prepare-matrix
+    strategy:
+      fail-fast: false  # 一个测试失败不影响其他测试
+      max-parallel: 4   # 最多同时运行4个测试
+      matrix: ${{fromJson(needs.prepare-matrix.outputs.test-matrix)}}
+    
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60  # 每个镜像测试限时1小时
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Fresh Environment
+      run: |
+        echo "设置新环境..."
         sudo apt update -y
         sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
         
@@ -36,49 +70,47 @@ jobs:
         git config --global user.name "daily-test"
         git config --global user.email "test@spiritlhl.top"
         
-    - name: Download Test Lists
+    - name: Test Image
       run: |
-        curl -o ${{ matrix.arch.file }} https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${{ matrix.arch.file }}
-        touch ${{ matrix.arch.output }}  # 创建输出文件
-        
-    - name: Test Images
-      run: |
-        while IFS= read -r image; do
-          if [[ -z "$image" ]]; then
-            continue
-          fi
-          
-          echo "Testing image: $image"
-          if sudo bash test.sh "$image"; then
-            echo "Test passed for $image"
-          else
-            echo "Test failed for $image"
-            # 测试失败的镜像不会被添加到fixed文件中，因为测试脚本会处理这个
-          fi
-        done < ${{ matrix.arch.file }}
+        echo "测试镜像: ${{ matrix.image }}"
+        # 确保输出文件存在
+        touch ${{ matrix.output }}
+        if sudo bash test_images.sh "${{ matrix.image }}"; then
+          echo "测试通过: ${{ matrix.image }}"
+        else
+          echo "测试失败: ${{ matrix.image }}"
+          exit 1
+        fi
         
     - name: Push Results
+      if: success()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [[ -f ${{ matrix.arch.output }} ]]; then
-          if [[ -s ${{ matrix.arch.output }} ]]; then
-            echo "Pushing test results..."
-            git add ${{ matrix.arch.output }}
-            git commit -m "更新 ${{ matrix.arch.name }} 架构已测试镜像列表 $(date +%Y-%m-%d)"
-            git push
-          else
-            echo "No images passed testing"
-          fi
-        else
-          echo "Output file not found"
+        if [[ -f ${{ matrix.output }} ]]; then
+          echo "推送测试结果..."
+          # 拉取最新更改
+          git pull origin main
+          git add ${{ matrix.output }}
+          git commit -m "更新 ${{ matrix.arch }} 架构镜像 ${{ matrix.image }} 的测试结果"
+          git push
         fi
       continue-on-error: true
-
+      
     - name: Upload Test Logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-logs-${{ matrix.arch.name }}
+        name: test-logs-${{ matrix.arch }}-${{ matrix.image }}
         path: log
         retention-days: 7
+
+  cleanup:
+    needs: test-single-image
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Test Results
+      run: |
+        echo "所有测试完成"
+        echo "查看 Actions 页面获取详细测试结果"

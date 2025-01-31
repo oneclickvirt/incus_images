@@ -2,7 +2,7 @@ name: Test Incus Images
 
 on:
   schedule:
-    - cron: '0 16 * * *'
+    - cron: '0 4 2-30/2 * *'
   workflow_dispatch:
 
 jobs:
@@ -43,11 +43,11 @@ jobs:
     needs: prepare-matrix
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 4
       matrix: ${{fromJson(needs.prepare-matrix.outputs.test-matrix)}}
     
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 30
+    timeout-minutes: 10
     
     steps:
     - uses: actions/checkout@v4

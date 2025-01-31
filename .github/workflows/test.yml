@@ -12,6 +12,7 @@ jobs:
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
     - name: Fetch Image Lists
+      id: fetch
       run: |
         # 下载并合并不同架构的镜像列表
         declare -A unique_images
@@ -27,28 +28,46 @@ jobs:
             [[ -n "$image" ]] && unique_images["$image"]=1
           done < "${arch}.txt"
         done
-        # 生成 JSON 数组
-        echo "生成矩阵配置文件..."
-        echo '{"include":[]}' > matrix.json
+        
+        # 创建镜像数组
+        images_array=()
         for image in "${!unique_images[@]}"; do
-          jq --arg img "$image" '.include += [{"image": $img}]' matrix.json > tmp.json && mv tmp.json matrix.json
+          images_array+=("$image")
         done
+        
+        # 将数组转换为JSON格式的字符串
+        json_array=$(printf '%s\n' "${images_array[@]}" | jq -R . | jq -s .)
+        echo "images_list=${json_array}" >> $GITHUB_OUTPUT
 
-    - name: Validate and Set Matrix
+    - name: Generate Matrix
       id: generate
       run: |
-        # 验证 JSON 格式
-        if ! jq -e '.include | length > 0' matrix.json; then
-          echo "::error::生成的矩阵内容为空"
+        # 从上一步获取镜像列表
+        images_list='${{ steps.fetch.outputs.images_list }}'
+        
+        # 检查列表是否为空
+        if [ "$images_list" == "[]" ]; then
+          echo "::error::没有找到可用的镜像"
           exit 1
         fi
-        # 设置 GitHub Actions 输出
-        matrix_content=$(cat matrix.json)
-        if [[ ${#matrix_content} -gt 65536 ]]; then
-          echo "::error::矩阵内容超过 64KB 限制"
+        
+        # 生成matrix格式的JSON
+        matrix_json="{\"image\":${images_list}}"
+        
+        # 验证JSON格式
+        if ! echo "$matrix_json" | jq . > /dev/null 2>&1; then
+          echo "::error::生成的JSON格式无效"
           exit 1
         fi
-        echo "matrix=${matrix_content}" >> $GITHUB_OUTPUT
+        
+        # 检查大小限制
+        if [ ${#matrix_json} -gt 65536 ]; then
+          echo "::error::矩阵内容超过64KB限制"
+          exit 1
+        fi
+        
+        # 输出matrix
+        echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   validate_images:
     needs: generate_matrix

@@ -27,33 +27,35 @@ jobs:
             [[ -n "$image" ]] && unique_images["$image"]=1
           done < "${arch}.txt"
         done
-        # 生成 JSON 数组文件
+        # 生成 JSON 数组
         echo "生成矩阵配置文件..."
-        jq -nc '$ARGS.positional' --args "${!unique_images[@]}" > matrix_raw.json
-        # 转换为标准矩阵格式
-        jq -c 'map({image: .})' matrix_raw.json > matrix.json
+        echo '{"include":[]}' > matrix.json
+        for image in "${!unique_images[@]}"; do
+          jq --arg img "$image" '.include += [{"image": $img}]' matrix.json > tmp.json && mv tmp.json matrix.json
+        done
+
     - name: Validate and Set Matrix
       id: generate
       run: |
         # 验证 JSON 格式
-        if ! jq -e '. | length > 0' matrix.json; then
+        if ! jq -e '.include | length > 0' matrix.json; then
           echo "::error::生成的矩阵内容为空"
           exit 1
         fi
         # 设置 GitHub Actions 输出
-        matrix_content=$(< matrix.json)
+        matrix_content=$(cat matrix.json)
         if [[ ${#matrix_content} -gt 65536 ]]; then
           echo "::error::矩阵内容超过 64KB 限制"
           exit 1
         fi
-        echo "matrix=$matrix_content" >> $GITHUB_OUTPUT
+        echo "matrix=${matrix_content}" >> $GITHUB_OUTPUT
 
   validate_images:
     needs: generate_matrix
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
-    runs-on: ubuntu-latest  # 修改为始终使用 ubuntu-latest
+    runs-on: ubuntu-latest
     timeout-minutes: 120
 
     steps:
@@ -102,7 +104,7 @@ jobs:
       timeout-minutes: 30
 
     - name: Preserve Test Artifacts
-      if: always()  # 无论成功失败都保存结果
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: validation-${{ matrix.image }}
@@ -113,7 +115,7 @@ jobs:
 
   aggregate_results:
     needs: validate_images
-    if: always()  # 确保即使有失败的测试也会运行
+    if: always()
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository

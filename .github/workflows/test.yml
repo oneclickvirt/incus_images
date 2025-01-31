@@ -9,187 +9,151 @@ jobs:
   generate_matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.generate.outputs.matrix }}
     steps:
-    - name: Fetch Images List
+    - name: Fetch Image Lists
       run: |
-        arch_list=("x86_64" "arm64")
-        declare -A images_map
-        # 获取镜像列表
-        for arch in "${arch_list[@]}"; do
+        # 下载并合并不同架构的镜像列表
+        declare -A unique_images
+        for arch in x86_64 arm64; do
           url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt"
-          curl -sL "$url" -o "${arch}.txt"
-          while IFS= read -r line; do
-            if [[ -n "$line" ]]; then
-              # 对镜像名称进行转义，确保 JSON 格式正确
-              escaped_line=$(echo "$line" | sed 's/"/\\"/g')
-              images_map["$escaped_line"]=1
-            fi
+          echo "正在下载 $arch 架构镜像列表..."
+          if ! curl -sL "$url" -o "${arch}.txt"; then
+            echo "::error::无法下载 $arch 镜像列表"
+            exit 1
+          fi
+          
+          # 读取并过滤有效镜像
+          while IFS= read -r image; do
+            [[ -n "$image" ]] && unique_images["$image"]=1
           done < "${arch}.txt"
         done
-        # 生成 JSON 数组
-        echo "[" > matrix.json
-        first=true
-        for image in "${!images_map[@]}"; do
-          if [ "$first" = true ]; then
-            first=false
-          else
-            echo "," >> matrix.json
-          fi
-          # 确保每个镜像名称被双引号包裹
-          echo -n "{\"image\": \"$image\"}" >> matrix.json
-        done
-        echo "" >> matrix.json
-        echo "]" >> matrix.json
-        # 验证 JSON 格式
-        if ! jq empty matrix.json 2>/dev/null; then
-          echo "错误：生成的 JSON 格式无效"
-          exit 1
-        fi
-        # 设置 GitHub Actions 输出
-        matrix_content=$(jq -c . matrix.json)
-        # 检查内容是否为空
-        if [[ -z "$matrix_content" ]]; then
-          echo "错误：生成的 JSON 内容为空"
-          exit 1
-        fi
-        # 检查内容长度是否超过 GitHub Actions 的限制
-        if [[ ${#matrix_content} -gt 65536 ]]; then
-          echo "错误：生成的 JSON 内容过长（超过 64 KB）"
-          exit 1
-        fi
-        # 将内容写入 $GITHUB_OUTPUT
-        {
-          echo "matrix<<EOF"
-          echo "$matrix_content"
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
-        echo "matrix=$matrix_content" >> "$GITHUB_OUTPUT"
 
-    - id: set-matrix
-      run: echo "matrix=$(cat matrix.json)" >> $GITHUB_OUTPUT
+        # 生成 JSON 数组文件
+        echo "生成矩阵配置文件..."
+        jq -nc '$ARGS.positional' --args "${!unique_images[@]}" > matrix_raw.json
+        
+        # 转换为标准矩阵格式
+        jq -c 'map({image: .})' matrix_raw.json > matrix.json
+
+    - name: Validate and Set Matrix
+      id: generate
+      run: |
+        # 验证 JSON 格式
+        if ! jq -e '. | length > 0' matrix.json; then
+          echo "::error::生成的矩阵内容为空"
+          exit 1
+        fi
+
+        # 设置 GitHub Actions 输出
+        matrix_content=$(< matrix.json)
+        if [[ ${#matrix_content} -gt 65536 ]]; then
+          echo "::error::矩阵内容超过 64KB 限制"
+          exit 1
+        fi
+        
+        echo "matrix=$matrix_content" >> $GITHUB_OUTPUT
 
   validate_images:
     needs: generate_matrix
     strategy:
       fail-fast: false
-      max-parallel: 1
       matrix: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
-    runs-on: ${{ contains(matrix.image, 'x86_64') && 'ubuntu-latest' || 'ubuntu-24.04-arm' }}
-    timeout-minutes: 90
+    runs-on: ${{ contains(matrix.image, 'x86_64') && 'ubuntu-latest' || 'arm64' }}
+    timeout-minutes: 120
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v4
 
-    - name: Setup Incus Environment
+    - name: Initialize Incus Environment
       run: |
-        sudo apt update -y
-        sudo DEBIAN_FRONTEND=noninteractive apt install -y zfsutils-linux
-        sudo snap install incus
-        sudo incus admin init --auto
-        sudo incus network set incusbr0 ipv6.address none
-
-    - name: Run Validation Tests
-      run: |
-        sudo chmod +x test.sh
-        if sudo ./test.sh "${{ matrix.image }}"; then
-          echo "测试完成"
-        else
-          echo "测试流程出错"
-        fi
-
-        # 生成唯一文件名
-        safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
-        mv log "${safe_name}_validation.log" 2>/dev/null || echo "未生成日志文件"
+        # 安装必要组件
+        sudo apt-get update
+        sudo apt-get install -y zfsutils-linux snapd
+        sudo snap install --channel=latest/stable incus
         
-        # 处理结果文件
-        if [[ -f "*_fixed_images.txt" ]]; then
-          results_file="${safe_name}_results.txt"
-          grep "${{ matrix.image }}" *_fixed_images.txt > "${results_file}" || echo "未通过测试" > "${results_file}"
-          rm -f *_fixed_images.txt
+        # 初始化 Incus
+        sudo incus admin init --auto --storage-backend=dir
+        sudo incus network set incusbr0 ipv6.address=none
+
+        # 验证环境
+        echo "当前 Incus 版本："
+        incus --version
+
+    - name: Execute Validation Test
+      run: |
+        # 生成安全文件名
+        safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
+        result_file="${safe_name}_validation.txt"
+        
+        # 执行测试脚本
+        if sudo ./test.sh "${{ matrix.image }}"; then
+          echo "${{ matrix.image }}" > "$result_file"
+          echo "✅ 验证成功：${{ matrix.image }}"
         else
-          echo "测试未生成结果" > "${safe_name}_results.txt"
+          echo "❌ 验证失败：${{ matrix.image }}" | tee "$result_file"
+          exit 1
         fi
 
-    - name: Upload Test Artifacts
+      # 超时后自动清理
+      timeout-minutes: 30
+
+    - name: Preserve Test Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.image }}_results
-        path: |
-          ${{ matrix.image }}_validation.log
-          ${{ matrix.image }}_results.txt
+        name: validation-${{ matrix.image }}
+        path: ${{ matrix.image }}_validation.txt
+        retention-days: 3
 
   aggregate_results:
     needs: validate_images
     runs-on: ubuntu-latest
     steps:
-    - name: Download All Artifacts
+    - name: Collect Artifacts
       uses: actions/download-artifact@v4
       with:
         path: artifacts
 
-    - name: Process Results
+    - name: Generate Consolidated Report
       run: |
         # 合并有效镜像列表
-        declare -A valid_images
+        find artifacts -name '*validation.txt' -exec cat {} \; | grep -v '❌' | sort -u > valid_images.txt
         
-        # 遍历所有结果文件
-        for result_file in artifacts/*_results.txt; do
-          while IFS= read -r line; do
-            if [[ "$line" == *"x86_64"* ]]; then
-              valid_images["x86_64"]+="$line"$'\n'
-            elif [[ "$line" == *"arm64"* ]]; then
-              valid_images["arm64"]+="$line"$'\n'
-            fi
-          done < "$result_file"
-        done
-
-        # 生成最终文件
-        for arch in x86_64 arm64; do
-          if [ -n "${valid_images[$arch]}" ]; then
-            echo "${valid_images[$arch]}" | sort -u > ${arch}_valid_images.txt
-          else
-            echo "无有效${arch}镜像" > ${arch}_valid_images.txt
-          fi
-        done
-
-        # 生成汇总报告
-        echo "# 镜像验证报告 ($(date +%Y-%m-%d))" > REPORT.md
-        echo "## 验证结果概览" >> REPORT.md
+        # 按架构分类
+        mkdir -p results
+        grep 'x86_64' valid_images.txt > results/x86_64_valid.txt || echo "无 x86_64 有效镜像" > results/x86_64_valid.txt
+        grep 'arm64' valid_images.txt > results/arm64_valid.txt || echo "无 arm64 有效镜像" > results/arm64_valid.txt
+        
+        # 生成 Markdown 报告
+        echo "# 每日镜像验证报告" > REPORT.md
+        echo "生成时间: $(date +'%Y-%m-%d %H:%M:%S %Z')" >> REPORT.md
+        echo "## 有效镜像统计" >> REPORT.md
+        echo "- x86_64 镜像数量: $(wc -l < results/x86_64_valid.txt)" >> REPORT.md
+        echo "- arm64 镜像数量: $(wc -l < results/arm64_valid.txt)" >> REPORT.md
+        echo "## 详细列表" >> REPORT.md
         echo "### x86_64 有效镜像" >> REPORT.md
         echo '```' >> REPORT.md
-        cat x86_64_valid_images.txt >> REPORT.md
+        cat results/x86_64_valid.txt >> REPORT.md
         echo '```' >> REPORT.md
-        
         echo "### arm64 有效镜像" >> REPORT.md
         echo '```' >> REPORT.md
-        cat arm64_valid_images.txt >> REPORT.md
+        cat results/arm64_valid.txt >> REPORT.md
         echo '```' >> REPORT.md
 
-        echo "## 详细日志" >> REPORT.md
-        find artifacts -name "*_validation.log" | while read log; do
-          echo "### ${log##*/}" >> REPORT.md
-          echo '```' >> REPORT.md
-          head -n 20 "$log" >> REPORT.md
-          echo "...完整日志请查看附件" >> REPORT.md
-          echo '```' >> REPORT.md
-        done
-
-    - name: Upload Final Report
+    - name: Upload Validation Results
       uses: actions/upload-artifact@v4
       with:
-        name: validation_report
+        name: validation-results
         path: |
-          x86_64_valid_images.txt
-          arm64_valid_images.txt
+          results/*
           REPORT.md
 
-    - name: Commit Results
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add x86_64_valid_images.txt arm64_valid_images.txt
-        git commit -m "更新验证结果 $(date +'%Y-%m-%d %H:%M')"
-        git push
+    - name: Commit to Repository
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: "自动更新验证结果 [skip ci]"
+        file_pattern: |
+          results/*_valid.txt
+          REPORT.md
+        branch: main

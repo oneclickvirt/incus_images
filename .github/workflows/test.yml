@@ -9,71 +9,32 @@ jobs:
   generate_matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.generate.outputs.matrix }}
+      images: ${{ steps.set-matrix.outputs.images }}
     steps:
-    - name: Fetch Image Lists
-      id: fetch
+    - name: Generate Image List
+      id: set-matrix
       run: |
-        # 下载并合并不同架构的镜像列表
-        declare -A unique_images
+        # 下载镜像列表
         for arch in x86_64 arm64; do
-          url="https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt"
-          echo "正在下载 $arch 架构镜像列表..."
-          if ! curl -sL "$url" -o "${arch}.txt"; then
-            echo "::error::无法下载 $arch 镜像列表"
-            exit 1
-          fi
-          # 读取并过滤有效镜像
-          while IFS= read -r image; do
-            [[ -n "$image" ]] && unique_images["$image"]=1
-          done < "${arch}.txt"
+          curl -sL "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/${arch}_all_images.txt" >> all_images.txt || echo "下载 $arch 列表失败"
         done
         
-        # 创建镜像数组
-        images_array=()
-        for image in "${!unique_images[@]}"; do
-          images_array+=("$image")
-        done
-        
-        # 将数组转换为JSON格式的字符串
-        json_array=$(printf '%s\n' "${images_array[@]}" | jq -R . | jq -s .)
-        echo "images_list=${json_array}" >> $GITHUB_OUTPUT
-
-    - name: Generate Matrix
-      id: generate
-      run: |
-        # 从上一步获取镜像列表
-        images_list='${{ steps.fetch.outputs.images_list }}'
-        
-        # 检查列表是否为空
-        if [ "$images_list" == "[]" ]; then
-          echo "::error::没有找到可用的镜像"
+        # 过滤空行并去重
+        if [ -f all_images.txt ]; then
+          images=$(grep -v '^$' all_images.txt | sort -u | tr '\n' ',' | sed 's/,$//')
+          echo "images=${images}" >> $GITHUB_OUTPUT
+        else
+          echo "::error::未能获取镜像列表"
           exit 1
         fi
-        
-        # 生成matrix格式的JSON
-        matrix_json="{\"image\":${images_list}}"
-        
-        # 验证JSON格式
-        if ! echo "$matrix_json" | jq . > /dev/null 2>&1; then
-          echo "::error::生成的JSON格式无效"
-          exit 1
-        fi
-        
-        # 检查大小限制
-        if [ ${#matrix_json} -gt 65536 ]; then
-          echo "::error::矩阵内容超过64KB限制"
-          exit 1
-        fi
-        
-        # 输出matrix
-        echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
 
   validate_images:
     needs: generate_matrix
+    if: needs.generate_matrix.outputs.images != ''
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate_matrix.outputs.matrix) }}
+      matrix:
+        image: ${{ split(needs.generate_matrix.outputs.images, ',') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -83,36 +44,25 @@ jobs:
 
     - name: Initialize Incus Environment
       run: |
-        # 安装必要组件
         sudo apt-get update
-        sudo apt-get install -y zfsutils-linux snapd curl jq
+        sudo apt-get install -y zfsutils-linux snapd curl
         sudo snap install --channel=latest/stable incus
-        
-        # 初始化 Incus
         sudo incus admin init --auto --storage-backend=dir
         sudo incus network set incusbr0 ipv6.address=none
-
-        # 验证环境
-        echo "当前 Incus 版本："
         incus --version
 
     - name: Execute Validation Test
       id: test
       run: |
-        # 确保测试脚本存在
         if [ ! -f "test.sh" ]; then
           echo "::error::测试脚本不存在"
           exit 1
         fi
         
-        # 给脚本执行权限
         chmod +x test.sh
-        
-        # 生成安全文件名
         safe_name=$(echo "${{ matrix.image }}" | sed 's/[^a-zA-Z0-9]/_/g')
         result_file="${safe_name}_validation.txt"
         
-        # 执行测试脚本并捕获输出
         if sudo ./test.sh "${{ matrix.image }}" > >(tee -a "$result_file") 2>&1; then
           echo "✅ 验证成功：${{ matrix.image }}"
           echo "${{ matrix.image }}" > "$result_file"
@@ -147,13 +97,9 @@ jobs:
 
     - name: Generate Consolidated Report
       run: |
-        # 创建输出目录
         mkdir -p results
-        
-        # 初始化结果文件
         touch results/x86_64_valid.txt results/arm64_valid.txt
         
-        # 合并有效镜像列表
         find artifacts -name '*validation.txt' -type f | while read -r file; do
           if ! grep -q '❌' "$file"; then
             cat "$file" | grep -v '^$' >> valid_images.tmp
@@ -162,13 +108,11 @@ jobs:
         
         if [ -f valid_images.tmp ]; then
           sort -u valid_images.tmp > valid_images.txt
-          # 按架构分类
           grep 'x86_64' valid_images.txt > results/x86_64_valid.txt || true
           grep 'arm64' valid_images.txt > results/arm64_valid.txt || true
           rm valid_images.tmp
         fi
         
-        # 生成 Markdown 报告
         {
           echo "# 每日镜像验证报告"
           echo "生成时间: $(date +'%Y-%m-%d %H:%M:%S %Z')"

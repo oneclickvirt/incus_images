@@ -28,17 +28,17 @@ jobs:
     - name: Setup Incus
       run: |
         sudo apt update -y
-        sudo apt-get install -y btrfs-progs
         sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
 
     - name: Run Tests
       run: |
         chmod +x test.sh
         sudo ./test.sh ${{ matrix.arch.name }} ${{ matrix.distro }}
-        # 重命名结果文件避免冲突
-        mv log ${matrix.distro}_${matrix.arch.name}_log
+        mv log "${{ matrix.distro }}_${{ matrix.arch.name }}_log" || echo "No log file generated"
         if [ -f "${{ matrix.arch.name }}_fixed_images.txt" ]; then
-          mv ${{ matrix.arch.name }}_fixed_images.txt ${matrix.distro}_${matrix.arch.name}_fixed.txt
+          mv "${{ matrix.arch.name }}_fixed_images.txt" "${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt"
+        else
+          echo "No valid images" > "${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt"
         fi
 
     - name: Upload Artifacts
@@ -46,15 +46,15 @@ jobs:
       with:
         name: ${{ matrix.distro }}-${{ matrix.arch.name }}-results
         path: |
-          ${matrix.distro}_${matrix.arch.name}_log
-          ${matrix.distro}_${matrix.arch.name}_fixed.txt
+          ${{ matrix.distro }}_${{ matrix.arch.name }}_log
+          ${{ matrix.distro }}_${{ matrix.arch.name }}_fixed.txt
 
   aggregate_results:
     needs: test_images
     runs-on: ubuntu-latest
     steps:
     - name: Download All Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: artifacts
 

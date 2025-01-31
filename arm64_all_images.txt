@@ -8,3 +8,5 @@ almalinux_8_8_arm64_default.zip
 almalinux_8_8_arm64_cloud.zip
 almalinux_9_9_arm64_default.zip
 almalinux_9_9_arm64_cloud.zip
+centos_9_9-Stream_arm64_default.zip
+centos_9_9-Stream_arm64_cloud.zip

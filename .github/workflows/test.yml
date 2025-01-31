@@ -25,7 +25,6 @@ jobs:
     - name: Setup Environment
       run: |
         sudo apt update -y
-        sudo apt-get install -y btrfs-progs
         sudo apt install -y polkit || sudo apt install -y policykit-1
         sudo apt install -y jq
         sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'

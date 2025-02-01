@@ -77,7 +77,7 @@ jobs:
           echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
       - name: Uninstall Incus
         run: |
-          sudo apt-get remove --purge -y incus lxd lxd-client
+          sudo apt-get remove --purge -y incus
           sudo apt-get autoremove -y
           sudo apt-get autoclean -y
       - name: Reset Network Configuration

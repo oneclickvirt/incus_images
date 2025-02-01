@@ -49,7 +49,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 8
     outputs:
-      test_result: ${{ steps.test.outputs.test_result }}
+      success: ${{ steps.test.outputs.success }}
+      image: ${{ steps.test.outputs.image }}
+      arch: ${{ steps.test.outputs.arch }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment
@@ -71,27 +73,55 @@ jobs:
           
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            # 将结果写入文件
-            mkdir -p ./results
-            echo "{\"success\":true,\"image\":\"${{ matrix.image }}\",\"arch\":\"${{ matrix.arch }}\"}" > "./results/result-${{ matrix.image }}.json"
-            echo "test_result=success" >> "$GITHUB_OUTPUT"
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "{\"success\":false,\"image\":\"${{ matrix.image }}\",\"arch\":\"${{ matrix.arch }}\"}" > "./results/result-${{ matrix.image }}.json"
-            echo "test_result=failure" >> "$GITHUB_OUTPUT"
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
+            exit 1
           fi
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
+
+  collect-single-image:
+    needs: [prepare-matrix, test-single-image]
+    name: collect-${{ matrix.image }}
+    # 关键修复：使用job id而不是动态构造的字符串
+    if: ${{ needs.test-single-image.outputs[format('test-{0}', matrix.image)].result == 'success' }}
+    strategy:
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect Test Result
+        run: |
+          # 使用job id获取结果
+          JOB_ID="test-${{ matrix.image }}"
+          echo "收集任务结果，job id: $JOB_ID"
+          
+          # 读取上游任务的输出
+          SUCCESS="${{ needs.test-single-image.outputs[format('test-{0}', matrix.image)].success }}"
+          IMAGE="${{ needs.test-single-image.outputs[format('test-{0}', matrix.image)].image }}"
+          ARCH="${{ needs.test-single-image.outputs[format('test-{0}', matrix.image)].arch }}"
+          
+          echo "结果: success=$SUCCESS, image=$IMAGE, arch=$ARCH"
+          
+          # 将结果写入文件
+          echo "success=$SUCCESS" > result.txt
+          echo "image=$IMAGE" >> result.txt
+          echo "arch=$ARCH" >> result.txt
       
-      - name: Upload Test Result
-        if: always()
+      - name: Upload Result Artifact
         uses: actions/upload-artifact@v3
         with:
           name: result-${{ matrix.image }}
-          path: ./results/result-${{ matrix.image }}.json
+          path: result.txt
 
   results-updater:
-    needs: test-single-image
+    needs: collect-single-image
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -107,29 +137,18 @@ jobs:
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
           
-          echo "聚合测试结果..."
-          for result_file in $(find ./results -name "*.json"); do
-            if [[ -f "$result_file" ]]; then
-              # 使用jq解析JSON文件
-              if [[ -x "$(command -v jq)" ]]; then
-                success=$(jq -r '.success' "$result_file")
-                image=$(jq -r '.image' "$result_file")
-                arch=$(jq -r '.arch' "$result_file")
-              else
-                # 如果没有jq，使用grep和sed解析JSON
-                success=$(grep -o '"success":\(true\|false\)' "$result_file" | sed 's/"success"://')
-                image=$(grep -o '"image":"[^"]*"' "$result_file" | sed 's/"image":"//;s/"//')
-                arch=$(grep -o '"arch":"[^"]*"' "$result_file" | sed 's/"arch":"//;s/"//')
-              fi
-              
-              echo "处理结果: success=$success, image=$image, arch=$arch"
-              
-              if [ "$success" = "true" ]; then
-                if [ "$arch" = "amd64" ]; then
-                  echo "$image" >> x86_64_fixed_images.txt
-                elif [ "$arch" = "arm64" ]; then
-                  echo "$image" >> arm64_fixed_images.txt
-                fi
+          echo "聚合各分支测试结果..."
+          for result_file in $(find ./results -type f -name "result.txt"); do
+            echo "处理文件: $result_file"
+            # 读取文件内容，得到 success、image、arch 变量
+            source "$result_file"
+            echo "success=$success, image=$image, arch=$arch"
+            
+            if [ "$success" = "true" ]; then
+              if [ "$arch" = "amd64" ]; then
+                echo "$image" >> x86_64_fixed_images.txt
+              elif [ "$arch" = "arm64" ]; then
+                echo "$image" >> arm64_fixed_images.txt
               fi
             fi
           done

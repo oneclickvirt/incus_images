@@ -68,18 +68,16 @@ jobs:
       continue-on-error: true
       run: |
         echo "测试镜像: ${{ matrix.image }}"
-        
         # 备份 DNS 解析文件
         sudo cp /etc/resolv.conf /etc/resolv.conf.backup
-        
         if sudo bash test.sh "${{ matrix.image }}"; then
           echo "success=true" >> $GITHUB_OUTPUT
           echo "测试通过: ${{ matrix.image }}"
         else
           echo "success=false" >> $GITHUB_OUTPUT
           echo "测试失败: ${{ matrix.image }}"
+          exit 1  # 让 GitHub Actions 任务失败
         fi
-        
         # 还原 DNS 配置
         sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 

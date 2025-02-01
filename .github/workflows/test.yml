@@ -93,6 +93,7 @@ jobs:
 
   results-updater:
     needs: test-single-image
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -75,6 +75,9 @@ jobs:
           fi
           echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
           echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
+      - name: Reset Network Configuration
+        run: |
+          sudo systemctl restart network-manager || sudo ifdown eth0 && sudo ifup eth0 || sudo dhclient -r && sudo dhclient
       - name: Collect Test Result
         if: ${{ steps.test.outputs.success && steps.test.outputs.success == 'true' }}
         run: |

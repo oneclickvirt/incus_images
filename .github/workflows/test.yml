@@ -68,19 +68,15 @@ jobs:
           echo "测试镜像: ${{ matrix.image }}"
           # 备份 DNS 配置
           sudo cp /etc/resolv.conf /etc/resolv.conf.backup || true
-          
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
             echo "success=true" >> "$GITHUB_OUTPUT"
-            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
-            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
           else
             echo "测试失败: ${{ matrix.image }}"
             echo "success=false" >> "$GITHUB_OUTPUT"
-            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
-            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
-            exit 1
           fi
+          echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+          echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
@@ -152,8 +148,6 @@ jobs:
           git config --global user.email "your-bot-email@example.com"
           # 确保处于 main 分支
           git checkout main
-          # 将结果文件拷贝到仓库根目录（如果需要的话，根据实际路径调整）
-          cp x86_64_fixed_images.txt arm64_fixed_images.txt ./
           # 添加文件
           git add x86_64_fixed_images.txt arm64_fixed_images.txt
           # 提交更改（如果有更改才会提交）

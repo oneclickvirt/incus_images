@@ -22,7 +22,7 @@ jobs:
           matrix_json="{\"include\":["
           
           while IFS= read -r image; do
-            if [[ -n "$image" ]]; then
+            if [[ -n "$image\" ]]; then
               matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\"},"
             fi
           done < x86_64_all_images.txt

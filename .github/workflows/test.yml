@@ -1,15 +1,15 @@
 name: Test Incus Images
-
 on:
   schedule:
-    - cron: '0 4 2-30/2 * *'
+    - cron: '0 4 2-30/2 *'*
   workflow_dispatch:
-
 jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
       test-matrix: ${{ steps.set-matrix.outputs.matrix }}
+      x86_64_images: ${{ steps.set-matrix.outputs.x86_64_images }}
+      arm64_images: ${{ steps.set-matrix.outputs.arm64_images }}
     
     steps:
     - uses: actions/checkout@v4
@@ -21,16 +21,20 @@ jobs:
         
         echo "构建测试矩阵..."
         matrix_json="{\"include\":["
+        x86_64_images=""
+        arm64_images=""
         
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
-            matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\",\"output\":\"x86_64_fixed_images.txt\"},"
+            matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\"},"
+            x86_64_images+="$image"$'\n'
           fi
         done < x86_64_all_images.txt
         
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
-            matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\",\"output\":\"arm64_fixed_images.txt\"},"
+            matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\"},"
+            arm64_images+="$image"$'\n'
           fi
         done < arm64_all_images.txt
         
@@ -38,13 +42,21 @@ jobs:
         matrix_json+="]}"
         
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+        echo "x86_64_images<<EOF" >> $GITHUB_OUTPUT
+        echo "$x86_64_images" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "arm64_images<<EOF" >> $GITHUB_OUTPUT
+        echo "$arm64_images" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
   test-single-image:
     needs: prepare-matrix
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 8
       matrix: ${{fromJson(needs.prepare-matrix.outputs.test-matrix)}}
+    outputs:
+      success_images: ${{ steps.record-success.outputs.success_images }}
     
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
@@ -64,71 +76,68 @@ jobs:
         git config --global user.email "test@spiritlhl.top"
         
     - name: Test Image
+      id: test
+      continue-on-error: true
       run: |
         echo "测试镜像: ${{ matrix.image }}"
-        touch ${{ matrix.output }}
         
-        # 备份 DNS 解析文件，避免影响后续任务
+        # 备份 DNS 解析文件
         sudo cp /etc/resolv.conf /etc/resolv.conf.backup
         
         if sudo bash test.sh "${{ matrix.image }}"; then
-          echo "${{ matrix.image }}" >> ${{ matrix.output }}
+          echo "success=true" >> $GITHUB_OUTPUT
           echo "测试通过: ${{ matrix.image }}"
         else
+          echo "success=false" >> $GITHUB_OUTPUT
           echo "测试失败: ${{ matrix.image }}"
-          exit 1
         fi
-
-        # 还原 DNS 配置，避免网络解析问题
+        
+        # 还原 DNS 配置
         sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
-    - name: Move Results to Workspace
+    - name: Record Success
+      id: record-success
+      if: steps.test.outputs.success == 'true'
       run: |
-        mkdir -p /tmp/test-results
-        mv ${{ matrix.output }} /tmp/test-results/
-        
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results
-        path: /tmp/test-results/
-        retention-days: 1
+        echo "${{ matrix.image }}" >> /tmp/success_images.txt
 
   results-updater:
-    needs: test-single-image
+    needs: [test-single-image, prepare-matrix]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     
-    - name: Download Test Results
-      uses: actions/download-artifact@v4
-      with:
-        name: test-results
-        path: /tmp/test-results
-
-    - name: Aggregate Test Results
+    - name: Update Results Based on Test Status
       run: |
-        # 确保目标文件存在
-        touch x86_64_fixed_images.txt
-        touch arm64_fixed_images.txt
+        # 创建或清空固定镜像列表文件
+        > x86_64_fixed_images.txt
+        > arm64_fixed_images.txt
         
-        # 合并测试结果
-        if [[ -f /tmp/test-results/x86_64_fixed_images.txt ]]; then
-          cat /tmp/test-results/x86_64_fixed_images.txt >> x86_64_fixed_images.txt
-        fi
-        if [[ -f /tmp/test-results/arm64_fixed_images.txt ]]; then
-          cat /tmp/test-results/arm64_fixed_images.txt >> arm64_fixed_images.txt
-        fi
+        # 遍历所有任务的状态
+        success_jobs=$(echo '${{ toJSON(needs.test-single-image.result) }}' | jq -r 'to_entries[] | select(.value=="success") | .key')
         
-        # 去重
+        # 从原始镜像列表中提取对应的成功镜像
+        x86_64_images=$(echo '${{ needs.prepare-matrix.outputs.x86_64_images }}')
+        arm64_images=$(echo '${{ needs.prepare-matrix.outputs.arm64_images }}')
+        
+        for job in $success_jobs; do
+          image=$(echo '${{ toJSON(needs.prepare-matrix.outputs.test-matrix) }}' | jq -r ".include[$job].image")
+          if echo "$x86_64_images" | grep -q "^$image$"; then
+            echo "$image" >> x86_64_fixed_images.txt
+          elif echo "$arm64_images" | grep -q "^$image$"; then
+            echo "$image" >> arm64_fixed_images.txt
+          fi
+        done
+        
+        # 去重并排序
         sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
         sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
-
+        
     - name: Push Results
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        if [[ -f x86_64_fixed_images.txt || -f arm64_fixed_images.txt ]]; then
+        if [[ -f x86_64_fixed_images.txt && -f arm64_fixed_images.txt ]]; then
           echo "推送测试结果..."
           git pull origin main
           git add x86_64_fixed_images.txt arm64_fixed_images.txt

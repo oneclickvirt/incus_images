@@ -64,48 +64,41 @@ jobs:
           echo "测试镜像: ${{ matrix.image }}"
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "success=true" | tee -a "$GITHUB_OUTPUT"
+            echo "::set-output name=success::true"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "success=false" | tee -a "$GITHUB_OUTPUT"
+            echo "::set-output name=success::false"
           fi
-          echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
-          echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
-      - name: Save Test Result to File
-        run: |
-          echo "success=${{ steps.test.outputs.success }}" > result-${{ matrix.image }}.txt
-          echo "image=${{ matrix.image }}" >> result-${{ matrix.image }}.txt
-          echo "arch=${{ matrix.arch }}" >> result-${{ matrix.image }}.txt
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results-${{ matrix.image }}
-          path: result-${{ matrix.image }}.txt
+          echo "::set-output name=image::${{ matrix.image }}"
+          echo "::set-output name=arch::${{ matrix.arch }}"
+          echo "success=${{ steps.test.outputs.success }}"
+          echo "image=${{ steps.test.outputs.image }}"
+          echo "arch=${{ steps.test.outputs.arch }}"
 
   collect-results:
     needs: test-single-image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Download Test Results
-        run: mkdir -p results
-      - name: Download All Test Results
-        uses: actions/download-artifact@v4
-        with:
-          name: test-results-*
-          path: results/
-      - name: List Downloaded Files
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Collect Logs
+        id: collect_logs
         run: |
-          echo "下载的文件列表："
-          ls -l results/
-      - name: Aggregate Test Results
+          mkdir -p results
+          echo "收集所有日志..."
+          run_ids=$(gh run list -L 100 --json databaseId --jq '.[].databaseId')
+          for run_id in $run_ids; do
+            gh run view $run_id --log > results/log-$run_id.txt
+          done
+      - name: Parse Logs
         run: |
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          for result_file in $(find results -type f -name "result-*.txt"); do
-            echo "处理文件: $result_file"
-            # 读取文件内容，得到 success、image、arch 变量
-            source "$result_file"
+          for log_file in $(find results -type f -name "log-*.txt"); do
+            echo "处理日志文件: $log_file"
+            success=$(grep -Eo 'success=(true|false)' $log_file | tail -1 | cut -d= -f2)
+            image=$(grep -Eo 'image=[^ ]+' $log_file | tail -1 | cut -d= -f2)
+            arch=$(grep -Eo 'arch=[^ ]+' $log_file | tail -1 | cut -d= -f2)
             echo "success=$success, image=$image, arch=$arch"
             if [ "$success" = "true" ]; then
               if [ "$arch" = "amd64" ]; then
@@ -122,7 +115,7 @@ jobs:
           cat x86_64_fixed_images.txt
           echo "成功的 arm64 镜像："
           cat arm64_fixed_images.txt
-  
+
       - name: Commit and Push Updated Results
         run: |
           # 配置 Git 用户信息

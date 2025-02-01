@@ -41,13 +41,16 @@ jobs:
 
   test-single-image:
     needs: prepare-matrix
-    name: test-${{ matrix.image }}
     strategy:
       fail-fast: false
       max-parallel: 12
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 8
+    outputs:
+      success: ${{ steps.test.outputs.success }}
+      image: ${{ matrix.image }}
+      arch: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment
@@ -69,65 +72,46 @@ jobs:
           
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            # 创建结果目录和文件
-            mkdir -p test-results
-            echo "{\"success\":true,\"image\":\"${{ matrix.image }}\",\"arch\":\"${{ matrix.arch }}\"}" > "test-results/result.json"
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
           else
             echo "测试失败: ${{ matrix.image }}"
-            mkdir -p test-results
-            echo "{\"success\":false,\"image\":\"${{ matrix.image }}\",\"arch\":\"${{ matrix.arch }}\"}" > "test-results/result.json"
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
-      
-      - name: Upload Test Result
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-result-${{ matrix.image }}
-          path: test-results/result.json
 
   collect-single-image:
     needs: [prepare-matrix, test-single-image]
-    name: collect-${{ matrix.image }}
-    if: always()
     strategy:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download Test Result
-        uses: actions/download-artifact@v3
-        with:
-          name: test-result-${{ matrix.image }}
-          path: ./test-results
-      
-      - name: Process Test Result
-        id: process
+      - uses: actions/checkout@v4
+      - name: Collect Test Result
         run: |
-          if [ -f "./test-results/result.json" ]; then
-            # 检查测试是否成功
-            if grep -q '"success":true' "./test-results/result.json"; then
-              # 创建收集结果目录
-              mkdir -p collect-results
-              # 复制测试结果到收集结果
-              cp "./test-results/result.json" "./collect-results/result.json"
-              echo "收集成功的测试结果：${{ matrix.image }}"
-            else
-              echo "跳过失败的测试结果：${{ matrix.image }}"
-              exit 0
-            fi
+          echo "收集测试结果..."
+          # 根据测试结果准备数据
+          if [[ "${{ needs.test-single-image.result }}" == "success" ]]; then
+            echo "success=true" > result.txt
+            echo "image=${{ matrix.image }}" >> result.txt
+            echo "arch=${{ matrix.arch }}" >> result.txt
+            echo "测试成功：${{ matrix.image }}"
           else
-            echo "找不到测试结果文件"
+            echo "测试失败或跳过：${{ matrix.image }}"
             exit 0
           fi
       
-      - name: Upload Collected Result
+      - name: Upload Result Artifact
         if: success()
         uses: actions/upload-artifact@v3
         with:
-          name: collected-result-${{ matrix.image }}
-          path: collect-results/result.json
+          name: result-${{ matrix.image }}
+          path: result.txt
 
   results-updater:
     needs: collect-single-image
@@ -135,10 +119,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download All Collected Results
+      - name: Download All Results
         uses: actions/download-artifact@v3
         with:
-          path: ./collected-results
+          path: ./results
       
       - name: Aggregate Test Results
         run: |
@@ -147,23 +131,11 @@ jobs:
           > arm64_fixed_images.txt
           
           echo "聚合各分支测试结果..."
-          for result_file in $(find ./collected-results -type f -name "result.json"); do
+          for result_file in $(find ./results -type f -name "result.txt"); do
             echo "处理文件: $result_file"
-            
-            # 解析 JSON 文件
-            if [ -x "$(command -v jq)" ]; then
-              # 使用 jq 解析（如果可用）
-              success=$(jq -r '.success' "$result_file")
-              image=$(jq -r '.image' "$result_file")
-              arch=$(jq -r '.arch' "$result_file")
-            else
-              # 降级使用 grep 和 sed
-              success=$(grep -o '"success":\(true\|false\)' "$result_file" | sed 's/"success"://')
-              image=$(grep -o '"image":"[^"]*"' "$result_file" | sed 's/"image":"//;s/"//')
-              arch=$(grep -o '"arch":"[^"]*"' "$result_file" | sed 's/"arch":"//;s/"//')
-            fi
-            
-            echo "结果: success=$success, image=$image, arch=$arch"
+            # 读取文件内容，得到 success、image、arch 变量
+            source "$result_file"
+            echo "success=$success, image=$image, arch=$arch"
             
             if [ "$success" = "true" ]; then
               if [ "$arch" = "amd64" ]; then

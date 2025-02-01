@@ -48,7 +48,7 @@ jobs:
       max-parallel: 12
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.test-matrix) }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 10
+    timeout-minutes: 8
     # 定义 job 输出，方便在后续任务中收集每个测试的状态
     outputs:
       success: ${{ steps.test.outputs.success }}

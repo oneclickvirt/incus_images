@@ -58,6 +58,10 @@ jobs:
           echo "设置新环境..."
           sudo apt-get update -y
           sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+      - name: Install Missing Packages
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y network-manager ifupdown isc-dhcp-client
       - name: Configure Git
         run: |
           git config --global user.name "daily-test"
@@ -78,6 +82,7 @@ jobs:
       - name: Reset Network Configuration
         run: |
           sudo systemctl restart network-manager || sudo ifdown eth0 && sudo ifup eth0 || sudo dhclient -r && sudo dhclient
+          curl ip.sb
       - name: Collect Test Result
         if: ${{ steps.test.outputs.success && steps.test.outputs.success == 'true' }}
         run: |

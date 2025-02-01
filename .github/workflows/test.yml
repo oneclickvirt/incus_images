@@ -118,20 +118,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ./results
-      
       - name: Aggregate Test Results
         run: |
           # 初始化结果文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          
           echo "聚合各分支测试结果..."
           for result_file in $(find ./results -type f -name "result.txt"); do
             echo "处理文件: $result_file"
             # 读取文件内容，得到 success、image、arch 变量
             source "$result_file"
             echo "success=$success, image=$image, arch=$arch"
-            
             if [ "$success" = "true" ]; then
               if [ "$arch" = "amd64" ]; then
                 echo "$image" >> x86_64_fixed_images.txt
@@ -140,16 +137,32 @@ jobs:
               fi
             fi
           done
-          
           echo "排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
-          
           echo "最终结果："
           echo "成功的 x86_64 镜像："
           cat x86_64_fixed_images.txt
           echo "成功的 arm64 镜像："
           cat arm64_fixed_images.txt
+  
+      - name: Commit and Push Updated Results
+        run: |
+          # 配置 Git 用户信息
+          git config --global user.name "your-bot-name"
+          git config --global user.email "your-bot-email@example.com"
+          # 确保处于 main 分支
+          git checkout main
+          # 将结果文件拷贝到仓库根目录（如果需要的话，根据实际路径调整）
+          cp x86_64_fixed_images.txt arm64_fixed_images.txt ./
+          # 添加文件
+          git add x86_64_fixed_images.txt arm64_fixed_images.txt
+          # 提交更改（如果有更改才会提交）
+          git commit -m "Update fixed images list"
+          # 推送到仓库
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
     needs: results-updater

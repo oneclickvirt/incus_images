@@ -68,7 +68,7 @@ jobs:
       - name: Test Image
         id: test
         # 使用 continue-on-error 保证即使当前镜像测试失败，也不会影响整个矩阵执行
-        continue-on-error: true
+        # continue-on-error: true
         run: |
           echo "测试镜像: ${{ matrix.image }}"
           # 备份 DNS 配置

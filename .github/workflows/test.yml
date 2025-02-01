@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       test-matrix: ${{ steps.set-matrix.outputs.matrix }}
-      x86_64_images: ${{ steps.set-matrix.outputs.x86_64_images }}
-      arm64_images: ${{ steps.set-matrix.outputs.arm64_images }}
     
     steps:
     - uses: actions/checkout@v4
@@ -21,20 +19,16 @@ jobs:
         
         echo "构建测试矩阵..."
         matrix_json="{\"include\":["
-        x86_64_images=""
-        arm64_images=""
         
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
             matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\"},"
-            x86_64_images+="$image"$'\n'
           fi
         done < x86_64_all_images.txt
         
         while IFS= read -r image; do
           if [[ -n "$image" ]]; then
             matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\"},"
-            arm64_images+="$image"$'\n'
           fi
         done < arm64_all_images.txt
         
@@ -42,21 +36,13 @@ jobs:
         matrix_json+="]}"
         
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-        echo "x86_64_images<<EOF" >> $GITHUB_OUTPUT
-        echo "$x86_64_images" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-        echo "arm64_images<<EOF" >> $GITHUB_OUTPUT
-        echo "$arm64_images" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
 
   test-single-image:
     needs: prepare-matrix
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 4
       matrix: ${{fromJson(needs.prepare-matrix.outputs.test-matrix)}}
-    outputs:
-      success_images: ${{ steps.record-success.outputs.success_images }}
     
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 10
@@ -95,36 +81,30 @@ jobs:
         # 还原 DNS 配置
         sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
-    - name: Record Success
-      id: record-success
-      if: steps.test.outputs.success == 'true'
-      run: |
-        echo "${{ matrix.image }}" >> /tmp/success_images.txt
-
   results-updater:
-    needs: [test-single-image, prepare-matrix]
+    needs: test-single-image
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     
     - name: Update Results Based on Test Status
       run: |
-        # 创建或清空固定镜像列表文件
+        # 下载当前镜像列表
+        curl -o x86_64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt
+        curl -o arm64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt
+        
+        # 清空或创建固定镜像列表
         > x86_64_fixed_images.txt
         > arm64_fixed_images.txt
         
-        # 遍历所有任务的状态
-        success_jobs=$(echo '${{ toJSON(needs.test-single-image.result) }}' | jq -r 'to_entries[] | select(.value=="success") | .key')
-        
-        # 从原始镜像列表中提取对应的成功镜像
-        x86_64_images=$(echo '${{ needs.prepare-matrix.outputs.x86_64_images }}')
-        arm64_images=$(echo '${{ needs.prepare-matrix.outputs.arm64_images }}')
-        
-        for job in $success_jobs; do
-          image=$(echo '${{ toJSON(needs.prepare-matrix.outputs.test-matrix) }}' | jq -r ".include[$job].image")
-          if echo "$x86_64_images" | grep -q "^$image$"; then
+        # 检查每个测试任务的状态
+        images=$(echo '${{ toJSON(needs.test-single-image.result) }}' | jq -r 'to_entries[] | select(.value=="success") | .key')
+        for i in $images; do
+          image=$(echo '${{ toJSON(needs.prepare-matrix.outputs.test-matrix) }}' | jq -r ".include[$i].image")
+          arch=$(echo '${{ toJSON(needs.prepare-matrix.outputs.test-matrix) }}' | jq -r ".include[$i].arch")
+          if [ "$arch" = "amd64" ]; then
             echo "$image" >> x86_64_fixed_images.txt
-          elif echo "$arm64_images" | grep -q "^$image$"; then
+          else
             echo "$image" >> arm64_fixed_images.txt
           fi
         done

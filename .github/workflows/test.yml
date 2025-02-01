@@ -76,10 +76,11 @@ jobs:
           echo "success=${{ steps.test.outputs.success }}" > result-${{ matrix.image }}.txt
           echo "image=${{ matrix.image }}" >> result-${{ matrix.image }}.txt
           echo "arch=${{ matrix.arch }}" >> result-${{ matrix.image }}.txt
-      - name: List Generated Files
-        run: |
-          echo "生成的文件列表："
-          ls -l
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.image }}
+          path: result-${{ matrix.image }}.txt
 
   collect-results:
     needs: test-single-image
@@ -87,33 +88,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download Test Results
-        run: |
-          mkdir -p results
-          echo "当前目录内容："
-          ls -l
-          cp -v result-*.txt results/
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: results/
-
-  results-updater:
-    needs: collect-results
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download All Results
+        run: mkdir -p results
+      - name: Download All Test Results
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: ./results
+          name: test-results-*
+          path: results/
+      - name: List Downloaded Files
+        run: |
+          echo "下载的文件列表："
+          ls -l results/
       - name: Aggregate Test Results
         run: |
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          for result_file in $(find ./results -type f -name "result-*.txt"); do
+          for result_file in $(find results -type f -name "result-*.txt"); do
             echo "处理文件: $result_file"
             # 读取文件内容，得到 success、image、arch 变量
             source "$result_file"

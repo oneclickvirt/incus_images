@@ -75,9 +75,15 @@ jobs:
           fi
           echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
           echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
+      - name: Uninstall Incus
+        run: |
+          sudo apt-get remove --purge -y incus lxd lxd-client
+          sudo apt-get autoremove -y
+          sudo apt-get autoclean -y
       - name: Reset Network Configuration
         run: |
-          sudo systemctl restart incus || sudo netplan apply
+          sudo netplan generate
+          sudo netplan apply
       - name: Collect Test Result
         if: ${{ steps.test.outputs.success && steps.test.outputs.success == 'true' }}
         run: |

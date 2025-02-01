@@ -87,6 +87,7 @@ jobs:
 
   collect-single-image:
     needs: [prepare-matrix, test-single-image]
+    if: always()
     strategy:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest

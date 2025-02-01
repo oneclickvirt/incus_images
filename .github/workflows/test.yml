@@ -140,7 +140,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cleanup:
-    needs: results-updater
+    needs: collect-results
     if: always()
     runs-on: ubuntu-latest
     steps:

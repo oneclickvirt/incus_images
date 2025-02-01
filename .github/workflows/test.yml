@@ -49,7 +49,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.test-matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 8
-    # 定义 job 输出，方便在后续任务中收集每个测试的状态
+    # 定义 job 输出，供下游通过 API 拉取时读取
     outputs:
       success: ${{ steps.test.outputs.success }}
       image:   ${{ steps.test.outputs.image }}
@@ -82,7 +82,6 @@ jobs:
           else
             echo "测试失败: ${{ matrix.image }}"
             echo "success=false" >> $GITHUB_OUTPUT
-            # 同时输出当前镜像与架构，方便后续整理时匹配
             echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
             echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
             exit 1
@@ -94,36 +93,40 @@ jobs:
     needs: test-single-image
     if: always()
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download Image Lists
+
+      - name: Collect Test Results via GitHub API
         run: |
-          curl -o x86_64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt
-          curl -o arm64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt
-          # 初始化固定镜像列表文件
+          echo "开始通过 GitHub API 拉取所有作业输出..."
+          # 使用 GitHub API 拉取当前 run 下所有作业信息
+          curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" > jobs.json
+
+          echo "拉取到的 jobs.json 内容："
+          cat jobs.json
+
+          # 初始化结果文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          
-      - name: Collect Test Results
-        run: |
-          echo "开始收集测试结果..."
-          # 获取所有测试任务的结果
-          TEST_RESULTS='${{ toJSON(needs.test-single-image) }}'
-          echo "测试任务结果原始数据："
-          echo "$TEST_RESULTS"
-          # 如果 TEST_RESULTS 不是数组，则包装为数组
-          TEST_RESULTS_ARRAY=$(echo "$TEST_RESULTS" | jq 'if type=="array" then . else [.] end')
-          # 解析每个任务的结果
-          echo "$TEST_RESULTS_ARRAY" | jq -c '.[]' | while read -r result; do
-            # 获取任务的成功状态、镜像名和架构
-            SUCCESS=$(echo "$result" | jq -r '.outputs.success')
-            IMAGE=$(echo "$result" | jq -r '.outputs.image')
-            ARCH=$(echo "$result" | jq -r '.outputs.arch')
-            echo "处理任务结果："
-            echo "镜像: $IMAGE"
-            echo "架构: $ARCH"
-            echo "执行状态: $SUCCESS"
-            # 根据任务状态和架构类型写入对应文件
+
+          echo "解析并聚合矩阵作业的输出..."
+          # 过滤出所有作业名称为 "test-single-image" 的记录，并读取每个作业的输出字段
+          cat jobs.json | jq -c '.jobs[] | select(.name=="test-single-image")' | while read -r job; do
+            # 读取输出字段 success、image、arch
+            SUCCESS=$(echo "$job" | jq -r '.outputs.success')
+            IMAGE=$(echo "$job" | jq -r '.outputs.image')
+            ARCH=$(echo "$job" | jq -r '.outputs.arch')
+
+            echo "处理作业输出："
+            echo "  镜像: $IMAGE"
+            echo "  架构: $ARCH"
+            echo "  执行状态: $SUCCESS"
+
             if [ "$SUCCESS" = "true" ]; then
               if [ "$ARCH" = "amd64" ]; then
                 echo "添加成功的 amd64 镜像: $IMAGE"
@@ -135,32 +138,19 @@ jobs:
                 echo "警告: 未知架构 $ARCH, 镜像 $IMAGE"
               fi
             else
-              echo "跳过失败的任务: $IMAGE (架构: $ARCH)"
+              echo "跳过失败的作业: $IMAGE (架构: $ARCH)"
             fi
           done
+
           echo "结果统计完成，进行排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
+
           echo "最终结果："
           echo "成功的 x86_64 镜像："
           cat x86_64_fixed_images.txt
           echo "成功的 arm64 镜像："
           cat arm64_fixed_images.txt
-          
-      - name: Push Results
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # 如果有任一固定镜像文件非空，则更新仓库
-          if [[ -s x86_64_fixed_images.txt || -s arm64_fixed_images.txt ]]; then
-            echo "推送测试结果..."
-            git pull origin main
-            git add x86_64_fixed_images.txt arm64_fixed_images.txt
-            git commit -m "更新镜像测试结果"
-            git push
-          fi
-        # 即使推送失败也不影响后续清理
-        continue-on-error: true
 
   cleanup:
     needs: results-updater

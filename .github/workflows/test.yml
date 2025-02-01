@@ -77,19 +77,19 @@ jobs:
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
             echo "success=true" >> $GITHUB_OUTPUT
+            echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
+            echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
           else
             echo "测试失败: ${{ matrix.image }}"
             echo "success=false" >> $GITHUB_OUTPUT
+            # 同时输出当前镜像与架构，方便后续整理时匹配
+            echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
+            echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
             # 使用 exit 1 标记此任务失败，但由于 continue-on-error，不会终止整个矩阵
             exit 1
           fi
-          
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
-          
-          # 同时输出当前镜像与架构，方便后续整理时匹配
-          echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
-          echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
 
   results-updater:
     needs: test-single-image

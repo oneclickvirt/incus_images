@@ -1,6 +1,3 @@
-debian_10_buster_x86_64_default.zip
 debian_11_bullseye_x86_64_cloud.zip
 kali_latest_kali-rolling_x86_64_default.zip
-archlinux_current_current_x86_64_cloud.zip
 gentoo_current_current_x86_64_cloud.zip
-gentoo_current_current_x86_64_systemd.zip

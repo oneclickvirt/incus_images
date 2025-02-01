@@ -66,19 +66,20 @@ jobs:
         id: test
         run: |
           echo "测试镜像: ${{ matrix.image }}"
-          # 备份 DNS 配置
-          sudo cp /etc/resolv.conf /etc/resolv.conf.backup || true
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "success=true" | tee -a "$GITHUB_OUTPUT"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "success=false" >> "$GITHUB_OUTPUT"
+            echo "success=false" | tee -a "$GITHUB_OUTPUT"
           fi
-          echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
-          echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
-          # 还原 DNS 配置
-          sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
+          echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
+          echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
+      - name: Debug Outputs
+        run: |
+          echo "Test success output: ${{ steps.test.outputs.success }}"
+          echo "Image output: ${{ steps.test.outputs.image }}"
+          echo "Arch output: ${{ steps.test.outputs.arch }}"
 
   collect-single-image:
     needs: [prepare-matrix, test-single-image]

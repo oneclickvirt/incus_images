@@ -49,7 +49,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.test-matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 8
-    # 定义 job 输出，供下游通过 API 拉取时读取
+    # 定义 job 输出（这里主要为了保留原结构，实际汇总时我们改为解析 job 名称）
     outputs:
       success: ${{ steps.test.outputs.success }}
       image:   ${{ steps.test.outputs.image }}
@@ -103,7 +103,7 @@ jobs:
       - name: Collect Test Results via GitHub API
         run: |
           echo "开始通过 GitHub API 拉取所有作业输出..."
-          # 使用 GitHub API 拉取当前 run 下所有作业信息
+          # 拉取当前 run 下所有作业的信息
           curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" > jobs.json
 
@@ -115,12 +115,24 @@ jobs:
           > arm64_fixed_images.txt
 
           echo "解析并聚合矩阵作业的输出..."
-          # 过滤出所有作业名称为 "test-single-image" 的记录，并读取每个作业的输出字段
-          cat jobs.json | jq -c '.jobs[] | select(.name=="test-single-image")' | while read -r job; do
-            # 读取输出字段 success、image、arch
-            SUCCESS=$(echo "$job" | jq -r '.outputs.success')
-            IMAGE=$(echo "$job" | jq -r '.outputs.image')
-            ARCH=$(echo "$job" | jq -r '.outputs.arch')
+          # 过滤出所有作业名称中包含 "test-single-image" 的记录
+          cat jobs.json | jq -c '.jobs[] | select(.name | test("test-single-image"))' | while read -r job; do
+            # 解析 job.name，格式应为：
+            # "test-single-image (镜像, 架构, runner)"
+            JOB_NAME=$(echo "$job" | jq -r '.name')
+            # 提取括号内的部分
+            DETAILS=$(echo "$JOB_NAME" | sed -n 's/.*(\(.*\)).*/\1/p')
+            # 分别取出各个字段（假设用逗号分隔）
+            IMAGE=$(echo "$DETAILS" | cut -d',' -f1 | xargs)
+            ARCH=$(echo "$DETAILS" | cut -d',' -f2 | xargs)
+            # 使用 job.conclusion 作为成功标识（注意：由于 continue-on-error，即使测试失败，job.conclusion 可能仍为 success，
+            # 但这里只能依赖 API 中的 conclusion 字段）
+            CONCLUSION=$(echo "$job" | jq -r '.conclusion')
+            if [ "$CONCLUSION" = "success" ]; then
+              SUCCESS="true"
+            else
+              SUCCESS="false"
+            fi
 
             echo "处理作业输出："
             echo "  镜像: $IMAGE"

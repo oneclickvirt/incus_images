@@ -75,36 +75,23 @@ jobs:
           fi
           echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
           echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
-      - name: Debug Outputs
-        run: |
-          echo "Test success output: ${{ steps.test.outputs.success }}"
-          echo "Image output: ${{ steps.test.outputs.image }}"
-          echo "Arch output: ${{ steps.test.outputs.arch }}"
-
-  collect-single-image:
-    needs: [prepare-matrix, test-single-image]
-    if: always()
-    strategy:
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
       - name: Collect Test Result
-        if: ${{ needs.test-single-image.outputs.success && needs.test-single-image.outputs.success == 'true' }}
+        if: ${{ steps.test.outputs.success && steps.test.outputs.success == 'true' }}
         run: |
           echo "收集测试结果..."
-          echo "success=${{ needs.test-single-image.outputs.success }}" > result.txt
+          echo "success=${{ steps.test.outputs.success }}" > result.txt
+          echo "image=${{ matrix.image }}" >> result.txt
+          echo "arch=${{ matrix.arch }}" >> result.txt
           cat result.txt
-          echo "测试成功：${{ matrix.image }}"
       - name: Upload Result Artifact
-        if: ${{ needs.test-single-image.outputs.success == 'true' }}
+        if: ${{ steps.test.outputs.success == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ matrix.image }}
           path: result.txt
 
   results-updater:
-    needs: collect-single-image
+    needs: test-single-image
     if: always()
     runs-on: ubuntu-latest
     steps:

@@ -100,11 +100,10 @@ jobs:
         run: |
           curl -o x86_64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/x86_64_all_images.txt
           curl -o arm64_all_images.txt https://raw.githubusercontent.com/oneclickvirt/incus_images/main/arm64_all_images.txt
-          
           # 初始化固定镜像列表文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-
+          
       - name: Collect Test Results
         run: |
           echo "开始收集测试结果..."
@@ -112,8 +111,10 @@ jobs:
           TEST_RESULTS='${{ toJSON(needs.test-single-image) }}'
           echo "测试任务结果原始数据："
           echo "$TEST_RESULTS"
+          # 如果 TEST_RESULTS 不是数组，则包装为数组
+          TEST_RESULTS_ARRAY=$(echo "$TEST_RESULTS" | jq 'if type=="array" then . else [.] end')
           # 解析每个任务的结果
-          echo "$TEST_RESULTS" | jq -c '.[]' | while read -r result; do
+          echo "$TEST_RESULTS_ARRAY" | jq -c '.[]' | while read -r result; do
             # 获取任务的成功状态、镜像名和架构
             SUCCESS=$(echo "$result" | jq -r '.outputs.success')
             IMAGE=$(echo "$result" | jq -r '.outputs.image')

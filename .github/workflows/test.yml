@@ -90,12 +90,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Collect Test Result
-        if: ${{ needs.test-single-image.outputs.success == 'true' }}
+        if: ${{ needs.test-single-image.outputs.success && needs.test-single-image.outputs.success == 'true' }}
         run: |
           echo "收集测试结果..."
-          echo "success=true" > result.txt
-          echo "image=${{ matrix.image }}" >> result.txt
-          echo "arch=${{ matrix.arch }}" >> result.txt
+          echo "success=${{ needs.test-single-image.outputs.success }}" > result.txt
+          cat result.txt
           echo "测试成功：${{ matrix.image }}"
       - name: Upload Result Artifact
         if: ${{ needs.test-single-image.outputs.success == 'true' }}

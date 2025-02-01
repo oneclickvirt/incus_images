@@ -9,7 +9,7 @@ jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
-      test-matrix: ${{ steps.set-matrix.outputs.matrix }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
       - id: set-matrix
@@ -38,18 +38,18 @@ jobs:
           matrix_json+="]}"
           
           echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-          # 同时用 set-output 兼容部分旧版本 runner
           echo "::set-output name=matrix::$matrix_json"
 
   test-single-image:
     needs: prepare-matrix
+    # 修改任务名称，使其包含唯一标识（镜像名称）
+    name: test-single-image - ${{ matrix.image }}
     strategy:
       fail-fast: false
       max-parallel: 12
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.test-matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 8
-    # 定义 job 输出（这里主要为了保留原结构，实际汇总时我们改为解析 job 名称）
     outputs:
       success: ${{ steps.test.outputs.success }}
       image:   ${{ steps.test.outputs.image }}
@@ -67,8 +67,8 @@ jobs:
           git config --global user.email "test@spiritlhl.top"
       - name: Test Image
         id: test
-        # 使用 continue-on-error 保证即使当前镜像测试失败，也不会影响整个矩阵执行
-        # continue-on-error: true
+        # 使用 continue-on-error 确保预期内的测试失败不会中断整个矩阵，但如果 runner 意外退出，则整个 job 结果不会为 success
+        continue-on-error: true
         run: |
           echo "测试镜像: ${{ matrix.image }}"
           # 备份 DNS 配置
@@ -89,75 +89,70 @@ jobs:
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
-  results-updater:
+  collect-single-image:
+    # 此任务依赖上游 test-single-image，每个矩阵分支单独运行
     needs: test-single-image
-    if: always()
+    # 仅在上游对应分支正常结束（未意外退出）时执行；这里利用我们在 test-single-image 中设置的动态名称来引用对应分支的结果
+    name: collect-single-image - ${{ matrix.image }}
+    # condition：只有当上游对应分支的结果为 success 时才执行此任务
+    if: ${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].result == 'success' }}
+    strategy:
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      GITHUB_REPOSITORY: ${{ github.repository }}
-      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: Collect Test Results via GitHub API
+      - name: Collect Test Result
         run: |
-          echo "开始通过 GitHub API 拉取所有作业输出..."
-          # 拉取当前 run 下所有作业的信息
-          curl -s -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs" > jobs.json
+          # 动态构造上游任务的 key
+          UPSTREAM_KEY=$(printf "test-single-image - %s" "${{ matrix.image }}")
+          echo "收集上游任务输出，key: $UPSTREAM_KEY"
+          # 读取上游任务的输出
+          SUCCESS="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.success }}"
+          IMAGE="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.image }}"
+          ARCH="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.arch }}"
+          echo "结果: success=$SUCCESS, image=$IMAGE, arch=$ARCH"
+          # 将结果写入文件（供后续聚合使用）
+          echo "success=$SUCCESS" > result.txt
+          echo "image=$IMAGE" >> result.txt
+          echo "arch=$ARCH" >> result.txt
+      - name: Upload Result Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: result-${{ matrix.image }}
+          path: result.txt
 
-          echo "拉取到的 jobs.json 内容："
-          cat jobs.json
-
+  results-updater:
+    needs: collect-single-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download All Result Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./results
+      - name: Aggregate Test Results
+        run: |
           # 初始化结果文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-
-          echo "解析并聚合矩阵作业的输出..."
-          # 过滤出所有作业名称中包含 "test-single-image" 的记录
-          cat jobs.json | jq -c '.jobs[] | select(.name | test("test-single-image"))' | while read -r job; do
-            # 解析 job.name，格式应为：
-            # "test-single-image (镜像, 架构, runner)"
-            JOB_NAME=$(echo "$job" | jq -r '.name')
-            # 提取括号内的部分
-            DETAILS=$(echo "$JOB_NAME" | sed -n 's/.*(\(.*\)).*/\1/p')
-            # 分别取出各个字段（假设用逗号分隔）
-            IMAGE=$(echo "$DETAILS" | cut -d',' -f1 | xargs)
-            ARCH=$(echo "$DETAILS" | cut -d',' -f2 | xargs)
-            # 使用 job.conclusion 作为成功标识（注意：由于 continue-on-error，即使测试失败，job.conclusion 可能仍为 success，
-            # 但这里只能依赖 API 中的 conclusion 字段）
-            CONCLUSION=$(echo "$job" | jq -r '.conclusion')
-            if [ "$CONCLUSION" = "success" ]; then
-              SUCCESS="true"
-            else
-              SUCCESS="false"
-            fi
-
-            echo "处理作业输出："
-            echo "  镜像: $IMAGE"
-            echo "  架构: $ARCH"
-            echo "  执行状态: $SUCCESS"
-
-            if [ "$SUCCESS" = "true" ]; then
-              if [ "$ARCH" = "amd64" ]; then
-                echo "添加成功的 amd64 镜像: $IMAGE"
-                echo "$IMAGE" >> x86_64_fixed_images.txt
-              elif [ "$ARCH" = "arm64" ]; then
-                echo "添加成功的 arm64 镜像: $IMAGE"
-                echo "$IMAGE" >> arm64_fixed_images.txt
-              else
-                echo "警告: 未知架构 $ARCH, 镜像 $IMAGE"
+          echo "聚合各分支测试结果..."
+          # 遍历所有下载到 results 目录下的 result.txt 文件
+          for file in $(find ./results -type f -name "result.txt"); do
+            echo "处理文件: $file"
+            # 读取文件内容，得到 success、image、arch 变量
+            source "$file"
+            echo "success=$success, image=$image, arch=$arch"
+            if [ "$success" = "true" ]; then
+              if [ "$arch" = "amd64" ]; then
+                echo "$image" >> x86_64_fixed_images.txt
+              elif [ "$arch" = "arm64" ]; then
+                echo "$image" >> arm64_fixed_images.txt
               fi
-            else
-              echo "跳过失败的作业: $IMAGE (架构: $ARCH)"
             fi
           done
-
-          echo "结果统计完成，进行排序去重..."
+          echo "排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
-
           echo "最终结果："
           echo "成功的 x86_64 镜像："
           cat x86_64_fixed_images.txt
@@ -169,7 +164,6 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Check Test Results
+      - name: Cleanup
         run: |
-          echo "所有测试完成"
-          echo "查看 Actions 页面获取详细测试结果"
+          echo "所有测试完成。请查看 Actions 页面获取详细测试结果。"

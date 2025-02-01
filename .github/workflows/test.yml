@@ -94,21 +94,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Collect Test Result
+        if: ${{ needs.test-single-image.outputs.success == 'true' }}
         run: |
           echo "收集测试结果..."
-          # 根据测试结果准备数据
-          if [[ "${{ needs.test-single-image.result }}" == "success" ]]; then
-            echo "success=true" > result.txt
-            echo "image=${{ matrix.image }}" >> result.txt
-            echo "arch=${{ matrix.arch }}" >> result.txt
-            echo "测试成功：${{ matrix.image }}"
-          else
-            echo "测试失败或跳过：${{ matrix.image }}"
-            exit 0
-          fi
-      
+          echo "success=true" > result.txt
+          echo "image=${{ matrix.image }}" >> result.txt
+          echo "arch=${{ matrix.arch }}" >> result.txt
+          echo "测试成功：${{ matrix.image }}"
       - name: Upload Result Artifact
-        if: success()
+        if: ${{ needs.test-single-image.outputs.success == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: result-${{ matrix.image }}

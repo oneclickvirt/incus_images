@@ -2,7 +2,7 @@ name: Test Incus Images
 
 on:
   schedule:
-    - cron: '0 4 2-30/2 *'*
+    - cron: '0 4 2-30/2 * *'
   workflow_dispatch:
   
 jobs:

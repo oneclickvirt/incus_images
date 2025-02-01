@@ -37,8 +37,7 @@ jobs:
           matrix_json=${matrix_json%,}
           matrix_json+="]}"
           
-          echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
-          echo "::set-output name=matrix::$matrix_json"
+          echo "matrix=$matrix_json" >> "$GITHUB_OUTPUT"
 
   test-single-image:
     needs: prepare-matrix
@@ -52,49 +51,49 @@ jobs:
     timeout-minutes: 8
     outputs:
       success: ${{ steps.test.outputs.success }}
-      image:   ${{ steps.test.outputs.image }}
-      arch:    ${{ steps.test.outputs.arch }}
+      image: ${{ steps.test.outputs.image }}
+      arch: ${{ steps.test.outputs.arch }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment
         run: |
           echo "设置新环境..."
-          sudo apt update -y
-          sudo sh -c 'export noninteractive=true && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
+          sudo apt-get update -y
+          sudo sh -c 'export DEBIAN_FRONTEND=noninteractive && curl -L https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh'
       - name: Configure Git
         run: |
           git config --global user.name "daily-test"
           git config --global user.email "test@spiritlhl.top"
       - name: Test Image
         id: test
-        # 使用 continue-on-error 确保预期内的测试失败不会中断整个矩阵，但如果 runner 意外退出，则整个 job 结果不会为 success
+        # 使用 continue-on-error 确保预期内的测试失败不会中断整个矩阵
         continue-on-error: true
         run: |
           echo "测试镜像: ${{ matrix.image }}"
           # 备份 DNS 配置
-          sudo cp /etc/resolv.conf /etc/resolv.conf.backup
+          sudo cp /etc/resolv.conf /etc/resolv.conf.backup || true
           
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "success=true" >> $GITHUB_OUTPUT
-            echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
-            echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
+            echo "success=true" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "success=false" >> $GITHUB_OUTPUT
-            echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
-            echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
+            echo "success=false" >> "$GITHUB_OUTPUT"
+            echo "image=${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+            echo "arch=${{ matrix.arch }}" >> "$GITHUB_OUTPUT"
             exit 1
           fi
           # 还原 DNS 配置
           sudo mv /etc/resolv.conf.backup /etc/resolv.conf || true
 
   collect-single-image:
-    # 此任务依赖上游 test-single-image，每个矩阵分支单独运行
-    needs: test-single-image
-    # 仅在上游对应分支正常结束（未意外退出）时执行；这里利用我们在 test-single-image 中设置的动态名称来引用对应分支的结果
+    # 此任务依赖上游 test-single-image
+    needs: [prepare-matrix, test-single-image]
+    # 修改任务名称，包含唯一标识
     name: collect-single-image - ${{ matrix.image }}
-    # condition：只有当上游对应分支的结果为 success 时才执行此任务
+    # 仅在上游对应分支正常结束（未意外退出）时执行
     if: ${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].result == 'success' }}
     strategy:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
@@ -104,17 +103,21 @@ jobs:
       - name: Collect Test Result
         run: |
           # 动态构造上游任务的 key
-          UPSTREAM_KEY=$(printf "test-single-image - %s" "${{ matrix.image }}")
+          UPSTREAM_KEY="test-single-image - ${{ matrix.image }}"
           echo "收集上游任务输出，key: $UPSTREAM_KEY"
+          
           # 读取上游任务的输出
           SUCCESS="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.success }}"
           IMAGE="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.image }}"
           ARCH="${{ needs.test-single-image[ format('test-single-image - {0}', matrix.image) ].outputs.arch }}"
+          
           echo "结果: success=$SUCCESS, image=$IMAGE, arch=$ARCH"
+          
           # 将结果写入文件（供后续聚合使用）
           echo "success=$SUCCESS" > result.txt
           echo "image=$IMAGE" >> result.txt
           echo "arch=$ARCH" >> result.txt
+      
       - name: Upload Result Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -130,11 +133,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: ./results
+      
       - name: Aggregate Test Results
         run: |
           # 初始化结果文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
+          
           echo "聚合各分支测试结果..."
           # 遍历所有下载到 results 目录下的 result.txt 文件
           for file in $(find ./results -type f -name "result.txt"); do
@@ -142,6 +147,7 @@ jobs:
             # 读取文件内容，得到 success、image、arch 变量
             source "$file"
             echo "success=$success, image=$image, arch=$arch"
+            
             if [ "$success" = "true" ]; then
               if [ "$arch" = "amd64" ]; then
                 echo "$image" >> x86_64_fixed_images.txt
@@ -150,9 +156,11 @@ jobs:
               fi
             fi
           done
+          
           echo "排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
+          
           echo "最终结果："
           echo "成功的 x86_64 镜像："
           cat x86_64_fixed_images.txt

@@ -64,16 +64,16 @@ jobs:
           echo "测试镜像: ${{ matrix.image }}"
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "::set-output name=success::true"
+            echo "success=true" >> $GITHUB_ENV
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "::set-output name=success::false"
+            echo "success=false" >> $GITHUB_ENV
           fi
-          echo "::set-output name=image::${{ matrix.image }}"
-          echo "::set-output name=arch::${{ matrix.arch }}"
-          echo "success=${{ steps.test.outputs.success }}"
-          echo "image=${{ steps.test.outputs.image }}"
-          echo "arch=${{ steps.test.outputs.arch }}"
+          echo "image=${{ matrix.image }}" >> $GITHUB_ENV
+          echo "arch=${{ matrix.arch }}" >> $GITHUB_ENV
+          echo "success=$(printenv success)"
+          echo "image=$(printenv image)"
+          echo "arch=$(printenv arch)"
 
   collect-results:
     needs: test-single-image

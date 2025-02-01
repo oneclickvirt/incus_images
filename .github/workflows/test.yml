@@ -22,13 +22,13 @@ jobs:
           matrix_json="{\"include\":["
           
           while IFS= read -r image; do
-            if [[ -n "$image\" ]]; then
+            if [[ -n "$image" ]]; then
               matrix_json+="{\"image\":\"$image\",\"arch\":\"amd64\",\"runner\":\"ubuntu-latest\"},"
             fi
           done < x86_64_all_images.txt
           
           while IFS= read -r image; do
-            if [[ -n "$image\" ]]; then
+            if [[ -n "$image" ]]; then
               matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\"},"
             fi
           done < arm64_all_images.txt
@@ -76,6 +76,10 @@ jobs:
           echo "success=${{ steps.test.outputs.success }}" > result-${{ matrix.image }}.txt
           echo "image=${{ matrix.image }}" >> result-${{ matrix.image }}.txt
           echo "arch=${{ matrix.arch }}" >> result-${{ matrix.image }}.txt
+      - name: List Generated Files
+        run: |
+          echo "生成的文件列表："
+          ls -l
 
   collect-results:
     needs: test-single-image
@@ -85,6 +89,8 @@ jobs:
       - name: Download Test Results
         run: |
           mkdir -p results
+          echo "当前目录内容："
+          ls -l
           cp -v result-*.txt results/
       - name: Upload Test Results
         uses: actions/upload-artifact@v4

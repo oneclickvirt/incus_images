@@ -65,7 +65,6 @@ jobs:
         
     - name: Test Image
       id: test
-      continue-on-error: true
       run: |
         echo "测试镜像: ${{ matrix.image }}"
         # 备份 DNS 解析文件

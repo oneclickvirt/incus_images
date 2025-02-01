@@ -108,49 +108,42 @@ jobs:
       - name: Collect Test Results
         run: |
           echo "开始收集测试结果..."
-          echo "当前工作目录文件列表:"
-          ls -la
-          echo "初始镜像列表内容:"
-          echo "x86_64_all_images.txt 内容:"
-          cat x86_64_all_images.txt
-          echo "arm64_all_images.txt 内容:"
-          cat arm64_all_images.txt
-          echo "开始处理测试矩阵结果..."
+          # 获取所有测试任务的结果
           TEST_RESULTS='${{ toJSON(needs.test-single-image) }}'
-          echo "所有测试结果："
+          echo "测试任务结果原始数据："
           echo "$TEST_RESULTS"
-          MATRIX_JSON='${{ needs.prepare-matrix.outputs.test-matrix }}'
-          echo "完整矩阵数据："
-          echo "$MATRIX_JSON"
-          echo "$MATRIX_JSON" | jq -c '.include[]' | nl -v 0 -w 1 -s ' ' | while read idx entry; do
-            IMAGE=$(echo "$entry" | jq -r '.image')
-            ARCH=$(echo "$entry" | jq -r '.arch')
-            echo "处理第 $idx 个测试结果:"
+          # 解析每个任务的结果
+          echo "$TEST_RESULTS" | jq -c '.[]' | while read -r result; do
+            # 获取任务的成功状态、镜像名和架构
+            SUCCESS=$(echo "$result" | jq -r '.outputs.success')
+            IMAGE=$(echo "$result" | jq -r '.outputs.image')
+            ARCH=$(echo "$result" | jq -r '.outputs.arch')
+            echo "处理任务结果："
             echo "镜像: $IMAGE"
             echo "架构: $ARCH"
-            SUCCESS=$(echo '${{ toJSON(needs.test-single-image) }}' | jq -r --arg idx "$idx" '.[$idx].outputs.success')
-            echo "测试结果: $SUCCESS"
+            echo "执行状态: $SUCCESS"
+            # 根据任务状态和架构类型写入对应文件
             if [ "$SUCCESS" = "true" ]; then
               if [ "$ARCH" = "amd64" ]; then
-                echo "添加成功的 amd64 镜像到 x86_64_fixed_images.txt: $IMAGE"
+                echo "添加成功的 amd64 镜像: $IMAGE"
                 echo "$IMAGE" >> x86_64_fixed_images.txt
               elif [ "$ARCH" = "arm64" ]; then
-                echo "添加成功的 arm64 镜像到 arm64_fixed_images.txt: $IMAGE"
+                echo "添加成功的 arm64 镜像: $IMAGE"
                 echo "$IMAGE" >> arm64_fixed_images.txt
               else
-                echo "警告: 未知架构 $ARCH, 镜像 $IMAGE 将被跳过"
+                echo "警告: 未知架构 $ARCH, 镜像 $IMAGE"
               fi
             else
-              echo "跳过测试失败的镜像: $IMAGE (架构: $ARCH)"
+              echo "跳过失败的任务: $IMAGE (架构: $ARCH)"
             fi
           done
-          echo "排序并去重结果文件..."
+          echo "结果统计完成，进行排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
-          echo "最终结果文件内容:"
-          echo "x86_64_fixed_images.txt 内容:"
+          echo "最终结果："
+          echo "成功的 x86_64 镜像："
           cat x86_64_fixed_images.txt
-          echo "arm64_fixed_images.txt 内容:"
+          echo "成功的 arm64 镜像："
           cat arm64_fixed_images.txt
           
       - name: Push Results

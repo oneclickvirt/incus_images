@@ -85,7 +85,6 @@ jobs:
             # 同时输出当前镜像与架构，方便后续整理时匹配
             echo "image=${{ matrix.image }}" >> $GITHUB_OUTPUT
             echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
-            # 使用 exit 1 标记此任务失败，但由于 continue-on-error，不会终止整个矩阵
             exit 1
           fi
           # 还原 DNS 配置
@@ -117,8 +116,11 @@ jobs:
           echo "arm64_all_images.txt 内容:"
           cat arm64_all_images.txt
           echo "开始处理测试矩阵结果..."
+          TEST_RESULTS='${{ toJSON(needs.test-single-image) }}'
+          echo "所有测试结果："
+          echo "$TEST_RESULTS"
           MATRIX_JSON='${{ needs.prepare-matrix.outputs.test-matrix }}'
-          echo "测试矩阵 JSON:"
+          echo "完整矩阵数据："
           echo "$MATRIX_JSON"
           echo "$MATRIX_JSON" | jq -c '.include[]' | nl -v 0 -w 1 -s ' ' | while read idx entry; do
             IMAGE=$(echo "$entry" | jq -r '.image')

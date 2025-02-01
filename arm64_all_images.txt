@@ -1,2 +1,1 @@
 debian_10_buster_arm64_default.zip
-debian_11_bullseye_arm64_cloud.zip

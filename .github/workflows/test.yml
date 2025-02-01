@@ -86,25 +86,43 @@ jobs:
       run: |
         mkdir -p /tmp/test-results
         mv ${{ matrix.output }} /tmp/test-results/
-    
+        
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: /tmp/test-results/
+        retention-days: 1
+
   results-updater:
     needs: test-single-image
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Download Test Results
+      uses: actions/download-artifact@v3
+      with:
+        name: test-results
+        path: /tmp/test-results
 
     - name: Aggregate Test Results
       run: |
-        mkdir -p /tmp/test-results
-        cp -r /tmp/test-results/* . || true
+        # 确保目标文件存在
+        touch x86_64_fixed_images.txt
+        touch arm64_fixed_images.txt
         
-        # 确保单独存储 x86_64 和 arm64 的测试结果
+        # 合并测试结果
         if [[ -f /tmp/test-results/x86_64_fixed_images.txt ]]; then
           cat /tmp/test-results/x86_64_fixed_images.txt >> x86_64_fixed_images.txt
         fi
         if [[ -f /tmp/test-results/arm64_fixed_images.txt ]]; then
           cat /tmp/test-results/arm64_fixed_images.txt >> arm64_fixed_images.txt
         fi
+        
+        # 去重
+        sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
+        sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
 
     - name: Push Results
       env:

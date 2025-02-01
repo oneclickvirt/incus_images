@@ -28,7 +28,7 @@ jobs:
           done < x86_64_all_images.txt
           
           while IFS= read -r image; do
-            if [[ -n "$image" ]]; then
+            if [[ -n "$image\" ]]; then
               matrix_json+="{\"image\":\"$image\",\"arch\":\"arm64\",\"runner\":\"ubuntu-24.04-arm\"},"
             fi
           done < arm64_all_images.txt
@@ -43,14 +43,10 @@ jobs:
     needs: prepare-matrix
     strategy:
       fail-fast: false
-      max-parallel: 12
+      max-parallel: 1
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 8
-    outputs:
-      success: ${{ steps.test.outputs.success }}
-      image: ${{ matrix.image }}
-      arch: ${{ matrix.arch }}
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment
@@ -75,32 +71,29 @@ jobs:
           fi
           echo "image=${{ matrix.image }}" | tee -a "$GITHUB_OUTPUT"
           echo "arch=${{ matrix.arch }}" | tee -a "$GITHUB_OUTPUT"
-      - name: Uninstall Incus
+      - name: Save Test Result to File
         run: |
-          sudo apt-get remove --purge -y incus
-          sudo apt-get autoremove -y
-          sudo apt-get autoclean -y
-      - name: Reset Network Configuration
+          echo "success=${{ steps.test.outputs.success }}" > result-${{ matrix.image }}.txt
+          echo "image=${{ matrix.image }}" >> result-${{ matrix.image }}.txt
+          echo "arch=${{ matrix.arch }}" >> result-${{ matrix.image }}.txt
+
+  collect-results:
+    needs: test-single-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Test Results
         run: |
-          sudo netplan generate
-          sudo netplan apply
-      - name: Collect Test Result
-        if: ${{ steps.test.outputs.success && steps.test.outputs.success == 'true' }}
-        run: |
-          echo "收集测试结果..."
-          echo "success=${{ steps.test.outputs.success }}" > result.txt
-          echo "image=${{ matrix.image }}" >> result.txt
-          echo "arch=${{ matrix.arch }}" >> result.txt
-          cat result.txt
-      - name: Upload Result Artifact
-        if: ${{ steps.test.outputs.success == 'true' }}
+          mkdir -p results
+          cp -v result-*.txt results/
+      - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
-          name: result-${{ matrix.image }}
-          path: result.txt
+          name: test-results
+          path: results/
 
   results-updater:
-    needs: test-single-image
+    needs: collect-results
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -108,14 +101,13 @@ jobs:
       - name: Download All Results
         uses: actions/download-artifact@v4
         with:
+          name: test-results
           path: ./results
       - name: Aggregate Test Results
         run: |
-          # 初始化结果文件
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          echo "聚合各分支测试结果..."
-          for result_file in $(find ./results -type f -name "result.txt"); do
+          for result_file in $(find ./results -type f -name "result-*.txt"); do
             echo "处理文件: $result_file"
             # 读取文件内容，得到 success、image、arch 变量
             source "$result_file"
@@ -128,7 +120,6 @@ jobs:
               fi
             fi
           done
-          echo "排序去重..."
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
           echo "最终结果："

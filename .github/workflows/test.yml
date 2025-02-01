@@ -88,7 +88,7 @@ jobs:
         mv ${{ matrix.output }} /tmp/test-results/
         
     - name: Upload Test Results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: /tmp/test-results/
@@ -101,7 +101,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Download Test Results
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: test-results
         path: /tmp/test-results

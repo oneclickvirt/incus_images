@@ -5,6 +5,7 @@ on:
     workflows: ["Run Tests"]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   collect-results:

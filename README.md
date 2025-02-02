@@ -22,9 +22,9 @@ Releases中的镜像(每日拉取镜像进行自动修补和更新)：
 
 未修改默认密码，与官方仓库一致
 
-本仓库所有镜像的名字列表：[x86_64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_all_images.txt) [arm64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_all_images.txt)
+本仓库所有镜像的名字列表：[x86_64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_all_images.txt) 和 [arm64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_all_images.txt)
 
-本仓库测试无误的镜像的名字列表：[x86_64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_fixed_images.txt) [arm64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_fixed_images.txt)
+本仓库测试无误的镜像的名字列表：[x86_64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_fixed_images.txt) 和 [arm64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_fixed_images.txt)
 
 本仓库的容器镜像服务于： https://github.com/oneclickvirt/incus 和 https://github.com/oneclickvirt/lxd
 

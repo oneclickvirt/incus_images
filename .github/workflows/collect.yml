@@ -30,7 +30,6 @@ jobs:
           mkdir -p results
           echo "收集最新日志..."
           gh run view $LATEST_COMPLETED_RUN_ID --log > results/log-$LATEST_COMPLETED_RUN_ID.txt
-          cat results/log-$LATEST_COMPLETED_RUN_ID.txt
 
       - name: Parse Logs
         run: |

@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Incus Tests
 
 on:
   schedule:

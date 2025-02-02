@@ -43,7 +43,6 @@ openwrt_23.05_23.05_x86_64_cloud.zip
 openwrt_23.05_23.05_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
-rockylinux_8_8_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
 rockylinux_9_9_x86_64_cloud.zip
 rockylinux_9_9_x86_64_default.zip

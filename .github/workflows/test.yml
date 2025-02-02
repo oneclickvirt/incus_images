@@ -63,13 +63,10 @@ jobs:
           echo "测试镜像: ${{ matrix.image }}"
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "success=true" >> $GITHUB_ENV
+            echo "success=true"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "success=false" >> $GITHUB_ENV
+            echo "success=false"
           fi
-          echo "image=${{ matrix.image }}" >> $GITHUB_ENV
-          echo "arch=${{ matrix.arch }}" >> $GITHUB_ENV
-          echo "success=$(printenv success)"
-          echo "image=$(printenv image)"
-          echo "arch=$(printenv arch)"
+          echo "image=${{ matrix.image }}"
+          echo "arch=${{ matrix.arch }}"

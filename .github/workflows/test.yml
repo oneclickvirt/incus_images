@@ -43,10 +43,10 @@ jobs:
     needs: prepare-matrix
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 12
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 6
+    timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment

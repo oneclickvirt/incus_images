@@ -83,6 +83,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Collect Logs
         id: collect_logs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p results
           echo "收集所有日志..."
@@ -115,7 +117,7 @@ jobs:
           cat x86_64_fixed_images.txt
           echo "成功的 arm64 镜像："
           cat arm64_fixed_images.txt
-
+  
       - name: Commit and Push Updated Results
         run: |
           # 配置 Git 用户信息
@@ -131,7 +133,6 @@ jobs:
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   cleanup:
     needs: collect-results
     if: always()

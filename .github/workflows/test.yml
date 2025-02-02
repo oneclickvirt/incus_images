@@ -1,9 +1,12 @@
-name: Test Incus Images
+name: Run Tests
 
 on:
   schedule:
     - cron: '0 4 2-30/2 * *'
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   prepare-matrix:
@@ -59,7 +62,6 @@ jobs:
           git config --global user.name "daily-test"
           git config --global user.email "test@spiritlhl.top"
       - name: Test Image
-        id: test
         run: |
           echo "测试镜像: ${{ matrix.image }}"
           if sudo bash test.sh "${{ matrix.image }}"; then
@@ -74,70 +76,3 @@ jobs:
           echo "success=$(printenv success)"
           echo "image=$(printenv image)"
           echo "arch=$(printenv arch)"
-
-  collect-results:
-    needs: test-single-image
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Collect Logs
-        id: collect_logs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p results
-          echo "收集所有日志..."
-          run_ids=$(gh run list -L 100 --json databaseId --jq '.[].databaseId')
-          for run_id in $run_ids; do
-            gh run view $run_id --log > results/log-$run_id.txt
-          done
-      - name: Parse Logs
-        run: |
-          > x86_64_fixed_images.txt
-          > arm64_fixed_images.txt
-          for log_file in $(find results -type f -name "log-*.txt"); do
-            echo "处理日志文件: $log_file"
-            success=$(grep -Eo 'success=(true|false)' $log_file | tail -1 | cut -d= -f2)
-            image=$(grep -Eo 'image=[^ ]+' $log_file | tail -1 | cut -d= -f2)
-            arch=$(grep -Eo 'arch=[^ ]+' $log_file | tail -1 | cut -d= -f2)
-            echo "success=$success, image=$image, arch=$arch"
-            if [ "$success" = "true" ]; then
-              if [ "$arch" = "amd64" ]; then
-                echo "$image" >> x86_64_fixed_images.txt
-              elif [ "$arch" = "arm64" ]; then
-                echo "$image" >> arm64_fixed_images.txt
-              fi
-            fi
-          done
-          sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
-          sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
-          echo "最终结果："
-          echo "成功的 x86_64 镜像："
-          cat x86_64_fixed_images.txt
-          echo "成功的 arm64 镜像："
-          cat arm64_fixed_images.txt
-  
-      - name: Commit and Push Updated Results
-        run: |
-          # 配置 Git 用户信息
-          git config --global user.name "your-bot-name"
-          git config --global user.email "your-bot-email@example.com"
-          # 确保处于 main 分支
-          git checkout main
-          # 添加文件
-          git add x86_64_fixed_images.txt arm64_fixed_images.txt
-          # 提交更改（如果有更改才会提交）
-          git commit -m "Update fixed images list"
-          # 推送到仓库
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  cleanup:
-    needs: collect-results
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cleanup
-        run: |
-          echo "所有测试完成。请查看 Actions 页面获取详细测试结果。"

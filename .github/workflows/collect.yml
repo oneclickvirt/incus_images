@@ -12,17 +12,21 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Get Latest Run ID
+        id: get_latest_run_id
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          latest_run_id=$(gh run list -L 1 --json databaseId --jq '.[0].databaseId')
+          echo "LATEST_RUN_ID=$latest_run_id" >> $GITHUB_ENV
       - name: Collect Logs
         id: collect_logs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p results
-          echo "收集所有日志..."
-          run_ids=$(gh run list -L 100 --json databaseId --jq '.[].databaseId')
-          for run_id in $run_ids; do
-            gh run view $run_id --log > results/log-$run_id.txt
-          done
+          echo "收集最新日志..."
+          gh run view $LATEST_RUN_ID --log > results/log-$LATEST_RUN_ID.txt
       - name: Parse Logs
         run: |
           > x86_64_fixed_images.txt

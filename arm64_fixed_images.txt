@@ -1,1 +1,1 @@
-debian_10_buster_arm64_default.zip
+openeuler_24.09_24.09_arm64_cloud.zip

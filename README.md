@@ -50,9 +50,9 @@ Default username: ```root```.
 
 Unchanged default password, consistent with official repository.
 
-A list of names for all images in this repository: [x86_64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_all_images.txt) [arm64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_all_images.txt)
+A list of names for all images in this repository: [x86_64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_all_images.txt) and [arm64_all_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_all_images.txt)
 
-A list of names of images in this repository that have been tested without error: [x86_64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_fixed_images.txt) [arm64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_fixed_images.txt)
+A list of names of images in this repository that have been tested without error: [x86_64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/x86_64_fixed_images.txt) and [arm64_fixed_images.txt](https://github.com/oneclickvirt/incus_images/blob/main/arm64_fixed_images.txt)
 
 This repository container images serves https://github.com/oneclickvirt/incus and https://github.com/oneclickvirt/lxd
 

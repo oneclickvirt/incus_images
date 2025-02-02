@@ -64,8 +64,8 @@ jobs:
       - name: Commit and Push Updated Results
         run: |
           # 配置 Git 用户信息
-          git config --global user.name "your-bot-name"
-          git config --global user.email "your-bot-email@example.com"
+          git config --global user.name "Push Fixed Images"
+          git config --global user.email "admin@spiritlhl.net"
           # 确保处于 main 分支
           git checkout main
           # 添加文件

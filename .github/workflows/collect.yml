@@ -30,26 +30,29 @@ jobs:
           mkdir -p results
           echo "收集最新日志..."
           gh run view $LATEST_COMPLETED_RUN_ID --log > results/log-$LATEST_COMPLETED_RUN_ID.txt
-          cat results/log-$LATEST_COMPLETED_RUN_ID.txt
 
       - name: Parse Logs
         run: |
           > x86_64_fixed_images.txt
           > arm64_fixed_images.txt
-          for log_file in $(find results -type f -name "log-*.txt"); do
-            echo "处理日志文件: $log_file"
-            success=$(grep -Eo 'success=(true|false)' $log_file | tail -1 | cut -d= -f2)
-            image=$(grep -Eo 'image=[^ ]+' $log_file | tail -1 | cut -d= -f2)
-            arch=$(grep -Eo 'arch=[^ ]+' $log_file | tail -1 | cut -d= -f2)
-            echo "success=$success, image=$image, arch=$arch"
-            if [ "$success" = "true" ]; then
-              if [ "$arch" = "amd64" ]; then
-                echo "$image" >> x86_64_fixed_images.txt
-              elif [ "$arch" = "arm64" ]; then
-                echo "$image" >> arm64_fixed_images.txt
+          log_file="results/log-$LATEST_COMPLETED_RUN_ID.txt"
+          while IFS= read -r line; do
+            if [[ "$line" =~ success=(true|false) ]]; then
+              success="${BASH_REMATCH[1]}"
+            elif [[ "$line" =~ image=([^ ]+) ]]; then
+              image="${BASH_REMATCH[1]}"
+            elif [[ "$line" =~ arch=([^ ]+) ]]; then
+              arch="${BASH_REMATCH[1]}"
+              if [[ "$success" == "true" ]]; then
+                if [[ "$arch" == "amd64" ]]; then
+                  echo "$image" >> x86_64_fixed_images.txt
+                elif [[ "$arch" == "arm64" ]]; then
+                  echo "$image" >> arm64_fixed_images.txt
+                fi
               fi
             fi
-          done
+          done < "$log_file"
+
           sort -u x86_64_fixed_images.txt -o x86_64_fixed_images.txt
           sort -u arm64_fixed_images.txt -o arm64_fixed_images.txt
           echo "最终结果："

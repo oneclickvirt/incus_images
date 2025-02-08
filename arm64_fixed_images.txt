@@ -20,7 +20,9 @@ debian_13_trixie_arm64_default.zip
 fedora_39_39_arm64_cloud.zip
 fedora_39_39_arm64_default.zip
 fedora_40_40_arm64_cloud.zip
+fedora_40_40_arm64_default.zip
 kali_latest_kali-rolling_arm64_cloud.zip
+kali_latest_kali-rolling_arm64_default.zip
 openeuler_20.03_20.03_arm64_cloud.zip
 openeuler_20.03_20.03_arm64_default.zip
 openeuler_22.03_22.03_arm64_cloud.zip
@@ -29,12 +31,14 @@ openeuler_24.03_24.03_arm64_cloud.zip
 openeuler_24.03_24.03_arm64_default.zip
 openeuler_24.09_24.09_arm64_cloud.zip
 openeuler_24.09_24.09_arm64_default.zip
-rockylinux_8_8_arm64_cloud.zip
 rockylinux_8_8_arm64_default.zip
+rockylinux_9_9_arm64_cloud.zip
 rockylinux_9_9_arm64_default.zip
 ubuntu_18.04_bionic_arm64_cloud.zip
 ubuntu_18.04_bionic_arm64_default.zip
 ubuntu_20.04_focal_arm64_cloud.zip
 ubuntu_20.04_focal_arm64_default.zip
+ubuntu_22.04_jammy_arm64_cloud.zip
 ubuntu_22.04_jammy_arm64_default.zip
+ubuntu_24.04_noble_arm64_cloud.zip
 ubuntu_24.04_noble_arm64_default.zip

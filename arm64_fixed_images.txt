@@ -1,7 +1,6 @@
 almalinux_8_8_arm64_cloud.zip
 almalinux_8_8_arm64_default.zip
 almalinux_9_9_arm64_cloud.zip
-almalinux_9_9_arm64_default.zip
 alpine_3.18_3.18_arm64_cloud.zip
 alpine_3.19_3.19_arm64_cloud.zip
 alpine_3.20_3.20_arm64_cloud.zip
@@ -27,10 +26,10 @@ openeuler_20.03_20.03_arm64_cloud.zip
 openeuler_20.03_20.03_arm64_default.zip
 openeuler_22.03_22.03_arm64_cloud.zip
 openeuler_22.03_22.03_arm64_default.zip
-openeuler_24.03_24.03_arm64_cloud.zip
 openeuler_24.03_24.03_arm64_default.zip
 openeuler_24.09_24.09_arm64_cloud.zip
 openeuler_24.09_24.09_arm64_default.zip
+rockylinux_8_8_arm64_cloud.zip
 rockylinux_8_8_arm64_default.zip
 rockylinux_9_9_arm64_cloud.zip
 rockylinux_9_9_arm64_default.zip

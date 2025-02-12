@@ -1,6 +1,7 @@
 almalinux_8_8_arm64_cloud.zip
 almalinux_8_8_arm64_default.zip
 almalinux_9_9_arm64_cloud.zip
+almalinux_9_9_arm64_default.zip
 alpine_3.18_3.18_arm64_cloud.zip
 alpine_3.19_3.19_arm64_cloud.zip
 alpine_3.20_3.20_arm64_cloud.zip
@@ -14,7 +15,6 @@ debian_11_bullseye_arm64_cloud.zip
 debian_11_bullseye_arm64_default.zip
 debian_12_bookworm_arm64_cloud.zip
 debian_12_bookworm_arm64_default.zip
-debian_13_trixie_arm64_cloud.zip
 debian_13_trixie_arm64_default.zip
 fedora_39_39_arm64_cloud.zip
 fedora_39_39_arm64_default.zip
@@ -26,18 +26,15 @@ openeuler_20.03_20.03_arm64_cloud.zip
 openeuler_20.03_20.03_arm64_default.zip
 openeuler_22.03_22.03_arm64_cloud.zip
 openeuler_22.03_22.03_arm64_default.zip
-openeuler_24.03_24.03_arm64_default.zip
+openeuler_24.03_24.03_arm64_cloud.zip
 openeuler_24.09_24.09_arm64_cloud.zip
 openeuler_24.09_24.09_arm64_default.zip
 rockylinux_8_8_arm64_cloud.zip
 rockylinux_8_8_arm64_default.zip
 rockylinux_9_9_arm64_cloud.zip
 rockylinux_9_9_arm64_default.zip
-ubuntu_18.04_bionic_arm64_cloud.zip
 ubuntu_18.04_bionic_arm64_default.zip
 ubuntu_20.04_focal_arm64_cloud.zip
 ubuntu_20.04_focal_arm64_default.zip
 ubuntu_22.04_jammy_arm64_cloud.zip
-ubuntu_22.04_jammy_arm64_default.zip
 ubuntu_24.04_noble_arm64_cloud.zip
-ubuntu_24.04_noble_arm64_default.zip

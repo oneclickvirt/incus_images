@@ -9,6 +9,7 @@ alpine_3.21_3.21_x86_64_cloud.zip
 alpine_edge_edge_x86_64_cloud.zip
 archlinux_current_current_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
+centos_8_8-Stream_x86_64_cloud.zip
 centos_8_8-Stream_x86_64_default.zip
 centos_9_9-Stream_x86_64_cloud.zip
 centos_9_9-Stream_x86_64_default.zip

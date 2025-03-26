@@ -20,7 +20,6 @@ debian_11_bullseye_x86_64_default.zip
 debian_12_bookworm_x86_64_cloud.zip
 debian_12_bookworm_x86_64_default.zip
 debian_13_trixie_x86_64_cloud.zip
-debian_13_trixie_x86_64_default.zip
 fedora_39_39_x86_64_cloud.zip
 fedora_39_39_x86_64_default.zip
 fedora_40_40_x86_64_cloud.zip

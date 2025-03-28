@@ -19,9 +19,6 @@ debian_13_trixie_arm64_cloud.zip
 debian_13_trixie_arm64_default.zip
 fedora_39_39_arm64_cloud.zip
 fedora_39_39_arm64_default.zip
-fedora_40_40_arm64_cloud.zip
-fedora_40_40_arm64_default.zip
-kali_latest_kali-rolling_arm64_cloud.zip
 kali_latest_kali-rolling_arm64_default.zip
 openeuler_20.03_20.03_arm64_cloud.zip
 openeuler_20.03_20.03_arm64_default.zip

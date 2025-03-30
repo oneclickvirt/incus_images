@@ -43,6 +43,7 @@ openwrt_snapshot_snapshot_x86_64_default.zip
 rockylinux_8_8_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
 rockylinux_9_9_x86_64_cloud.zip
+rockylinux_9_9_x86_64_default.zip
 ubuntu_18.04_bionic_x86_64_cloud.zip
 ubuntu_18.04_bionic_x86_64_default.zip
 ubuntu_20.04_focal_x86_64_cloud.zip

@@ -56,3 +56,5 @@ openeuler_24.09_24.09_arm64_default.zip
 openeuler_24.09_24.09_arm64_cloud.zip
 debian_13_trixie_arm64_default.zip
 debian_13_trixie_arm64_cloud.zip
+openeuler_25.03_25.03_arm64_default.zip
+openeuler_25.03_25.03_arm64_cloud.zip

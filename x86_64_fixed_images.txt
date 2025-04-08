@@ -32,11 +32,14 @@ openeuler_24.03_24.03_x86_64_cloud.zip
 openeuler_24.03_24.03_x86_64_default.zip
 openeuler_24.09_24.09_x86_64_cloud.zip
 openeuler_24.09_24.09_x86_64_default.zip
+openeuler_25.03_25.03_x86_64_cloud.zip
+openeuler_25.03_25.03_x86_64_default.zip
 openwrt_21.02_21.02_x86_64_cloud.zip
 openwrt_21.02_21.02_x86_64_default.zip
 openwrt_22.03_22.03_x86_64_cloud.zip
 openwrt_22.03_22.03_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
+openwrt_23.05_23.05_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
 rockylinux_8_8_x86_64_cloud.zip

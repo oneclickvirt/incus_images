@@ -2,7 +2,6 @@ almalinux_8_8_x86_64_cloud.zip
 almalinux_8_8_x86_64_default.zip
 almalinux_9_9_x86_64_cloud.zip
 almalinux_9_9_x86_64_default.zip
-alpine_3.18_3.18_x86_64_cloud.zip
 alpine_3.19_3.19_x86_64_cloud.zip
 alpine_3.20_3.20_x86_64_cloud.zip
 alpine_3.21_3.21_x86_64_cloud.zip
@@ -44,8 +43,6 @@ openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
 rockylinux_8_8_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
-rockylinux_9_9_x86_64_cloud.zip
-rockylinux_9_9_x86_64_default.zip
 ubuntu_18.04_bionic_x86_64_cloud.zip
 ubuntu_18.04_bionic_x86_64_default.zip
 ubuntu_20.04_focal_x86_64_cloud.zip

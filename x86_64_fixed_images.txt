@@ -23,7 +23,6 @@ debian_13_trixie_x86_64_cloud.zip
 debian_13_trixie_x86_64_default.zip
 fedora_39_39_x86_64_cloud.zip
 fedora_39_39_x86_64_default.zip
-fedora_40_40_x86_64_cloud.zip
 kali_latest_kali-rolling_x86_64_default.zip
 openeuler_20.03_20.03_x86_64_cloud.zip
 openeuler_20.03_20.03_x86_64_default.zip

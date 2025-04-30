@@ -24,7 +24,7 @@ jobs:
         #   - distro: openeuler
         #     arch: arm64
     runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 120
+    timeout-minutes: 150
 
     steps:
     - uses: actions/checkout@v4

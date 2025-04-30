@@ -188,7 +188,7 @@ build_or_list_images() {
                     fi
                 fi
                 if [ "$is_build_image" == true ]; then
-if command -v distrobuilder >/dev/null 2>&1; then
+                    if command -v distrobuilder >/dev/null 2>&1; then
                         if [[ "$run_funct" == "gentoo" ]]; then
                             echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}"
                             if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" -o image.architecture=${arch} -o image.variant=${variant} ${EXTRA_ARGS}; then

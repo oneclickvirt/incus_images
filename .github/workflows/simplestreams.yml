@@ -106,9 +106,9 @@ jobs:
 
     - name: Generate simplestreams metadata
       run: |
-        OUT_INDEX="build/simplestreams_index"
-        incus-simplestreams generate-metadata --output "$OUT_INDEX"
-        echo "Metadata generated in $OUT_INDEX"
+        ls
+        incus-simplestreams generate-metadata -h
+        incus-simplestreams generate-metadata
 
     - name: List build contents
       run: |

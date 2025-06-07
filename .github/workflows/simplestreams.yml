@@ -11,17 +11,14 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-        
-    - name: Install simplestream-maintainer
+
+    - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y golang git
-        git clone https://github.com/lxc/incus
-        cd incus/cmd/incus-simplestreams
-        go build -o incus-simplestreams .
-        sudo mv incus-simplestreams /usr/local/bin/
-        incus-simplestreams --version
-        incus-simplestreams --help
+        sudo apt-get install -y golang git python3-pip
+        go install github.com/MottainaiCI/simplestreams-builder@latest
+        echo "$HOME/go/bin" >> $GITHUB_PATH
+        simplestreams-builder --version
 
     - name: Download assets from GitHub Release
       run: |
@@ -86,14 +83,18 @@ jobs:
           cd - >/dev/null
         done
 
-    - name: Build simplestreams index and webpage
+    - name: Build simplestreams index and webpage (with simplestreams-builder)
       run: |
-        ls
-        simplestream-maintainer build build --build-webpage -d spiritlhl
+        # 你可以自定义 --web-dir, --images-dir 路径
+        simplestreams-builder \
+          --images-dir build/spiritlhl \
+          --web-dir build/web \
+          --variant spiritlhl \
+          --distribution incus
 
     - name: Patch index.html for spiritlhl (content-only)
       run: |
-        find build -name "index.html" | while read -r f; do
+        find build/web -name "index.html" | while read -r f; do
           sed -i 's/images:/spiritlhl:/g' "$f"
           sed -i 's/The images provided via this image server are unofficial images,/ /g' "$f"
           sed -i 's/provided as a convenience and for testing purposes. Whenever possible, you/lxc remote add spiritlhl https:\/\/incusimages.spiritlhl.net --protocol simplestreams --public/g' "$f"
@@ -111,7 +112,7 @@ jobs:
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@v3.0
       with:
-        publish-dir: './build'
+        publish-dir: './build/web'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
       env:

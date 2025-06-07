@@ -15,9 +15,10 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y golang git python3-pip
-        go install github.com/MottainaiCI/simplestreams-builder@latest
-        echo "$HOME/go/bin" >> $GITHUB_PATH
+        sudo apt-get install -y git python3-pip
+        wget https://github.com/MottainaiCI/simplestreams-builder/releases/download/v0.3.1/simplestreams-builder-v0.3.1-linux-amd64 simplestreams-builder
+        chmod 777 simplestreams-builder
+        mv simplestreams-builder /usr/local/bin
         simplestreams-builder --version
 
     - name: Download assets from GitHub Release

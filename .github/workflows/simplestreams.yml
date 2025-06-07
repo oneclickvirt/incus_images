@@ -94,7 +94,6 @@ jobs:
           d=$(dirname "$squashfs")
           meta="$d/meta.yaml"
           image="$d/incus.tar.xz"
-          # 检查必需的文件是否存在
           if [ -f "$meta" ] && [ -f "$image" ]; then
             echo "Importing $d"
             incus-simplestreams add "$image" "$squashfs" || echo "Failed to add $d"
@@ -104,11 +103,10 @@ jobs:
         done
         echo "All images added."
 
-    - name: Generate simplestreams metadata
+    - name: Generate simplestreams index json
       run: |
         mkdir -p build/streams/v1
-        incus-simplestreams generate-metadata build/streams/v1
-        cp build/streams/v1/index.json build/streams/v1/spiritlhl.json || true
+        incus-simplestreams simplestreams build/streams/v1
 
     - name: Generate index.html
       run: |

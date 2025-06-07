@@ -55,7 +55,7 @@ jobs:
             .[] | 
             select(.tag_name != "processed") | 
             .assets[] | 
-            select(.name | test("^[a-z0-9]+_[0-9a-z.-]+_[a-z0-9]+_[a-z0-9]+_[a-z]+\\.zip$")) |
+            select(.name | test("^[a-zA-Z0-9]+_[a-zA-Z0-9.\\-]+_[a-zA-Z0-9.\\-]+_[a-zA-Z0-9_\\-]+_[a-zA-Z0-9_\\-]+\\.zip$")) |
             @base64
           ' > assets_to_process.txt
           existing_assets=$(curl -s "https://api.github.com/repos/$REPO/releases/$PROCESSED_RELEASE_ID/assets")
@@ -67,14 +67,20 @@ jobs:
             name=$(echo "$asset" | jq -r '.name')
             url=$(echo "$asset" | jq -r '.browser_download_url')
             echo "Processing $name"
-            if [[ "$name" =~ ^([a-z0-9]+)_([0-9a-z\.\-]+)_([a-z0-9]+)_([a-z0-9]+)_([a-z]+)\.zip$ ]]; then
+            if [[ "$name" =~ ^([a-zA-Z0-9]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9_\-]+)_([a-zA-Z0-9_\-]+)\.zip$ ]]; then
               os="${BASH_REMATCH[1]}"
               version="${BASH_REMATCH[2]}"
               codename="${BASH_REMATCH[3]}"
               arch="${BASH_REMATCH[4]}"
               variant="${BASH_REMATCH[5]}"
-              rootfs_file="${os}-${version}-${arch}-${variant}-rootfs.squashfs"
-              incus_file="${os}-${version}-${arch}-${variant}-incus.tar.xz"
+              # 新增标准化映射
+              case "$arch" in
+                x86_64) std_arch="amd64" ;;
+                aarch64) std_arch="arm64" ;;
+                *) std_arch="$arch" ;;
+              esac
+              rootfs_file="${os}-${version}-${std_arch}-${variant}-rootfs.squashfs"
+              incus_file="${os}-${version}-${std_arch}-${variant}-incus.tar.xz"
               rootfs_asset_id=$(echo "$existing_assets" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .id // empty')
               incus_asset_id=$(echo "$existing_assets" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .id // empty')
               if [ -n "$rootfs_asset_id" ]; then
@@ -96,6 +102,7 @@ jobs:
                  --arg os "$os" \
                  --arg version "$version" \
                  --arg arch "$arch" \
+                 --arg std_arch "$std_arch" \
                  --arg variant "$variant" \
                  --arg rootfs_file "$rootfs_file" \
                  --arg incus_file "$incus_file" \
@@ -105,6 +112,7 @@ jobs:
                    os: $os,
                    version: $version,
                    arch: $arch,
+                   std_arch: $std_arch,
                    variant: $variant,
                    rootfs_file: $rootfs_file,
                    incus_file: $incus_file
@@ -139,6 +147,7 @@ jobs:
             os=$(echo "$file_info" | jq -r '.os')
             version=$(echo "$file_info" | jq -r '.version')
             arch=$(echo "$file_info" | jq -r '.arch')
+            std_arch=$(echo "$file_info" | jq -r '.std_arch')
             variant=$(echo "$file_info" | jq -r '.variant')
             rootfs_file=$(echo "$file_info" | jq -r '.rootfs_file')
             incus_file=$(echo "$file_info" | jq -r '.incus_file')
@@ -181,6 +190,7 @@ jobs:
                   jq --arg os "$os" \
                      --arg version "$version" \
                      --arg arch "$arch" \
+                     --arg std_arch "$std_arch" \
                      --arg variant "$variant" \
                      --arg rootfs_url "$rootfs_url" \
                      --arg incus_url "$incus_url" \
@@ -193,6 +203,7 @@ jobs:
                        os: $os,
                        version: $version,
                        arch: $arch,
+                       std_arch: $std_arch,
                        variant: $variant,
                        rootfs_url: $rootfs_url,
                        incus_url: $incus_url,

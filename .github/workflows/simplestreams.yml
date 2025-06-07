@@ -99,9 +99,8 @@ jobs:
           if [ -f "$meta" ] && [ -f "$image" ]; then
             echo "Importing $d"
             incus-simplestreams add \
-              --meta "$meta" \
-              --rootfs "$squashfs" \
-              --image "$image" \
+              "$image" \
+              "$squashfs" \
               --output "$OUT_INDEX"
           else
             echo "Skip $d (missing files)"

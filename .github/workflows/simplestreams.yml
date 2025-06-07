@@ -106,9 +106,28 @@ jobs:
 
     - name: Generate simplestreams metadata
       run: |
-        ls
-        incus-simplestreams generate-metadata -h
-        incus-simplestreams generate-metadata
+        mkdir -p build/streams/v1
+        incus-simplestreams generate-metadata build/streams/v1
+        cp build/streams/v1/index.json build/streams/v1/spiritlhl.json || true
+
+    - name: Generate index.html
+      run: |
+        cat > build/index.html <<EOF
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <title>spiritlhl incus images</title>
+        </head>
+        <body>
+          <h1>spiritlhl incus images</h1>
+          <ul>
+            <li><a href="streams/v1/index.json">streams/v1/index.json</a></li>
+            <li><a href="streams/v1/spiritlhl.json">streams/v1/spiritlhl.json</a></li>
+          </ul>
+        </body>
+        </html>
+        EOF
 
     - name: List build contents
       run: |

@@ -103,6 +103,7 @@ jobs:
       run: |
         find build -name "index.html" | while read -r f; do
           sed -i 's/images:/spiritlhl:/g' "$f"
+          sed -i 's/lxc launch/incus launch/g' "$f"
           echo "Patched $f"
         done
 

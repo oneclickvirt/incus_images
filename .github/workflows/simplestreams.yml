@@ -23,6 +23,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y golang git
         git clone https://github.com/canonical/lxd-imagebuilder
+        sed -i 's/ItemTypeMetadata = "lxd\.tar\.xz"/ItemTypeMetadata = "incus.tar.xz"/' lxd-imagebuilder/simplestream-maintainer/stream/stream.go
         cd lxd-imagebuilder/simplestream-maintainer
         go build -o simplestream-maintainer .
         sudo mv simplestream-maintainer /usr/local/bin/

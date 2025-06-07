@@ -17,8 +17,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y python3 python3-pip snapd wget
         sudo pip install PyYAML
-        sudo snap install --edge incus-imagebuilder --classic
-        incus-imagebuilder --version
 
     - name: Install simplestream-maintainer
       run: |

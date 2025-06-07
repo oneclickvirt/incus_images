@@ -97,7 +97,7 @@ jobs:
           # 检查必需的文件是否存在
           if [ -f "$meta" ] && [ -f "$image" ]; then
             echo "Importing $d"
-            incus-simplestreams add "$image" "$squashfs"
+            incus-simplestreams add "$image" "$squashfs" || echo "Failed to add $d"
           else
             echo "Skip $d (missing files)"
           fi

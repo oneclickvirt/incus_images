@@ -12,16 +12,24 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install incus-simplestreams
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip snapd wget
+        sudo pip install PyYAML
+        sudo snap install --edge incus-imagebuilder --classic
+        incus-imagebuilder --version
+
+    - name: Install simplestream-maintainer
       run: |
         sudo apt-get update
         sudo apt-get install -y golang git
-        git clone https://github.com/lxc/incus
-        cd incus/cmd/incus-simplestreams
-        go build -o incus-simplestreams .
-        sudo mv incus-simplestreams /usr/local/bin/
-        incus-simplestreams --version
-        incus-simplestreams --help
+        git clone https://github.com/canonical/lxd-imagebuilder
+        cd lxd-imagebuilder/simplestream-maintainer
+        go build -o simplestream-maintainer .
+        sudo mv simplestream-maintainer /usr/local/bin/
+        simplestream-maintainer --version
+        simplestream-maintainer build -h
 
     - name: Download assets from GitHub Release
       run: |
@@ -87,45 +95,22 @@ jobs:
           cd - >/dev/null
         done
 
-    - name: Build simplestreams index (add all images)
+    - name: Build simplestreams index and webpage
       run: |
-        set -e
-        find build/spiritlhl -type f -name 'rootfs.squashfs' | while read -r squashfs; do
-          d=$(dirname "$squashfs")
-          meta="$d/meta.yaml"
-          image="$d/incus.tar.xz"
-          if [ -f "$meta" ] && [ -f "$image" ]; then
-            echo "Importing $d"
-            incus-simplestreams add "$image" "$squashfs" || echo "Failed to add $d"
-          else
-            echo "Skip $d (missing files)"
-          fi
+        ls
+        simplestream-maintainer build build --build-webpage -d spiritlhl
+
+    - name: Patch index.html for spiritlhl (content-only)
+      run: |
+        find build -name "index.html" | while read -r f; do
+          sed -i 's/images:/spiritlhl:/g' "$f"
+          sed -i 's/The images provided via this image server are unofficial images,/ /g' "$f"
+          sed -i 's/provided as a convenience and for testing purposes. Whenever possible, you/lxc remote add spiritlhl https:\/\/incusimages.spiritlhl.net --protocol simplestreams --public/g' "$f"
+          sed -i 's/should try to use official images from your Linux distribution of choice./incus image list spiritlhl:debian/g' "$f"
+          sed -i 's@https://github.com/canonical/lxd/issues/new@https://github.com/oneclickvirt/incus_images@g' "$f"
+          sed -i 's@https://documentation.ubuntu.com/lxd/en/latest/howto/images_manage/@https://www.spiritlhl.net@g' "$f"
+          echo "Patched $f"
         done
-        echo "All images added."
-
-    - name: Generate simplestreams index json
-      run: |
-        mkdir -p build/streams/v1
-        incus-simplestreams simplestreams build/streams/v1
-
-    - name: Generate index.html
-      run: |
-        cat > build/index.html <<EOF
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>spiritlhl incus images</title>
-        </head>
-        <body>
-          <h1>spiritlhl incus images</h1>
-          <ul>
-            <li><a href="streams/v1/index.json">streams/v1/index.json</a></li>
-            <li><a href="streams/v1/spiritlhl.json">streams/v1/spiritlhl.json</a></li>
-          </ul>
-        </body>
-        </html>
-        EOF
 
     - name: List build contents
       run: |

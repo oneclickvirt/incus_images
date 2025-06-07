@@ -22,7 +22,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y golang git
-        git clone https://github.com/canonical/lxd-imagebuilder
+        git clone https://github.com/oneclickvirt/lxd-imagebuilder.git
         sed -i 's/ItemTypeMetadata = "lxd\.tar\.xz"/ItemTypeMetadata = "incus.tar.xz"/' lxd-imagebuilder/simplestream-maintainer/stream/stream.go
         cd lxd-imagebuilder/simplestream-maintainer
         go build -o simplestream-maintainer .
@@ -103,11 +103,6 @@ jobs:
       run: |
         find build -name "index.html" | while read -r f; do
           sed -i 's/images:/spiritlhl:/g' "$f"
-          sed -i 's/The images provided via this image server are unofficial images,/ /g' "$f"
-          sed -i 's/provided as a convenience and for testing purposes. Whenever possible, you/lxc remote add spiritlhl https:\/\/incusimages.spiritlhl.net --protocol simplestreams --public/g' "$f"
-          sed -i 's/should try to use official images from your Linux distribution of choice./incus image list spiritlhl:debian/g' "$f"
-          sed -i 's@https://github.com/canonical/lxd/issues/new@https://github.com/oneclickvirt/incus_images@g' "$f"
-          sed -i 's@https://documentation.ubuntu.com/lxd/en/latest/howto/images_manage/@https://www.spiritlhl.net@g' "$f"
           echo "Patched $f"
         done
 

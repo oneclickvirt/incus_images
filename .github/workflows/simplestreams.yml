@@ -21,7 +21,7 @@ jobs:
         go build -o incus-simplestreams .
         sudo mv incus-simplestreams /usr/local/bin/
         incus-simplestreams --version
-        incus-simplestreams build -h
+        incus-simplestreams --help
 
     - name: Download assets from GitHub Release
       run: |

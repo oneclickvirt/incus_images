@@ -16,9 +16,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y git python3-pip
-        wget https://github.com/MottainaiCI/simplestreams-builder/releases/download/v0.3.1/simplestreams-builder-v0.3.1-linux-amd64 simplestreams-builder
-        chmod 777 simplestreams-builder
-        mv simplestreams-builder /usr/local/bin
+        wget https://github.com/MottainaiCI/simplestreams-builder/releases/download/v0.3.1/simplestreams-builder-v0.3.1-linux-amd64
+        chmod +x simplestreams-builder-v0.3.1-linux-amd64
+        sudo mv simplestreams-builder-v0.3.1-linux-amd64 /usr/local/bin/simplestreams-builder
         simplestreams-builder --version
 
     - name: Download assets from GitHub Release

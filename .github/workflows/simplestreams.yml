@@ -39,7 +39,7 @@ jobs:
         for a in assets:
             name = a["name"]
             url = a["browser_download_url"]
-            m = re.match(r"([a-zA-Z0-9]+)-([^-]+)-([^-]+)-([^-]+)-(rootfs|incus)\.(squashfs|tar\.xz)", name)
+            m = re.match(r"([a-zA-Z0-9]+)-([^-]+)-([^-]+)-cloud-(rootfs|incus)\.(squashfs|tar\.xz)", name)
             if not m: continue
             os_name, rel, arch, variant, t, ext = m.groups()
             local_dir = f"{OUTDIR}/{os_name}/{rel}/{arch}/{variant}/{dt}"

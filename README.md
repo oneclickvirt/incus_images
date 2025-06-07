@@ -36,6 +36,8 @@ LXD 版本 <= [5.18](https://github.com/canonical/lxd/releases/tag/lxd-5.18)
 
 incus在LXD的5.18版本分叉，不保证LXD更高版本下的容器镜像可用性
 
+远程镜像源地址: https://incusimages.spiritlhl.net/
+
 ## Introduce
 
 Mirrors in Releases (pulls mirrors daily for automatic patching and updating):
@@ -63,6 +65,8 @@ Support:
 LXD version <= [5.18](https://github.com/canonical/lxd/releases/tag/lxd-5.18)
 
 incus forked at version 5.18 of LXD and does not guarantee container image availability under higher versions of LXD
+
+Remote images source address: https://incusimages.spiritlhl.net/
 
 ## 测试-test
 

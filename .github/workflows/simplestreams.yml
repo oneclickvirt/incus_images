@@ -106,6 +106,8 @@ jobs:
           sed -i 's/lxd/incus/g' "$f"
           sed -i 's/images:/spiritlhl:/g' "$f"
           sed -i 's/lxc launch/incus launch/g' "$f"
+          sed -i 's/lxc remote/incus remote/g' "$f"
+          sed -i 's/lxc image/incus image/g' "$f"
           echo "Patched $f"
         done
 

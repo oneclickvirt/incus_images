@@ -74,3 +74,4 @@ openeuler_24.09_24.09_x86_64_default.zip
 openeuler_24.09_24.09_x86_64_cloud.zip
 openeuler_25.03_25.03_x86_64_default.zip
 openeuler_25.03_25.03_x86_64_cloud.zip
+alpine_3.22_3.22_x86_64_cloud.zip

@@ -9,7 +9,7 @@ jobs:
   build-images:
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 6
       matrix:
         distro: ["debian", "kali", "centos", "almalinux", "rockylinux", "fedora", "opensuse", "alpine", "archlinux", "gentoo", "openwrt", "oracle", "openeuler", "ubuntu"]
         arch:
@@ -24,7 +24,7 @@ jobs:
         #   - distro: openeuler
         #     arch: arm64
     runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 150
+    timeout-minutes: 200
 
     steps:
     - uses: actions/checkout@v4

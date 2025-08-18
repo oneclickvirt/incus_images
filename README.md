@@ -4,6 +4,8 @@
 
 [![Multi-Distro Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml)
 
+[![Multi-Distro KVM Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build_vm.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build_vm.yml)
+
 ## 说明
 
 Releases中的镜像(每日拉取镜像进行自动修补和更新)：

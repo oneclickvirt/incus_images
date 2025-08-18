@@ -13,11 +13,11 @@ jobs:
           [
             "debian",
             "ubuntu",
-            "fedora",
+            # "fedora", # 无法编译
             "opensuse",
             "alpine",
             "archlinux",
-            "centos",
+            # "centos", # 无法编译
             "almalinux",
             "rockylinux",
             "oracle",

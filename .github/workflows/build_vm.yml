@@ -43,9 +43,16 @@ jobs:
         run: |
           git config --global user.name "daily-update"
           git config --global user.email "tg@spiritlhl.top"
+      
+      # 添加GitHub CLI安装
+      - name: Install GitHub CLI
+        run: |
+          sudo apt install -y gh
+
       - name: Build and Upload KVM Images
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
           DISTRO="${{ matrix.distro }}"
@@ -59,17 +66,13 @@ jobs:
             echo "$item"
           done
           echo "-------"
-          release_response=$(curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/kvm_images" || true)
-          if [ "$(jq -r '.id' <<< "$release_response")" == "null" ]; then
+          
+          # 检查或创建release
+          if ! gh release view kvm_images >/dev/null 2>&1; then
             echo "Creating new release for kvm_images"
-            release_response=$(curl -sS -X POST -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -d '{"tag_name":"kvm_images", "name":"KVM Images", "generate_release_notes":true}' \
-              "https://api.github.com/repos/oneclickvirt/incus_images/releases" || true)
+            gh release create kvm_images --title "KVM Images" --notes "Automated KVM image builds"
           fi
-          release_id=$(jq -r '.id' <<< "$release_response")
+          
           echo "Building $DISTRO KVM images and packaging zips for $ARCH"
           sudo bash build_kvm_images.sh $DISTRO true $ARCH || true
           echo "------------"
@@ -77,78 +80,70 @@ jobs:
           ls
           echo "------------"
 
-          upload_large_file() {
-            local file="$1"
-            local asset_name="$2"
-            local file_size=$(stat -c %s "$file")
-            local chunk_size=$((50 * 1024 * 1024))
-            local total_chunks=$(( (file_size + chunk_size - 1) / chunk_size ))
-            
-            echo "Starting chunked upload for $asset_name (size: $(numfmt --to=iec-i --suffix=B $file_size), chunks: $total_chunks)"
-            
-            upload_url=$(curl -sS -X POST \
-              -H "Authorization: Bearer $GITHUB_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              -d "{\"name\":\"$asset_name\"}" \
-              "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
-              | jq -r '.upload_url' | sed 's/{?name,label}//')
-            
-            if [ "$upload_url" = "null" ] || [ -z "$upload_url" ]; then
-              echo "Failed to get upload URL"
-              return 1
-            fi
-            
-            for ((i=0; i<total_chunks; i++)); do
-              local start=$((i * chunk_size))
-              local end=$((start + chunk_size - 1))
-              if [ $end -ge $file_size ]; then
-                end=$((file_size - 1))
-              fi
-              local current_chunk_size=$((end - start + 1))
-              
-              echo "Uploading chunk $((i+1))/$total_chunks (bytes $start-$end)"
-              
-              dd if="$file" bs=1 skip=$start count=$current_chunk_size 2>/dev/null | \
-              curl -sS -X PUT \
-                -H "Authorization: Bearer $GITHUB_TOKEN" \
-                -H "Content-Type: application/zip" \
-                -H "Content-Range: bytes $start-$end/$file_size" \
-                --data-binary @- \
-                "$upload_url?name=$asset_name" || return 1
-            done
-            
-            echo "Upload completed for $asset_name"
-            return 0
-          }
-
+          # 检查GitHub Release文件大小限制（通常为2GB）
+          MAX_FILE_SIZE=$((2 * 1024 * 1024 * 1024))  # 2GB in bytes
+          
           for file in "${zip_name_list[@]}"; do
-            if [ -f "$file" ] && [ $(stat -c %s "$file") -gt 10485760 ]; then
-              echo "Processing $file (size: $(numfmt --to=iec-i --suffix=B $(stat -c %s "$file")))"
-              asset_name=$(basename "$file")
-              existing_asset=$(curl -sS -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets" \
-                | jq -r --arg name "$asset_name" '.[] | select(.name == $name)')
-              if [ -n "$existing_asset" ]; then
-                asset_id=$(jq -r '.id' <<< "$existing_asset")
-                echo "Removing existing asset ID $asset_id"
-                curl -sS -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" \
-                  "https://api.github.com/repos/oneclickvirt/incus_images/releases/assets/$asset_id" || true
+            if [ -f "$file" ]; then
+              file_size=$(stat -c %s "$file")
+              file_size_mb=$((file_size / 1024 / 1024))
+              
+              echo "Processing $file (size: $(numfmt --to=iec-i --suffix=B $file_size))"
+              
+              # 跳过过小的文件
+              if [ $file_size -lt 10485760 ]; then
+                echo "Skipping $file - size <10MB"
+                rm -vf "$file"
+                continue
               fi
               
-              file_size=$(stat -c %s "$file")
-              if [ $file_size -gt $((100 * 1024 * 1024)) ]; then
-                upload_large_file "$file" "$asset_name" || echo "Chunked upload failed for $file"
-              else
-                echo "Uploading $asset_name..."
-                curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
-                  -H "Content-Type: application/zip" \
-                  --data-binary @"$file" \
-                  "https://uploads.github.com/repos/oneclickvirt/incus_images/releases/$release_id/assets?name=$asset_name" || true
+              # 检查文件是否过大
+              if [ $file_size -gt $MAX_FILE_SIZE ]; then
+                echo "Warning: $file is too large for GitHub Release ($(numfmt --to=iec-i --suffix=B $file_size))"
+                echo "Consider splitting or compressing the file further"
+                rm -vf "$file"
+                continue
               fi
+              
+              asset_name=$(basename "$file")
+              
+              # 删除已存在的asset
+              echo "Checking for existing asset: $asset_name"
+              if gh release view kvm_images --json assets --jq ".assets[].name" | grep -q "^$asset_name$"; then
+                echo "Removing existing asset: $asset_name"
+                gh release delete-asset kvm_images "$asset_name" --yes || true
+                sleep 2  # 等待删除完成
+              fi
+              
+              # 上传文件
+              echo "Uploading $asset_name..."
+              if gh release upload kvm_images "$file" --clobber; then
+                echo "Successfully uploaded $asset_name"
+              else
+                echo "Failed to upload $asset_name"
+                # 尝试使用curl作为备用方案
+                echo "Attempting backup upload method..."
+                upload_url="https://uploads.github.com/repos/oneclickvirt/incus_images/releases"
+                release_id=$(gh release view kvm_images --json id --jq .id)
+                
+                if [ -n "$release_id" ] && [ "$release_id" != "null" ]; then
+                  curl_response=$(curl -sS -H "Authorization: Bearer $GITHUB_TOKEN" \
+                    -H "Content-Type: application/zip" \
+                    --data-binary @"$file" \
+                    "$upload_url/$release_id/assets?name=$asset_name" || echo "curl_failed")
+                  
+                  if [ "$curl_response" != "curl_failed" ]; then
+                    echo "Backup upload successful for $asset_name"
+                  else
+                    echo "Both upload methods failed for $asset_name"
+                  fi
+                fi
+              fi
+              
+              # 清理文件
               sudo rm -vf "$file"
             else
-              echo "Skipping $file - does not exist or size <10MB"
-              [ -f "$file" ] && rm -vf "$file"
+              echo "File $file does not exist"
             fi
           done
         continue-on-error: true

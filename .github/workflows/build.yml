@@ -24,7 +24,7 @@ jobs:
             "alpine",
             "archlinux",
             "gentoo",
-            "openwrt",
+            # "openwrt", # 编译无效
             "oracle",
             "ubuntu",
           ]

@@ -4,10 +4,6 @@
 
 [![Multi-Distro Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml)
 
-[![Collect Logs](https://github.com/oneclickvirt/incus_images/actions/workflows/collect.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/collect.yml)
-
-
-
 ## 说明
 
 Releases中的镜像(每日拉取镜像进行自动修补和更新)：

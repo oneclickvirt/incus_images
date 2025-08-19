@@ -18,7 +18,7 @@ jobs:
             "centos",
             "almalinux",
             "rockylinux",
-            # "fedora", # 编译无效
+            "fedora", # 编译无效
             # "centos", # 编译无效
             "opensuse",
             "alpine",

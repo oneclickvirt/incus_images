@@ -13,7 +13,7 @@ jobs:
           [
             "debian",
             "ubuntu",
-            # "fedora", # 无法编译
+            "fedora", # 无法编译
             "opensuse",
             "alpine",
             "archlinux",

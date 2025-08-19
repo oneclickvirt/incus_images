@@ -1,5 +1,7 @@
 # incus_images
 
+[![Downloads](https://ghdownload.spiritlhl.net/oneclickvirt/incus_images?label=Downloads&color=03c220)](https://github.com/oneclickvirt/incus_images/releases)
+
 [![Clone Yaml](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/clone_yaml.yml)
 
 [![Multi-Distro Images Builder](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml/badge.svg)](https://github.com/oneclickvirt/incus_images/actions/workflows/build.yml)

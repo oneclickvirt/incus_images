@@ -22,6 +22,9 @@ if command -v apt-get >/dev/null 2>&1; then
     if ! command -v snap >/dev/null 2>&1; then
         sudo apt-get install snapd -y
     fi
+    if ! command -v umoci >/dev/null 2>&1; then
+        sudo apt-get install umoci -y
+    fi
     sudo systemctl start snapd
     sleep 10
     if ! command -v distrobuilder >/dev/null 2>&1; then

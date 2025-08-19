@@ -15,7 +15,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq unzip curl gh
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: 获取所有 Releases 信息
         id: get_releases
         env:
@@ -23,13 +24,11 @@ jobs:
         run: |
           curl -s "https://api.github.com/repos/${{ github.repository }}/releases" > releases.json
           echo "data=$(cat releases.json | jq -c .)" >> $GITHUB_OUTPUT
-
       - name: 创建或获取 processed Release
         id: get_processed_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 使用 gh 命令检查和创建 release
           if ! gh release view processed >/dev/null 2>&1; then
             echo "Creating new release 'processed'..."
             gh release create processed --title "Processed Assets" --notes "Automatically processed container assets"
@@ -40,8 +39,6 @@ jobs:
           else
             echo "Found existing release 'processed'"
           fi
-          
-          # 获取 release ID
           processed_id=$(gh release view processed --json id --jq .id)
           echo "release_id=$processed_id" >> $GITHUB_OUTPUT
 
@@ -55,8 +52,6 @@ jobs:
           mkdir -p work
           cd work
           echo "[]" > files_to_upload.json
-          
-          # 将黑名单转换为 jq 查询条件
           blacklist_condition=""
           IFS=',' read -ra TAGS <<< "$BLACKLIST_TAGS"
           for tag in "${TAGS[@]}"; do
@@ -65,10 +60,7 @@ jobs:
             fi
             blacklist_condition="${blacklist_condition}.tag_name != \"$tag\""
           done
-          
           echo "Using blacklist condition: $blacklist_condition"
-          
-          # 处理符合条件的资源，排除黑名单中的 releases
           cat ../releases.json | jq -r "
             .[] | 
             select($blacklist_condition) |
@@ -76,10 +68,7 @@ jobs:
             select(.name | test(\"^[a-zA-Z0-9]+_[a-zA-Z0-9.\\\\-]+_[a-zA-Z0-9.\\\\-]+_[a-zA-Z0-9_\\\\-]+_[a-zA-Z0-9_\\\\-]+\\\\.zip$\")) |
             @base64
           " > assets_to_process.txt
-          
-          # 获取现有的processed assets
           existing_assets=$(gh release view processed --json assets --jq .assets)
-          
           while IFS= read -r encoded_asset; do
             if [ -z "$encoded_asset" ]; then
               continue
@@ -87,7 +76,6 @@ jobs:
             asset=$(echo "$encoded_asset" | base64 -d)
             name=$(echo "$asset" | jq -r '.name')
             url=$(echo "$asset" | jq -r '.browser_download_url')
-            
             echo "Processing $name"
             if [[ "$name" =~ ^([a-zA-Z0-9]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9_\-]+)_([a-zA-Z0-9_\-]+)\.zip$ ]]; then
               os="${BASH_REMATCH[1]}"
@@ -95,31 +83,23 @@ jobs:
               codename="${BASH_REMATCH[3]}"
               arch="${BASH_REMATCH[4]}"
               variant="${BASH_REMATCH[5]}"
-              
-              # 标准化架构映射
               case "$arch" in
                 x86_64) std_arch="amd64" ;;
                 aarch64) std_arch="arm64" ;;
                 *) std_arch="$arch" ;;
               esac
-              
               rootfs_file="${os}-${version}-${std_arch}-${variant}-rootfs.squashfs"
               incus_file="${os}-${version}-${std_arch}-${variant}-incus.tar.xz"
-              
-              # 检查并删除现有文件
               if echo "$existing_assets" | jq -r '.[].name' | grep -q "^$rootfs_file$"; then
                 echo "Deleting existing $rootfs_file..."
                 gh release delete-asset processed "$rootfs_file" --yes || true
                 sleep 2
               fi
-              
               if echo "$existing_assets" | jq -r '.[].name' | grep -q "^$incus_file$"; then
                 echo "Deleting existing $incus_file..."
                 gh release delete-asset processed "$incus_file" --yes || true
                 sleep 2
               fi
-              
-              # 添加到处理队列
               jq --arg name "$name" \
                  --arg url "$url" \
                  --arg os "$os" \
@@ -143,7 +123,6 @@ jobs:
               mv files_to_upload_temp.json files_to_upload.json
             fi
           done < assets_to_process.txt
-          
           mv files_to_upload.json /tmp/files_to_upload.json
 
       - name: 等待API同步

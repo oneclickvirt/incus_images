@@ -27,6 +27,7 @@ jobs:
             "openwrt", # 编译无效
             "oracle",
             "ubuntu",
+            "openeuler",
           ]
         arch:
           - name: amd64

@@ -1,4 +1,4 @@
-name: simplestreams_pre_build
+name: Incus Simplestreams Pre Build
 
 on:
   schedule:

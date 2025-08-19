@@ -1,4 +1,4 @@
-name: Build incus Simplestreams
+name: Build Incus Simplestreams
 
 on:
   workflow_dispatch:

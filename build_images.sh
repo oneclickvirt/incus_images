@@ -20,6 +20,9 @@ if command -v apt-get >/dev/null 2>&1; then
     if ! command -v jq >/dev/null 2>&1; then
         sudo apt-get install jq -y
     fi
+    if ! command -v umoci >/dev/null 2>&1; then
+        sudo apt-get install umoci -y
+    fi
     uname_output=$(uname -a)
     # if [[ $uname_output != *ARM* && $uname_output != *arm* && $uname_output != *aarch* ]]; then
     if ! command -v snap >/dev/null 2>&1; then

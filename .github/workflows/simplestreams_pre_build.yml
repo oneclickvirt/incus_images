@@ -8,67 +8,77 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 480  # 8小时超时，考虑到大文件处理
-
+    timeout-minutes: 200
+    
     steps:
       - name: 安装依赖
         run: |
           sudo apt-get update
           sudo apt-get install -y jq unzip curl gh
-          gh --version
 
       - name: 获取所有 Releases 信息
         id: get_releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           curl -s "https://api.github.com/repos/${{ github.repository }}/releases" > releases.json
           echo "data=$(cat releases.json | jq -c .)" >> $GITHUB_OUTPUT
 
-      - name: 创建或获取 processed Release ID
+      - name: 创建或获取 processed Release
         id: get_processed_release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 使用 GitHub CLI 检查是否存在 processed release
-          if gh release view processed >/dev/null 2>&1; then
-            echo "Found existing release 'processed'"
-            processed_id=$(gh release view processed --json id --jq .id)
-          else
+          # 使用 gh 命令检查和创建 release
+          if ! gh release view processed >/dev/null 2>&1; then
             echo "Creating new release 'processed'..."
-            gh release create processed --title "Processed Assets" --notes "Automated processing of container images"
-            processed_id=$(gh release view processed --json id --jq .id)
+            gh release create processed --title "Processed Assets" --notes "Automatically processed container assets"
+            if [ $? -ne 0 ]; then
+              echo "Failed to create release"
+              exit 1
+            fi
+          else
+            echo "Found existing release 'processed'"
           fi
           
-          if [ "$processed_id" = "null" ] || [ -z "$processed_id" ]; then
-            echo "Failed to get or create release ID"
-            exit 1
-          fi
-          
+          # 获取 release ID
+          processed_id=$(gh release view processed --json id --jq .id)
           echo "release_id=$processed_id" >> $GITHUB_OUTPUT
 
       - name: 预处理和删除现有文件
         env:
           PROCESSED_RELEASE_ID: ${{ steps.get_processed_release.outputs.release_id }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          BLACKLIST_TAGS: "processed,kvm_images"
         run: |
           mkdir -p work
           cd work
           echo "[]" > files_to_upload.json
           
-          # 提取需要处理的资产
-          cat ../releases.json | jq -r '
+          # 将黑名单转换为 jq 查询条件
+          blacklist_condition=""
+          IFS=',' read -ra TAGS <<< "$BLACKLIST_TAGS"
+          for tag in "${TAGS[@]}"; do
+            if [ -n "$blacklist_condition" ]; then
+              blacklist_condition="$blacklist_condition and "
+            fi
+            blacklist_condition="${blacklist_condition}.tag_name != \"$tag\""
+          done
+          
+          echo "Using blacklist condition: $blacklist_condition"
+          
+          # 处理符合条件的资源，排除黑名单中的 releases
+          cat ../releases.json | jq -r "
             .[] | 
-            select(.tag_name != "processed") | 
+            select($blacklist_condition) |
             .assets[] | 
-            select(.name | test("^[a-zA-Z0-9]+_[a-zA-Z0-9.\\-]+_[a-zA-Z0-9.\\-]+_[a-zA-Z0-9_\\-]+_[a-zA-Z0-9_\\-]+\\.zip$")) |
+            select(.name | test(\"^[a-zA-Z0-9]+_[a-zA-Z0-9.\\\\-]+_[a-zA-Z0-9.\\\\-]+_[a-zA-Z0-9_\\\\-]+_[a-zA-Z0-9_\\\\-]+\\\\.zip$\")) |
             @base64
-          ' > assets_to_process.txt
+          " > assets_to_process.txt
           
           # 获取现有的processed assets
-          existing_assets=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$REPO/releases/$PROCESSED_RELEASE_ID/assets")
+          existing_assets=$(gh release view processed --json assets --jq .assets)
           
           while IFS= read -r encoded_asset; do
             if [ -z "$encoded_asset" ]; then
@@ -77,8 +87,8 @@ jobs:
             asset=$(echo "$encoded_asset" | base64 -d)
             name=$(echo "$asset" | jq -r '.name')
             url=$(echo "$asset" | jq -r '.browser_download_url')
-            echo "Processing $name"
             
+            echo "Processing $name"
             if [[ "$name" =~ ^([a-zA-Z0-9]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9.\-]+)_([a-zA-Z0-9_\-]+)_([a-zA-Z0-9_\-]+)\.zip$ ]]; then
               os="${BASH_REMATCH[1]}"
               version="${BASH_REMATCH[2]}"
@@ -96,15 +106,14 @@ jobs:
               rootfs_file="${os}-${version}-${std_arch}-${variant}-rootfs.squashfs"
               incus_file="${os}-${version}-${std_arch}-${variant}-incus.tar.xz"
               
-              # 检查并删除现有的处理后文件
-              echo "Checking for existing processed files..."
-              if gh release view processed --json assets --jq ".assets[].name" | grep -q "^$rootfs_file$"; then
+              # 检查并删除现有文件
+              if echo "$existing_assets" | jq -r '.[].name' | grep -q "^$rootfs_file$"; then
                 echo "Deleting existing $rootfs_file..."
                 gh release delete-asset processed "$rootfs_file" --yes || true
                 sleep 2
               fi
               
-              if gh release view processed --json assets --jq ".assets[].name" | grep -q "^$incus_file$"; then
+              if echo "$existing_assets" | jq -r '.[].name' | grep -q "^$incus_file$"; then
                 echo "Deleting existing $incus_file..."
                 gh release delete-asset processed "$incus_file" --yes || true
                 sleep 2
@@ -136,32 +145,27 @@ jobs:
           done < assets_to_process.txt
           
           mv files_to_upload.json /tmp/files_to_upload.json
-          echo "Files to process: $(jq length /tmp/files_to_upload.json)"
 
       - name: 等待API同步
         run: |
           echo "Waiting for GitHub API to sync after deletions..."
-          sleep 60  # 减少等待时间从6分钟到1分钟
+          sleep 120
 
       - name: 处理并上传解压文件
         env:
           PROCESSED_RELEASE_ID: ${{ steps.get_processed_release.outputs.release_id }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           mkdir -p work
           cd work
           echo "[]" > processed_assets.json
-          
-          # 设置文件大小限制（2GB）
-          MAX_FILE_SIZE=$((2 * 1024 * 1024 * 1024))
-          
+          echo "Available disk space:"
+          df -h /
           jq -r '.[] | @base64' /tmp/files_to_upload.json | while IFS= read -r encoded_file; do
             if [ -z "$encoded_file" ]; then
               continue
             fi
-            
             file_info=$(echo "$encoded_file" | base64 -d)
             name=$(echo "$file_info" | jq -r '.name')
             url=$(echo "$file_info" | jq -r '.url')
@@ -172,105 +176,104 @@ jobs:
             variant=$(echo "$file_info" | jq -r '.variant')
             rootfs_file=$(echo "$file_info" | jq -r '.rootfs_file')
             incus_file=$(echo "$file_info" | jq -r '.incus_file')
-            
             temp_dir="temp_${os}_${version}_${arch}_${variant}_$$"
             mkdir -p "$temp_dir"
             cd "$temp_dir"
-            
             echo "Downloading $name..."
-            download_success=false
-            max_retries=3
-            
-            for retry in $(seq 1 $max_retries); do
-              if curl -L -o image.zip "$url" && [ -f image.zip ]; then
-                echo "Download successful on attempt $retry"
-                download_success=true
-                break
-              else
-                echo "Download attempt $retry failed"
-                [ $retry -lt $max_retries ] && sleep 10
+            if curl -L --max-filesize 2147483648 -o image.zip "$url"; then  # 2GB 限制
+              file_size=$(stat -c%s image.zip)
+              echo "Downloaded file size: $(numfmt --to=iec-i --suffix=B $file_size)"
+              available_space=$(df --output=avail / | tail -1)
+              needed_space=$((file_size * 3))
+              if [ $available_space -lt $needed_space ]; then
+                echo "Insufficient disk space for $name, skipping..."
+                cd ..
+                rm -rf "$temp_dir"
+                continue
               fi
-            done
-            
-            if [ "$download_success" = true ] && unzip -q image.zip; then
-              if [ -f rootfs.squashfs ] && [ -f incus.tar.xz ]; then
-                # 检查文件大小
-                rootfs_size=$(stat -c%s rootfs.squashfs)
-                incus_size=$(stat -c%s incus.tar.xz)
-                
-                if [ $rootfs_size -gt $MAX_FILE_SIZE ] || [ $incus_size -gt $MAX_FILE_SIZE ]; then
-                  echo "Warning: Files too large for GitHub Release"
-                  echo "rootfs.squashfs: $(numfmt --to=iec-i --suffix=B $rootfs_size)"
-                  echo "incus.tar.xz: $(numfmt --to=iec-i --suffix=B $incus_size)"
-                  cd ..
-                  rm -rf "$temp_dir"
-                  continue
-                fi
-                
-                mv rootfs.squashfs "$rootfs_file"
-                mv incus.tar.xz "$incus_file"
-                
-                # 计算校验和
-                rootfs_sha256=$(sha256sum "$rootfs_file" | cut -d' ' -f1)
-                incus_sha256=$(sha256sum "$incus_file" | cut -d' ' -f1)
-                combined_sha256=$(echo -n "${rootfs_sha256}${incus_sha256}" | sha256sum | cut -d' ' -f1)
-                
-                echo "Uploading $rootfs_file ($(numfmt --to=iec-i --suffix=B $rootfs_size))..."
-                rootfs_upload_success=false
-                if gh release upload processed "$rootfs_file" --clobber; then
-                  rootfs_upload_success=true
-                  rootfs_url=$(gh release view processed --json assets --jq ".assets[] | select(.name == \"$rootfs_file\") | .browser_download_url")
-                fi
-                
-                echo "Uploading $incus_file ($(numfmt --to=iec-i --suffix=B $incus_size))..."
-                incus_upload_success=false
-                if gh release upload processed "$incus_file" --clobber; then
-                  incus_upload_success=true
-                  incus_url=$(gh release view processed --json assets --jq ".assets[] | select(.name == \"$incus_file\") | .browser_download_url")
-                fi
-                
-                if [ "$rootfs_upload_success" = true ] && [ "$incus_upload_success" = true ]; then
-                  echo "Successfully uploaded both files for $name"
-                  jq --arg os "$os" \
-                     --arg version "$version" \
-                     --arg arch "$arch" \
-                     --arg std_arch "$std_arch" \
-                     --arg variant "$variant" \
-                     --arg rootfs_url "$rootfs_url" \
-                     --arg incus_url "$incus_url" \
-                     --arg rootfs_size "$rootfs_size" \
-                     --arg incus_size "$incus_size" \
-                     --arg rootfs_sha256 "$rootfs_sha256" \
-                     --arg incus_sha256 "$incus_sha256" \
-                     --arg combined_sha256 "$combined_sha256" \
-                     '. += [{
-                       os: $os,
-                       version: $version,
-                       arch: $arch,
-                       std_arch: $std_arch,
-                       variant: $variant,
-                       rootfs_url: $rootfs_url,
-                       incus_url: $incus_url,
-                       rootfs_size: ($rootfs_size | tonumber),
-                       incus_size: ($incus_size | tonumber),
-                       rootfs_sha256: $rootfs_sha256,
-                       incus_sha256: $incus_sha256,
-                       combined_sha256: $combined_sha256
-                     }]' ../processed_assets.json > ../processed_assets_temp.json
-                  mv ../processed_assets_temp.json ../processed_assets.json
+              if unzip -q image.zip; then
+                rm image.zip
+                if [ -f rootfs.squashfs ] && [ -f incus.tar.xz ]; then
+                  mv rootfs.squashfs "$rootfs_file"
+                  mv incus.tar.xz "$incus_file"
+                  rootfs_size=$(stat -c%s "$rootfs_file")
+                  incus_size=$(stat -c%s "$incus_file")
+                  rootfs_sha256=$(sha256sum "$rootfs_file" | cut -d' ' -f1)
+                  incus_sha256=$(sha256sum "$incus_file" | cut -d' ' -f1)
+                  combined_sha256=$(echo -n "${rootfs_sha256}${incus_sha256}" | sha256sum | cut -d' ' -f1)
+                  echo "File sizes - rootfs: $(numfmt --to=iec-i --suffix=B $rootfs_size), incus: $(numfmt --to=iec-i --suffix=B $incus_size)"
+                  upload_success=true
+                  echo "Uploading $rootfs_file..."
+                  if ! gh release upload processed "$rootfs_file" --clobber; then
+                    echo "Failed to upload $rootfs_file"
+                    upload_success=false
+                  fi
+                  echo "Uploading $incus_file..."
+                  if ! gh release upload processed "$incus_file" --clobber; then
+                    echo "Failed to upload $incus_file"
+                    upload_success=false
+                  fi
+                  if [ "$upload_success" = true ]; then
+                    sleep 5
+                    assets_json=$(gh release view processed --json assets --jq .assets)
+                    rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+                    incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+                    if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
+                      echo "Successfully uploaded both files for $name"
+                      jq --arg os "$os" \
+                         --arg version "$version" \
+                         --arg arch "$arch" \
+                         --arg std_arch "$std_arch" \
+                         --arg variant "$variant" \
+                         --arg rootfs_url "$rootfs_url" \
+                         --arg incus_url "$incus_url" \
+                         --arg rootfs_size "$rootfs_size" \
+                         --arg incus_size "$incus_size" \
+                         --arg rootfs_sha256 "$rootfs_sha256" \
+                         --arg incus_sha256 "$incus_sha256" \
+                         --arg combined_sha256 "$combined_sha256" \
+                         '. += [{
+                           os: $os,
+                           version: $version,
+                           arch: $arch,
+                           std_arch: $std_arch,
+                           variant: $variant,
+                           rootfs_url: $rootfs_url,
+                           incus_url: $incus_url,
+                           rootfs_size: ($rootfs_size | tonumber),
+                           incus_size: ($incus_size | tonumber),
+                           rootfs_sha256: $rootfs_sha256,
+                           incus_sha256: $incus_sha256,
+                           combined_sha256: $combined_sha256
+                         }]' ../processed_assets.json > ../processed_assets_temp.json
+                      mv ../processed_assets_temp.json ../processed_assets.json
+                    else
+                      echo "Failed to get download URLs for $name"
+                    fi
+                  else
+                    echo "Upload failed for $name"
+                  fi
                 else
-                  echo "Failed to upload files for $name"
+                  echo "Missing required files in $name"
                 fi
               else
-                echo "Missing required files in $name"
+                echo "Failed to extract $name"
+                rm -f image.zip
               fi
             else
-              echo "Failed to download or extract $name"
+              echo "Failed to download $name"
             fi
-            
             cd ..
             rm -rf "$temp_dir"
+            echo "Remaining disk space:"
+            df -h / | tail -1
+            sync
+            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
           done
-          
-          mv processed_assets.json /tmp/processed_assets.json
-          echo "Processed $(jq length /tmp/processed_assets.json) assets"
+          mv processed_assets.json /tmp/processed_assets.json || true
+          if [ -f /tmp/processed_assets.json ]; then
+            processed_count=$(jq length /tmp/processed_assets.json)
+            echo "Successfully processed $processed_count assets"
+          else
+            echo "No assets were processed successfully"
+          fi

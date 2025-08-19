@@ -13,14 +13,18 @@ jobs:
           [
             "debian",
             "ubuntu",
+            "kali",
             "fedora", # 无法编译
             "opensuse",
             "alpine",
             "archlinux",
-            # "centos", # 无法编译
+            "centos", # 无法编译
             "almalinux",
             "rockylinux",
             "oracle",
+            "openwrt",
+            "gentoo",
+            "openeuler",
           ]
         arch:
           - name: amd64

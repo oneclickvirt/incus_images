@@ -19,12 +19,12 @@ jobs:
             "almalinux",
             "rockylinux",
             "fedora", # 编译无效
-            # "centos", # 编译无效
+            "centos", # 编译无效
             "opensuse",
             "alpine",
             "archlinux",
             "gentoo",
-            # "openwrt", # 编译无效
+            "openwrt", # 编译无效
             "oracle",
             "ubuntu",
           ]

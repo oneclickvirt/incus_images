@@ -138,6 +138,7 @@ jobs:
           mkdir -p work
           cd work
           echo "[]" > processed_assets.json
+          echo "[]" > upload_records.json
           echo "Available disk space:"
           df -h /
           
@@ -147,6 +148,7 @@ jobs:
             if [ -d "$temp_dir" ]; then
               rm -rf "$temp_dir"
               sync
+              # 忽略权限错误
               echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             fi
           }
@@ -215,48 +217,36 @@ jobs:
                   fi
                   
                   if [ "$upload_success" = true ]; then
-                    echo "Upload completed, waiting for API sync..."
-                    sleep 5
+                    echo "Upload completed for $name"
                     
-                    # 获取上传后的URL
-                    assets_json=$(gh release view processed --json assets --jq .assets)
-                    rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
-                    incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
-                    
-                    if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
-                      echo "Successfully uploaded both files for $name"
-                      
-                      # 更新处理记录
-                      jq --arg os "$os" \
-                         --arg version "$version" \
-                         --arg arch "$arch" \
-                         --arg std_arch "$std_arch" \
-                         --arg variant "$variant" \
-                         --arg rootfs_url "$rootfs_url" \
-                         --arg incus_url "$incus_url" \
-                         --arg rootfs_size "$rootfs_size" \
-                         --arg incus_size "$incus_size" \
-                         --arg rootfs_sha256 "$rootfs_sha256" \
-                         --arg incus_sha256 "$incus_sha256" \
-                         --arg combined_sha256 "$combined_sha256" \
-                         '. += [{
-                           os: $os,
-                           version: $version,
-                           arch: $arch,
-                           std_arch: $std_arch,
-                           variant: $variant,
-                           rootfs_url: $rootfs_url,
-                           incus_url: $incus_url,
-                           rootfs_size: ($rootfs_size | tonumber),
-                           incus_size: ($incus_size | tonumber),
-                           rootfs_sha256: $rootfs_sha256,
-                           incus_sha256: $incus_sha256,
-                           combined_sha256: $combined_sha256
-                         }]' ../processed_assets.json > ../processed_assets_temp.json
-                      mv ../processed_assets_temp.json ../processed_assets.json
-                    else
-                      echo "Failed to get download URLs for $name"
-                    fi
+                    # 记录上传成功的信息，稍后统一获取URL
+                    jq --arg os "$os" \
+                       --arg version "$version" \
+                       --arg arch "$arch" \
+                       --arg std_arch "$std_arch" \
+                       --arg variant "$variant" \
+                       --arg rootfs_file "$rootfs_file" \
+                       --arg incus_file "$incus_file" \
+                       --arg rootfs_size "$rootfs_size" \
+                       --arg incus_size "$incus_size" \
+                       --arg rootfs_sha256 "$rootfs_sha256" \
+                       --arg incus_sha256 "$incus_sha256" \
+                       --arg combined_sha256 "$combined_sha256" \
+                       '. += [{
+                         os: $os,
+                         version: $version,
+                         arch: $arch,
+                         std_arch: $std_arch,
+                         variant: $variant,
+                         rootfs_file: $rootfs_file,
+                         incus_file: $incus_file,
+                         rootfs_size: ($rootfs_size | tonumber),
+                         incus_size: ($incus_size | tonumber),
+                         rootfs_sha256: $rootfs_sha256,
+                         incus_sha256: $incus_sha256,
+                         combined_sha256: $combined_sha256
+                       }]' ../upload_records.json > ../upload_records_temp.json
+                    mv ../upload_records_temp.json ../upload_records.json
                   else
                     echo "Upload failed for $name"
                   fi
@@ -282,6 +272,45 @@ jobs:
             echo "Completed processing $name"
             echo "----------------------------------------"
           done
+          
+          # 等待 GitHub API 同步
+          echo "Waiting for GitHub API to sync..."
+          sleep 120
+          
+          # 统一获取所有上传文件的 URL
+          echo "Getting download URLs for uploaded files..."
+          assets_json=$(gh release view processed --json assets --jq .assets)
+          
+          jq -r '.[] | @base64' upload_records.json | while IFS= read -r encoded_record; do
+            if [ -z "$encoded_record" ]; then
+              continue
+            fi
+            
+            record=$(echo "$encoded_record" | base64 -d)
+            rootfs_file=$(echo "$record" | jq -r '.rootfs_file')
+            incus_file=$(echo "$record" | jq -r '.incus_file')
+            
+            rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+            incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+            
+            if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
+              echo "Found URLs for $rootfs_file and $incus_file"
+              
+              # 添加 URL 信息到最终记录
+              echo "$record" | jq --arg rootfs_url "$rootfs_url" --arg incus_url "$incus_url" \
+                '. + {rootfs_url: $rootfs_url, incus_url: $incus_url}' >> temp_processed.json
+            else
+              echo "Warning: Could not find URLs for $rootfs_file and/or $incus_file"
+              echo "Available assets:" 
+              echo "$assets_json" | jq -r '.[].name'
+            fi
+          done
+          
+          # 合并所有成功的记录
+          if [ -f temp_processed.json ]; then
+            jq -s '.' temp_processed.json > processed_assets.json
+            rm temp_processed.json
+          fi
           
           # 移动最终结果
           mv processed_assets.json /tmp/processed_assets.json || true

@@ -129,7 +129,6 @@ jobs:
         run: |
           echo "Waiting for GitHub API to sync after deletions..."
           sleep 120
-
       - name: 处理并上传解压文件
         env:
           PROCESSED_RELEASE_ID: ${{ steps.get_processed_release.outputs.release_id }}
@@ -141,10 +140,28 @@ jobs:
           echo "[]" > processed_assets.json
           echo "Available disk space:"
           df -h /
+          
+          # 获取当前可用空间（KB）
+          get_available_space() {
+            df --output=avail / | tail -1
+          }
+          
+          # 清理函数
+          cleanup_temp() {
+            local temp_dir="$1"
+            if [ -d "$temp_dir" ]; then
+              rm -rf "$temp_dir"
+              sync
+              # 强制清理系统缓存
+              echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            fi
+          }
+          
           jq -r '.[] | @base64' /tmp/files_to_upload.json | while IFS= read -r encoded_file; do
             if [ -z "$encoded_file" ]; then
               continue
             fi
+            
             file_info=$(echo "$encoded_file" | base64 -d)
             name=$(echo "$file_info" | jq -r '.name')
             url=$(echo "$file_info" | jq -r '.url')
@@ -155,50 +172,101 @@ jobs:
             variant=$(echo "$file_info" | jq -r '.variant')
             rootfs_file=$(echo "$file_info" | jq -r '.rootfs_file')
             incus_file=$(echo "$file_info" | jq -r '.incus_file')
+            
             temp_dir="temp_${os}_${version}_${arch}_${variant}_$$"
+            
+            echo "Processing $name..."
+            
+            # 获取文件大小（先HEAD请求，不下载）
+            echo "Getting file size for $name..."
+            file_size=$(curl -sI "$url" | grep -i content-length | cut -d: -f2 | tr -d ' \r\n' || echo "0")
+            
+            if [ "$file_size" -eq 0 ]; then
+              echo "Could not determine file size for $name, skipping..."
+              continue
+            fi
+            
+            # 转换为KB
+            file_size_kb=$((file_size / 1024))
+            echo "File size: $(numfmt --to=iec-i --suffix=B $file_size)"
+            
+            # 检查可用空间（需要原文件 + 解压后的文件，估算2倍空间）
+            available_space=$(get_available_space)
+            needed_space=$((file_size_kb * 2))
+            echo "Available space: ${available_space}KB, Needed space: ${needed_space}KB"
+            if [ $available_space -lt $needed_space ]; then
+              echo "Insufficient disk space for $name (need ${needed_space}KB, have ${available_space}KB), skipping..."
+              continue
+            fi
+            
+            # 创建临时目录
             mkdir -p "$temp_dir"
             cd "$temp_dir"
+            
+            # 下载文件
             echo "Downloading $name..."
-            if curl -L --max-filesize 2147483648 -o image.zip "$url"; then  # 2GB 限制
-              file_size=$(stat -c%s image.zip)
-              echo "Downloaded file size: $(numfmt --to=iec-i --suffix=B $file_size)"
-              available_space=$(df --output=avail / | tail -1)
-              needed_space=$((file_size * 3))
-              if [ $available_space -lt $needed_space ]; then
-                echo "Insufficient disk space for $name, skipping..."
+            if curl -L --max-filesize 2147483648 -o image.zip "$url"; then
+              actual_size=$(stat -c%s image.zip)
+              echo "Downloaded file size: $(numfmt --to=iec-i --suffix=B $actual_size)"
+              
+              # 再次检查空间（基于实际下载的文件大小）
+              available_space=$(get_available_space)
+              needed_for_extract=$((actual_size / 1024 * 2))  # 需要2倍空间来解压
+              
+              if [ $available_space -lt $needed_for_extract ]; then
+                echo "Insufficient space for extraction, cleaning up..."
                 cd ..
-                rm -rf "$temp_dir"
+                cleanup_temp "$temp_dir"
                 continue
               fi
+              
+              # 解压文件
+              echo "Extracting $name..."
               if unzip -q image.zip; then
+                # 立即删除zip文件释放空间
                 rm image.zip
+                
                 if [ -f rootfs.squashfs ] && [ -f incus.tar.xz ]; then
                   mv rootfs.squashfs "$rootfs_file"
                   mv incus.tar.xz "$incus_file"
+                  
+                  # 计算文件信息
                   rootfs_size=$(stat -c%s "$rootfs_file")
                   incus_size=$(stat -c%s "$incus_file")
                   rootfs_sha256=$(sha256sum "$rootfs_file" | cut -d' ' -f1)
                   incus_sha256=$(sha256sum "$incus_file" | cut -d' ' -f1)
                   combined_sha256=$(echo -n "${rootfs_sha256}${incus_sha256}" | sha256sum | cut -d' ' -f1)
+                  
                   echo "File sizes - rootfs: $(numfmt --to=iec-i --suffix=B $rootfs_size), incus: $(numfmt --to=iec-i --suffix=B $incus_size)"
+                  
+                  # 上传文件
                   upload_success=true
+                  
                   echo "Uploading $rootfs_file..."
                   if ! gh release upload processed "$rootfs_file" --clobber; then
                     echo "Failed to upload $rootfs_file"
                     upload_success=false
                   fi
+                  
                   echo "Uploading $incus_file..."
                   if ! gh release upload processed "$incus_file" --clobber; then
                     echo "Failed to upload $incus_file"
                     upload_success=false
                   fi
+                  
                   if [ "$upload_success" = true ]; then
-                    sleep 5
+                    echo "Upload completed, waiting for API sync..."
+                    sleep 10
+                    
+                    # 获取上传后的URL
                     assets_json=$(gh release view processed --json assets --jq .assets)
                     rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
                     incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+                    
                     if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
                       echo "Successfully uploaded both files for $name"
+                      
+                      # 更新处理记录
                       jq --arg os "$os" \
                          --arg version "$version" \
                          --arg arch "$arch" \
@@ -242,14 +310,22 @@ jobs:
             else
               echo "Failed to download $name"
             fi
+            
+            # 清理当前处理的文件
             cd ..
-            rm -rf "$temp_dir"
+            cleanup_temp "$temp_dir"
+            
+            # 显示剩余空间
             echo "Remaining disk space:"
             df -h / | tail -1
-            sync
-            echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
+            
+            echo "Completed processing $name"
+            echo "----------------------------------------"
           done
+          
+          # 移动最终结果
           mv processed_assets.json /tmp/processed_assets.json || true
+          
           if [ -f /tmp/processed_assets.json ]; then
             processed_count=$(jq length /tmp/processed_assets.json)
             echo "Successfully processed $processed_count assets"

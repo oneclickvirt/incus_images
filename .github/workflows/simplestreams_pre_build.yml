@@ -141,23 +141,18 @@ jobs:
           echo "[]" > upload_records.json
           echo "Available disk space:"
           df -h /
-          
-          # 清理函数
           cleanup_temp() {
             local temp_dir="$1"
             if [ -d "$temp_dir" ]; then
               rm -rf "$temp_dir"
               sync
-              # 忽略权限错误
               echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
             fi
           }
-          
           jq -r '.[] | @base64' /tmp/files_to_upload.json | while IFS= read -r encoded_file; do
             if [ -z "$encoded_file" ]; then
               continue
             fi
-            
             file_info=$(echo "$encoded_file" | base64 -d)
             name=$(echo "$file_info" | jq -r '.name')
             url=$(echo "$file_info" | jq -r '.url')
@@ -168,58 +163,38 @@ jobs:
             variant=$(echo "$file_info" | jq -r '.variant')
             rootfs_file=$(echo "$file_info" | jq -r '.rootfs_file')
             incus_file=$(echo "$file_info" | jq -r '.incus_file')
-            
             temp_dir="temp_${os}_${version}_${arch}_${variant}_$$"
-            
             echo "Processing $name..."
-            
-            # 创建临时目录
             mkdir -p "$temp_dir"
             cd "$temp_dir"
-            
-            # 下载文件
             echo "Downloading $name..."
             if curl -L -o image.zip "$url"; then
               echo "Downloaded successfully, extracting..."
-              
-              # 解压文件
               if unzip -q image.zip; then
-                # 立即删除zip文件释放空间
                 rm -f image.zip
                 echo "Extraction completed, zip file removed"
-                
                 if [ -f rootfs.squashfs ] && [ -f incus.tar.xz ]; then
                   mv rootfs.squashfs "$rootfs_file"
                   mv incus.tar.xz "$incus_file"
-                  
-                  # 计算文件信息
                   rootfs_size=$(stat -c%s "$rootfs_file")
                   incus_size=$(stat -c%s "$incus_file")
                   rootfs_sha256=$(sha256sum "$rootfs_file" | cut -d' ' -f1)
                   incus_sha256=$(sha256sum "$incus_file" | cut -d' ' -f1)
                   combined_sha256=$(echo -n "${rootfs_sha256}${incus_sha256}" | sha256sum | cut -d' ' -f1)
-                  
                   echo "File sizes - rootfs: $(numfmt --to=iec-i --suffix=B $rootfs_size), incus: $(numfmt --to=iec-i --suffix=B $incus_size)"
-                  
-                  # 上传文件
                   upload_success=true
-                  
                   echo "Uploading $rootfs_file..."
                   if ! gh release upload processed "$rootfs_file" --clobber; then
                     echo "Failed to upload $rootfs_file"
                     upload_success=false
                   fi
-                  
                   echo "Uploading $incus_file..."
                   if ! gh release upload processed "$incus_file" --clobber; then
                     echo "Failed to upload $incus_file"
                     upload_success=false
                   fi
-                  
                   if [ "$upload_success" = true ]; then
                     echo "Upload completed for $name"
-                    
-                    # 记录上传成功的信息，稍后统一获取URL
                     jq --arg os "$os" \
                        --arg version "$version" \
                        --arg arch "$arch" \
@@ -260,64 +235,44 @@ jobs:
             else
               echo "Failed to download $name"
             fi
-            
-            # 清理当前处理的文件
             cd ..
             cleanup_temp "$temp_dir"
-            
-            # 显示剩余空间
             echo "Remaining disk space:"
             df -h / | tail -1
-            
             echo "Completed processing $name"
             echo "----------------------------------------"
           done
-          
-          # 等待 GitHub API 同步
-          echo "Waiting for GitHub API to sync..."
-          sleep 120
-          
-          # 统一获取所有上传文件的 URL
-          echo "Getting download URLs for uploaded files..."
-          assets_json=$(gh release view processed --json assets --jq .assets)
-          
-          jq -r '.[] | @base64' upload_records.json | while IFS= read -r encoded_record; do
-            if [ -z "$encoded_record" ]; then
-              continue
-            fi
-            
-            record=$(echo "$encoded_record" | base64 -d)
-            rootfs_file=$(echo "$record" | jq -r '.rootfs_file')
-            incus_file=$(echo "$record" | jq -r '.incus_file')
-            
-            rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
-            incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
-            
-            if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
-              echo "Found URLs for $rootfs_file and $incus_file"
-              
-              # 添加 URL 信息到最终记录
-              echo "$record" | jq --arg rootfs_url "$rootfs_url" --arg incus_url "$incus_url" \
-                '. + {rootfs_url: $rootfs_url, incus_url: $incus_url}' >> temp_processed.json
-            else
-              echo "Warning: Could not find URLs for $rootfs_file and/or $incus_file"
-              echo "Available assets:" 
-              echo "$assets_json" | jq -r '.[].name'
-            fi
-          done
-          
-          # 合并所有成功的记录
-          if [ -f temp_processed.json ]; then
-            jq -s '.' temp_processed.json > processed_assets.json
-            rm temp_processed.json
-          fi
-          
-          # 移动最终结果
-          mv processed_assets.json /tmp/processed_assets.json || true
-          
-          if [ -f /tmp/processed_assets.json ]; then
-            processed_count=$(jq length /tmp/processed_assets.json)
-            echo "Successfully processed $processed_count assets"
-          else
-            echo "No assets were processed successfully"
-          fi
+          # echo "Waiting for GitHub API to sync..."
+          # sleep 120
+          # echo "Getting download URLs for uploaded files..."
+          # assets_json=$(gh release view processed --json assets --jq .assets)
+          # jq -r '.[] | @base64' upload_records.json | while IFS= read -r encoded_record; do
+          #   if [ -z "$encoded_record" ]; then
+          #     continue
+          #   fi
+          #   record=$(echo "$encoded_record" | base64 -d)
+          #   rootfs_file=$(echo "$record" | jq -r '.rootfs_file')
+          #   incus_file=$(echo "$record" | jq -r '.incus_file')
+          #   rootfs_url=$(echo "$assets_json" | jq -r --arg name "$rootfs_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+          #   incus_url=$(echo "$assets_json" | jq -r --arg name "$incus_file" '.[] | select(.name == $name) | .browser_download_url // empty')
+          #   if [ -n "$rootfs_url" ] && [ -n "$incus_url" ]; then
+          #     echo "Found URLs for $rootfs_file and $incus_file"
+          #     echo "$record" | jq --arg rootfs_url "$rootfs_url" --arg incus_url "$incus_url" \
+          #       '. + {rootfs_url: $rootfs_url, incus_url: $incus_url}' >> temp_processed.json
+          #   else
+          #     echo "Warning: Could not find URLs for $rootfs_file and/or $incus_file"
+          #     echo "Available assets:" 
+          #     echo "$assets_json" | jq -r '.[].name'
+          #   fi
+          # done
+          # if [ -f temp_processed.json ]; then
+          #   jq -s '.' temp_processed.json > processed_assets.json
+          #   rm temp_processed.json
+          # fi
+          # mv processed_assets.json /tmp/processed_assets.json || true
+          # if [ -f /tmp/processed_assets.json ]; then
+          #   processed_count=$(jq length /tmp/processed_assets.json)
+          #   echo "Successfully processed $processed_count assets"
+          # else
+          #   echo "No assets were processed successfully"
+          # fi

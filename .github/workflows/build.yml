@@ -2,7 +2,7 @@ name: Multi-Distro Images Builder
 
 on:
   schedule:
-    - cron: "0 14 * * *"
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,6 +13,7 @@ jobs:
       matrix:
         distro:
           [
+            "openeuler",
             "debian",
             "kali",
             "centos",
@@ -27,7 +28,6 @@ jobs:
             "openwrt", # 编译无效
             "oracle",
             "ubuntu",
-            "openeuler",
           ]
         arch:
           - name: amd64
@@ -35,7 +35,7 @@ jobs:
           - name: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 200
+    timeout-minutes: 360
 
     steps:
       - uses: actions/checkout@v4

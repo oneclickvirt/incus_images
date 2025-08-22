@@ -1,7 +1,7 @@
 name: Multi-Distro KVM Images Builder
 on:
   schedule:
-    - cron: "0 14 * * *"
+    - cron: "0 1 * * *"
   workflow_dispatch:
 jobs:
   build-kvm-images:
@@ -11,6 +11,7 @@ jobs:
       matrix:
         distro:
           [
+            "openeuler",
             "debian",
             "ubuntu",
             "kali",
@@ -24,7 +25,6 @@ jobs:
             "oracle",
             "openwrt",
             "gentoo",
-            "openeuler",
           ]
         arch:
           - name: amd64
@@ -32,7 +32,7 @@ jobs:
           - name: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.arch.runner }}
-    timeout-minutes: 360
+    timeout-minutes: 380
     steps:
       - uses: actions/checkout@v4
       - name: Check workspace

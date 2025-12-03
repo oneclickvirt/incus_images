@@ -61,3 +61,5 @@ openeuler_25.03_25.03_arm64_cloud.zip
 alpine_3.22_3.22_arm64_cloud.zip
 opensuse_16.0_16.0_arm64_default.zip
 opensuse_16.0_16.0_arm64_cloud.zip
+openeuler_25.09_25.09_arm64_default.zip
+openeuler_25.09_25.09_arm64_cloud.zip

@@ -41,7 +41,7 @@ cleanup() {
     if [[ -f "$test_status_file" ]]; then
         if [[ "$(cat "$test_status_file")" != "success" ]]; then
             echo "测试失败，从列表中移除镜像"
-            sed -i "/$image_name/d" "$fixed_images_file"
+            grep -vxF "$image_name" "$fixed_images_file" > "${fixed_images_file}.tmp" && mv "${fixed_images_file}.tmp" "$fixed_images_file" || true
         fi
     else
         echo "警告：test_status_file 丢失，跳过失败处理" | tee -a log

@@ -97,7 +97,7 @@ jobs:
     - name: Build simplestreams index and webpage
       run: |
         ls
-        simplestream-maintainer build build --build-webpage -d spiritlhl
+        simplestream-maintainer build --build-webpage -d spiritlhl
 
     - name: Patch index.html for spiritlhl (content-only)
       run: |

@@ -71,6 +71,10 @@ build_or_list_kvm_images() {
                     manager="apk"
                 elif [[ "$run_funct" == "opensuse" ]]; then
                     manager="zypper"
+                elif [[ "$run_funct" == "gentoo" ]]; then
+                    manager="portage"
+                elif [[ "$run_funct" == "openwrt" ]]; then
+                    manager="opkg"
                 else
                     echo "Unsupported distribution: $run_funct"
                     exit 1
@@ -126,10 +130,21 @@ build_or_list_kvm_images() {
                     if [ "${arch}" != "amd64" ] && [ "${arch}" != "i386" ] && [ "${arch}" != "x86_64" ]; then
                         EXTRA_ARGS="-o source.url=http://ports.ubuntu.com/ubuntu-ports"
                     fi
+                elif [[ "$run_funct" == "gentoo" ]]; then
+                    [ "${arch}" = "x86_64" ] && arch="amd64"
+                    [ "${arch}" = "aarch64" ] && arch="arm64"
+                    if [ "${variant}" = "cloud" ]; then
+                        EXTRA_ARGS="-o source.variant=openrc"
+                    else
+                        EXTRA_ARGS="-o source.variant=${variant}"
+                    fi
+                elif [[ "$run_funct" == "openwrt" ]]; then
+                    [ "${arch}" = "amd64" ] && arch="x86_64"
+                    [ "${arch}" = "arm64" ] && arch="aarch64"
                 fi
                 if [ "$is_build_image" == true ]; then
                     if command -v distrobuilder >/dev/null 2>&1; then
-                        if [[ "$run_funct" != "archlinux" ]]; then
+                        if [[ "$run_funct" != "archlinux" && "$run_funct" != "gentoo" ]]; then
                             echo "sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
                             if sudo distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                                 echo "Command succeeded"
@@ -141,7 +156,7 @@ build_or_list_kvm_images() {
                             fi
                         fi
                     else
-                        if [[ "$run_funct" != "archlinux" ]]; then
+                        if [[ "$run_funct" != "archlinux" && "$run_funct" != "gentoo" ]]; then
                             echo "sudo $HOME/goprojects/bin/distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
                             if sudo $HOME/goprojects/bin/distrobuilder build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}; then
                                 echo "Command succeeded"
@@ -153,9 +168,9 @@ build_or_list_kvm_images() {
                             fi
                         fi
                     fi
-                    if [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" ]]; then
+                    if [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" || "$run_funct" == "gentoo" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
-                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" ]]; then
+                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" || "$run_funct" == "openwrt" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
                     elif [[ "$run_funct" == "almalinux" || "$run_funct" == "centos" || "$run_funct" == "rockylinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
@@ -165,9 +180,9 @@ build_or_list_kvm_images() {
                         rm -rf incus.tar.xz disk.qcow2
                     fi
                 else
-                    if [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" ]]; then
+                    if [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" || "$run_funct" == "gentoo" ]]; then
                         [ "${arch}" = "amd64" ] && arch="x86_64"
-                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" ]]; then
+                    elif [[ "$run_funct" == "fedora" || "$run_funct" == "opensuse" || "$run_funct" == "alpine" || "$run_funct" == "oracle" || "$run_funct" == "archlinux" || "$run_funct" == "openwrt" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"
                     elif [[ "$run_funct" == "almalinux" || "$run_funct" == "centos" || "$run_funct" == "rockylinux" ]]; then
                         [ "${arch}" = "aarch64" ] && arch="arm64"

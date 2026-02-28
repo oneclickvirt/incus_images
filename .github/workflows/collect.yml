@@ -20,6 +20,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           latest_completed_run_id=$(gh run list -L 10 --json databaseId,status,workflowName --jq '.[] | select(.status=="completed" and .workflowName=="Run Incus Tests") | .databaseId' | head -n 1)
+          if [ -z "$latest_completed_run_id" ]; then
+            echo "Error: No completed 'Run Incus Tests' run found."
+            exit 1
+          fi
           echo "LATEST_COMPLETED_RUN_ID=$latest_completed_run_id" >> $GITHUB_ENV
 
       - name: Collect Logs
@@ -37,12 +41,10 @@ jobs:
           > arm64_fixed_images.txt
           log_file="results/log-$LATEST_COMPLETED_RUN_ID.txt"
           while IFS= read -r line; do
-            if [[ "$line" =~ success=(true|false) ]]; then
+            if [[ "$line" =~ TEST_RESULT\ success=(true|false)\ image=([^ ]+)\ arch=([^ ]+) ]]; then
               success="${BASH_REMATCH[1]}"
-            elif [[ "$line" =~ image=([^ ]+) ]]; then
-              image="${BASH_REMATCH[1]}"
-            elif [[ "$line" =~ arch=([^ ]+) ]]; then
-              arch="${BASH_REMATCH[1]}"
+              image="${BASH_REMATCH[2]}"
+              arch="${BASH_REMATCH[3]}"
               if [[ "$success" == "true" ]]; then
                 if [[ "$arch" == "amd64" ]]; then
                   echo "$image" >> x86_64_fixed_images.txt
@@ -71,8 +73,8 @@ jobs:
           # 添加文件
           git add x86_64_fixed_images.txt arm64_fixed_images.txt
           # 提交更改（如果有更改才会提交）
-          git commit -m "Update fixed images list"
+          git diff --cached --quiet || git commit -m "Update fixed images list"
           # 推送到仓库
-          git push origin main
+          git push origin main || true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

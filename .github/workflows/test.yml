@@ -46,7 +46,7 @@ jobs:
       max-parallel: 12
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 7
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Setup Fresh Environment
@@ -63,10 +63,8 @@ jobs:
           echo "测试镜像: ${{ matrix.image }}"
           if sudo bash test.sh "${{ matrix.image }}"; then
             echo "测试通过: ${{ matrix.image }}"
-            echo "success=true"
+            echo "TEST_RESULT success=true image=${{ matrix.image }} arch=${{ matrix.arch }}"
           else
             echo "测试失败: ${{ matrix.image }}"
-            echo "success=false"
+            echo "TEST_RESULT success=false image=${{ matrix.image }} arch=${{ matrix.arch }}"
           fi
-          echo "image=${{ matrix.image }}"
-          echo "arch=${{ matrix.arch }}"

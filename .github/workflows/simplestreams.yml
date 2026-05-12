@@ -15,8 +15,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y python3 python3-pip snapd wget
-        sudo pip install PyYAML
+        sudo apt-get install -y python3 python3-pip python3-requests snapd wget
 
     - name: Install simplestream-maintainer
       run: |
@@ -31,6 +30,8 @@ jobs:
         simplestream-maintainer build -h
 
     - name: Download assets from GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         python3 <<EOF
         import requests, os, re, glob
@@ -38,7 +39,11 @@ jobs:
         API_URL = "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/processed"
         OUTDIR = "build/spiritlhl"
         os.makedirs(OUTDIR, exist_ok=True)
-        r = requests.get(API_URL)
+        headers = {"Accept": "application/vnd.github+json"}
+        token = os.environ.get("GITHUB_TOKEN")
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        r = requests.get(API_URL, headers=headers)
         r.raise_for_status()
         assets = r.json().get("assets", [])
         seen_dirs = set()
@@ -55,7 +60,7 @@ jobs:
             local_file = f"{local_dir}/{name}"
             if not os.path.exists(local_file):
                 print("Downloading", url)
-                resp = requests.get(url, stream=True)
+                resp = requests.get(url, stream=True, headers=headers)
                 with open(local_file, "wb") as f:
                     for chunk in resp.iter_content(8192):
                         f.write(chunk)
@@ -96,7 +101,8 @@ jobs:
 
     - name: Build simplestreams index and webpage
       run: |
-        ls
+        ls build/
+        cd build
         simplestream-maintainer build --build-webpage -d spiritlhl
 
     - name: Patch index.html for spiritlhl (content-only)

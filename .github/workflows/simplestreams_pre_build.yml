@@ -14,7 +14,7 @@ jobs:
       - name: 安装依赖
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq unzip curl gh
+          sudo apt-get install -y jq unzip curl gh xz-utils
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: 获取所有 Releases 信息
@@ -176,6 +176,18 @@ jobs:
                 if [ -f rootfs.squashfs ] && [ -f incus.tar.xz ]; then
                   mv rootfs.squashfs "$rootfs_file"
                   mv incus.tar.xz "$incus_file"
+                  # 仅对incus.tar.xz外层xz重新压缩（tar内容不变，不影响内部rootfs哈希元数据）
+                  # 注意：rootfs.squashfs不可重新压缩，incus.tar.xz内部存有其SHA256校验值
+                  original_incus_size=$(stat -c%s "$incus_file")
+                  if xz --decompress --stdout "$incus_file" | xz -9 --extreme -T0 --stdout > "${incus_file}.new" 2>/dev/null; then
+                    mv "${incus_file}.new" "$incus_file"
+                    new_incus_size=$(stat -c%s "$incus_file")
+                    saved=$((original_incus_size - new_incus_size))
+                    echo "incus.tar.xz xz recompression: $(numfmt --to=iec-i --suffix=B $original_incus_size) -> $(numfmt --to=iec-i --suffix=B $new_incus_size) (saved $(numfmt --to=iec-i --suffix=B $saved))"
+                  else
+                    rm -f "${incus_file}.new"
+                    echo "incus.tar.xz recompression skipped (no gain or error), keeping original"
+                  fi
                   rootfs_size=$(stat -c%s "$rootfs_file")
                   incus_size=$(stat -c%s "$incus_file")
                   rootfs_sha256=$(sha256sum "$rootfs_file" | cut -d' ' -f1)

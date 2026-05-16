@@ -103,7 +103,7 @@ jobs:
       run: |
         ls build/
         cd build
-        simplestream-maintainer build --build-webpage -d spiritlhl
+        simplestream-maintainer build . --build-webpage -d spiritlhl
 
     - name: Patch index.html for spiritlhl (content-only)
       run: |

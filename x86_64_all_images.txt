@@ -80,3 +80,5 @@ opensuse_16.0_16.0_x86_64_cloud.zip
 alpine_3.23_3.23_x86_64_cloud.zip
 openeuler_25.09_25.09_x86_64_default.zip
 openeuler_25.09_25.09_x86_64_cloud.zip
+almalinux_10_10_x86_64_default.zip
+almalinux_10_10_x86_64_cloud.zip

@@ -11,6 +11,10 @@ if [[ $# -ne 1 ]]; then
 fi
 
 image_name="$1"
+is_kvm_image=false
+if [[ "$image_name" == *_kvm.zip ]]; then
+    is_kvm_image=true
+fi
 
 if [[ "$image_name" == *"x86_64"* || "$image_name" == *"amd64"* ]]; then
     fixed_images_file="x86_64_fixed_images.txt"
@@ -20,6 +24,10 @@ else
     echo "错误：无法识别镜像架构"
     exit 1
 fi
+if $is_kvm_image; then
+    fixed_images_file="${fixed_images_file/_fixed_images/_fixed_kvm_images}"
+fi
+touch "$fixed_images_file"
 
 date=$(date)
 {
@@ -48,7 +56,7 @@ cleanup() {
     fi
 
     rm -f "$test_status_file"
-    rm -f incus.tar.xz rootfs.squashfs "$image_name"
+    rm -f incus.tar.xz rootfs.squashfs disk.qcow2 "$image_name"
     echo "------------------------------------------" >> log
 
     # 检查 systemd-resolved 是否被影响，并尝试恢复
@@ -62,10 +70,15 @@ cleanup() {
 
 trap cleanup EXIT
 
+release_tag="${image_name%%_*}"
+if $is_kvm_image; then
+    release_tag="kvm_images"
+fi
+
 echo "开始下载镜像..."
-if ! curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"; then
+if ! curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
     echo "主下载失败，尝试备用下载源..."
-    if ! curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${image_name%%_*}/$image_name"; then
+    if ! curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
         echo "错误：所有下载源均失败" | tee -a log
         echo "fail" > "$test_status_file"
         exit 1
@@ -88,29 +101,93 @@ fi
 
 echo "$image_name" >> "$fixed_images_file"
 
-if ! incus image import incus.tar.xz rootfs.squashfs --alias myc; then
-    echo "错误：镜像导入失败" | tee -a log
+if $is_kvm_image; then
+    if [ ! -s incus.tar.xz ] || [ ! -s disk.qcow2 ]; then
+        echo "错误：KVM 镜像缺少 incus.tar.xz 或 disk.qcow2" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
+elif [ ! -s incus.tar.xz ] || [ ! -s rootfs.squashfs ]; then
+    echo "错误：容器镜像缺少 incus.tar.xz 或 rootfs.squashfs" | tee -a log
     echo "fail" > "$test_status_file"
     exit 1
 fi
 
-if ! incus init myc test; then
-    echo "错误：容器初始化失败" | tee -a log
+if $is_kvm_image && [ ! -e /dev/kvm ]; then
+    echo "错误：当前环境缺少 /dev/kvm，无法验证 VM 镜像启动" | tee -a log
     echo "fail" > "$test_status_file"
     exit 1
+fi
+
+if $is_kvm_image; then
+    if ! incus image import incus.tar.xz disk.qcow2 --alias myc; then
+        echo "错误：VM 镜像导入失败" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
+else
+    if ! incus image import incus.tar.xz rootfs.squashfs --alias myc; then
+        echo "错误：镜像导入失败" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
+fi
+
+requires_secureboot_disabled() {
+    case "$image_name" in
+    alpine_*_kvm.zip | archlinux_*_kvm.zip | gentoo_*_kvm.zip | openwrt_*_kvm.zip)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
+}
+
+init_args=(myc test)
+if $is_kvm_image; then
+    init_args+=(--vm)
+fi
+
+if ! incus init "${init_args[@]}"; then
+    echo "错误：实例初始化失败" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
+
+image_type=$(incus image info myc | awk -F': ' '/^Type:/ {print $2; exit}')
+if $is_kvm_image && [ "$image_type" != "virtual-machine" ]; then
+    echo "错误：KVM 镜像类型异常，当前类型为 ${image_type:-unknown}" | tee -a log
+    echo "fail" > "$test_status_file"
+    exit 1
+fi
+
+if $is_kvm_image && requires_secureboot_disabled; then
+    if ! incus image info myc | grep -q 'requirements.secureboot: "false"\|requirements.secureboot: false'; then
+        echo "错误：KVM 镜像缺少 requirements.secureboot=false" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
 fi
 
 if ! incus start test; then
-    echo "错误：容器启动失败" | tee -a log
+    echo "错误：实例启动失败" | tee -a log
     echo "fail" > "$test_status_file"
     exit 1
 fi
 
-sleep 10
+if $is_kvm_image; then
+    sleep 45
+else
+    sleep 10
+fi
 
 ssh_test() {
     local retries=0
     local max_retries=5
+    if $is_kvm_image; then
+        max_retries=12
+    fi
     
     while [ $retries -lt $max_retries ]; do
         if incus exec test -- lsof -i:22 2>/dev/null | grep -q ssh; then
@@ -118,7 +195,11 @@ ssh_test() {
             return 0
         fi
         echo "等待SSH服务启动，尝试 $((retries + 1))/$max_retries..." | tee -a log
-        sleep $((2**retries))
+        if $is_kvm_image; then
+            sleep 10
+        else
+            sleep $((2**retries))
+        fi
         ((retries++))
     done
     
@@ -152,16 +233,20 @@ if ! network_test; then
 fi
 echo "执行重启测试..." | tee -a log
 if ! incus stop test; then
-    echo "错误：容器停止失败" | tee -a log
+    echo "错误：实例停止失败" | tee -a log
     echo "fail" > "$test_status_file"
     exit 1
 fi
 if ! incus start test; then
-    echo "错误：容器重启失败" | tee -a log
+    echo "错误：实例重启失败" | tee -a log
     echo "fail" > "$test_status_file"
     exit 1
 fi
-sleep 15
+if $is_kvm_image; then
+    sleep 45
+else
+    sleep 15
+fi
 if ! network_test; then
     echo "重启后网络测试失败" | tee -a log
     echo "fail" > "$test_status_file"

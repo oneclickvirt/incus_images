@@ -14,7 +14,6 @@ jobs:
             "openeuler",
             "debian",
             "ubuntu",
-            "kali",
             "fedora", # 无法编译
             "opensuse",
             "alpine",
@@ -22,7 +21,6 @@ jobs:
             "centos", # 无法编译
             "almalinux",
             "rockylinux",
-            "oracle",
             "openwrt",
             "gentoo",
           ]

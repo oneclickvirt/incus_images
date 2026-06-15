@@ -3,7 +3,33 @@
 # Thanks https://github.com/lxc/lxc-ci/tree/main/images
 # 2025.01.30
 
-cd /home/runner/work/incus_images/incus_images/images_yaml/
+REPO_DIR="${GITHUB_WORKSPACE:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+cd "$REPO_DIR/images_yaml"
+
+patch_alpine_vm_boot() {
+    local file_name="${1:-alpine.yaml}"
+
+    sed -i 's#same_as: .*#same_as: 3.21#' "$file_name"
+    sed -i 's#url: .*alpine/.*#url: https://dl-cdn.alpinelinux.org/alpine/#' "$file_name"
+    sed -i 's#GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules={{ targets.incus.vm.filesystem }} rootfstype={{ targets.incus.vm.filesystem }}"#GRUB_CMDLINE_LINUX_DEFAULT="console=tty1 console=ttyS0 modules=sd-mod,usb-storage,{{ targets.incus.vm.filesystem }} rootfstype={{ targets.incus.vm.filesystem }}"#' "$file_name"
+
+    if ! grep -q '^    - udev$' "$file_name"; then
+        sed -i '/    - linux-virt/a\    - udev' "$file_name"
+    fi
+
+    sed -i 's#for svc_name in devfs dmesg hwdrivers mdev; do#for svc_name in devfs dmesg hwdrivers mdev udev udev-settle udev-trigger; do#' "$file_name"
+    sed -i 's#grub-install --target=${TARGET}-efi --no-nvram --removable#grub-install --target=${TARGET}-efi --efi-directory=/boot/efi --no-nvram --removable#' "$file_name"
+    sed -i 's#grub-install --target=${TARGET}-efi --no-nvram$#grub-install --target=${TARGET}-efi --efi-directory=/boot/efi --no-nvram#' "$file_name"
+
+    if ! grep -q 'BOOT_EFI="/boot/efi/EFI/BOOT/BOOTX64.EFI"' "$file_name"; then
+        sed -i '/grub-install --target=${TARGET}-efi --efi-directory=\/boot\/efi --no-nvram$/a\
+    BOOT_EFI="/boot/efi/EFI/BOOT/BOOTX64.EFI"\
+    [ "${TARGET}" = "arm64" ] && BOOT_EFI="/boot/efi/EFI/BOOT/BOOTAA64.EFI"\
+    test -s "${BOOT_EFI}"' "$file_name"
+    fi
+
+    sed -i 's#rm /etc/update-grub.conf#rm -f /etc/update-grub.conf#' "$file_name"
+}
 
 # debian
 rm -rf debian.yaml
@@ -11,7 +37,7 @@ wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/debian.yaml
 chmod 777 debian.yaml
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cron"
 sed -i "/- vim/ a\\$insert_content_1" debian.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 line_number=$(($(wc -l < debian.yaml) - 2))
 head -n $line_number debian.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -25,7 +51,7 @@ wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/ubuntu.yaml
 chmod 777 ubuntu.yaml
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cron"
 sed -i "/- vim/ a\\$insert_content_1" ubuntu.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 line_number=$(($(wc -l < ubuntu.yaml) - 2))
 head -n $line_number ubuntu.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -39,7 +65,7 @@ wget https://raw.githubusercontent.com/lxc/lxc-ci/main/images/kali.yaml
 chmod 777 kali.yaml
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cron"
 sed -i "/- systemd/ a\\$insert_content_1" kali.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 line_number=$(($(wc -l < kali.yaml) - 2))
 head -n $line_number kali.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -54,7 +80,7 @@ chmod 777 centos.yaml
 # epel-relase 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" centos.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat centos.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -67,7 +93,7 @@ chmod 777 almalinux.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" almalinux.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat almalinux.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -80,7 +106,7 @@ chmod 777 rockylinux.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" rockylinux.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat rockylinux.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -93,7 +119,7 @@ chmod 777 oracle.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" oracle.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat oracle.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -106,7 +132,7 @@ chmod 777 archlinux.yaml
 # cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - iptables\n    - dos2unix"
 sed -i "/- which/ a\\$insert_content_1" archlinux.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 line_number=$(($(wc -l < archlinux.yaml) - 2))
 head -n $line_number archlinux.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -121,7 +147,7 @@ chmod 777 gentoo.yaml
 # cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - iptables\n    - dos2unix"
 sed -i "/- sudo/ a\\$insert_content_1" gentoo.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 line_number=$(($(wc -l < gentoo.yaml) - 3))
 head -n $line_number gentoo.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -137,7 +163,7 @@ chmod 777 fedora.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- xz/ a\\$insert_content_1" fedora.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat fedora.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -150,12 +176,13 @@ chmod 777 alpine.yaml
 # cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - cronie\n    - iptables\n    - dos2unix"
 sed -i "/- doas/ a\\$insert_content_1" alpine.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/sh_insert_content.text)
 line_number=$(($(wc -l < alpine.yaml) - 2))
 head -n $line_number alpine.yaml > temp.yaml
 echo "$insert_content_2" >> temp.yaml
 tail -n 2 alpine.yaml >> temp.yaml
 mv temp.yaml alpine.yaml
+patch_alpine_vm_boot alpine.yaml
 sed -i -e '/mappings:/i \ ' alpine.yaml
 
 # openwrt
@@ -165,10 +192,6 @@ chmod 777 openwrt.yaml
 # cronie 不可用 cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - openssh-keygen\n    - iptables"
 sed -i "/- sudo/ a\\$insert_content_1" openwrt.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/sh_insert_content.text)
-cat openwrt.yaml > temp.yaml
-echo "$insert_content_2" >> temp.yaml
-mv temp.yaml openwrt.yaml
 
 # opensuse
 rm -rf opensuse.yaml
@@ -177,7 +200,7 @@ chmod 777 opensuse.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" opensuse.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat opensuse.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
@@ -190,13 +213,13 @@ chmod 777 openeuler.yaml
 # cron 不可用
 insert_content_1="    - curl\n    - wget\n    - bash\n    - lsof\n    - sshpass\n    - openssh-server\n    - iptables\n    - dos2unix\n    - cronie"
 sed -i "/- vim-minimal/ a\\$insert_content_1" openeuler.yaml
-insert_content_2=$(cat /home/runner/work/incus_images/incus_images/bash_insert_content.text)
+insert_content_2=$(cat $REPO_DIR/bash_insert_content.text)
 cat openeuler.yaml > temp.yaml
 echo "" >> temp.yaml
 echo "$insert_content_2" >> temp.yaml
 mv temp.yaml openeuler.yaml
 
-cd /home/runner/work/incus_images/incus_images
+cd "$REPO_DIR"
 # 更新支持的镜像列表
 build_or_list_images() {
     local versions=()

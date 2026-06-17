@@ -66,3 +66,4 @@ openeuler_25.09_25.09_arm64_cloud.zip
 alpine_3.23_3.23_arm64_cloud.zip
 almalinux_10_10_arm64_default.zip
 almalinux_10_10_arm64_cloud.zip
+alpine_3.24_3.24_arm64_cloud.zip

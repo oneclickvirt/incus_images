@@ -82,3 +82,4 @@ openeuler_25.09_25.09_x86_64_default.zip
 openeuler_25.09_25.09_x86_64_cloud.zip
 almalinux_10_10_x86_64_default.zip
 almalinux_10_10_x86_64_cloud.zip
+alpine_3.24_3.24_x86_64_cloud.zip

@@ -147,6 +147,19 @@ validate_vm_artifacts() {
         return 1
     fi
 
+    local template_files=""
+    template_files=$(tar -xOf incus.tar.xz metadata.yaml 2>/dev/null | sed -n 's/^[[:space:]]*template:[[:space:]]*//p' | tr -d "\"'" | awk '{print $1}' | sort -u)
+    if [ -n "$template_files" ]; then
+        local tpl=""
+        while IFS= read -r tpl; do
+            [ -n "$tpl" ] || continue
+            if ! tar -tf incus.tar.xz "templates/${tpl}" >/dev/null 2>&1; then
+                echo "metadata.yaml for ${image_name} references missing template: templates/${tpl}"
+                return 1
+            fi
+        done <<< "$template_files"
+    fi
+
     if requires_secureboot_disabled; then
         if ! tar -xOf incus.tar.xz metadata.yaml 2>/dev/null | grep -q '^[[:space:]]*requirements\.secureboot:[[:space:]]*["'\'']*false["'\'']*[[:space:]]*$'; then
             echo "metadata.yaml for ${image_name} must declare requirements.secureboot=false"

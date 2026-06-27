@@ -120,7 +120,7 @@ if $is_kvm_image && [ ! -e /dev/kvm ]; then
 fi
 
 if $is_kvm_image; then
-    if ! incus image import incus.tar.xz disk.qcow2 --alias myc; then
+    if ! incus image import incus.tar.xz disk.qcow2 --alias myc --vm; then
         echo "错误：VM 镜像导入失败" | tee -a log
         echo "fail" > "$test_status_file"
         exit 1

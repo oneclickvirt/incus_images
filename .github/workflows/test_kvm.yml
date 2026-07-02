@@ -11,7 +11,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - id: set-matrix
         run: |
           distros=(openeuler debian ubuntu fedora opensuse alpine archlinux centos almalinux rockylinux openwrt gentoo)
@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Fresh Environment
         run: |
           sudo apt-get update -y

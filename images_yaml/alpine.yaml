@@ -232,6 +232,7 @@ files:
   content: |-
     auto eth0
     iface eth0 inet dhcp
+    iface eth0 inet6 dhcp
     hostname $(hostname)
 
 - path: /etc/inittab
@@ -341,6 +342,7 @@ packages:
     - grub-efi
     - linux-virt
     - udev
+    - dhcpcd
     action: install
     types:
     - vm

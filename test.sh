@@ -39,6 +39,8 @@ date=$(date)
 test_status_file=$(mktemp)
 echo "success" > "$test_status_file"
 
+# Invoked by the EXIT trap.
+# shellcheck disable=SC2329
 cleanup() {
     local exit_code=$?
     echo "清理资源..."
@@ -65,7 +67,7 @@ cleanup() {
         systemctl restart systemd-resolved || true
     fi
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 trap cleanup EXIT
@@ -165,6 +167,11 @@ fi
 if $is_kvm_image && requires_secureboot_disabled; then
     if ! incus image info myc | grep -q 'requirements.secureboot: "false"\|requirements.secureboot: false'; then
         echo "错误：KVM 镜像缺少 requirements.secureboot=false" | tee -a log
+        echo "fail" > "$test_status_file"
+        exit 1
+    fi
+    if ! incus config set test security.secureboot false; then
+        echo "错误：无法设置镜像声明要求的 Secure Boot 配置" | tee -a log
         echo "fail" > "$test_status_file"
         exit 1
     fi

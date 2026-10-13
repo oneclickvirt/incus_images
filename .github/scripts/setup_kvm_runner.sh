@@ -12,7 +12,7 @@ fi
 
 sudo apt-get update -y
 # Ubuntu 24.04 provides the VM tools as native QEMU/firmware packages.
-sudo apt-get install -y --no-install-recommends incus qemu-system-x86 qemu-utils ovmf swtpm dnsmasq-base unzip jq
+sudo apt-get install -y --no-install-recommends incus qemu-system-x86 qemu-system-modules-spice qemu-utils ovmf swtpm dnsmasq-base unzip jq
 sudo systemctl start incus
 sudo incus admin waitready --timeout=120
 # The image test needs an isolated bridge and root pool. Production installer

@@ -70,7 +70,7 @@ jobs:
         wget https://raw.githubusercontent.com/oneclickvirt/incus_images/refs/heads/main/back/google9217a97bfdec3a8f.html -O ./build/google9217a97bfdec3a8f.html
         chmod 777 ./build/google9217a97bfdec3a8f.html
         echo "Build directory contents:"
-        find build -type f | head -39
+        find build -type f | sed -n '1,39p'
       shell: bash
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0.0
@@ -81,6 +81,7 @@ jobs:
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+    timeout-minutes: 45
 'on':
   workflow_dispatch: null
   schedule:

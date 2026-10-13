@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 # 从 https://github.com/oneclickvirt/incus_images 获取
 
 run_funct="${1:-debian}"
@@ -6,14 +7,18 @@ is_build_image="${2:-false}"
 build_arch="${3:-amd64}"
 zip_name_list=()
 opath=$(pwd)
-rm -rf *.tar.xz *.qcow2
+selected_images=0
+[[ "$is_build_image" == true || "$is_build_image" == false ]] || { echo "Invalid build mode" >&2; exit 1; }
+[[ "$build_arch" =~ ^(amd64|x86_64|arm64|aarch64)$ ]] || { echo "Invalid image architecture" >&2; exit 1; }
+[[ "${CI_IMAGE_RELEASES:-}" =~ ^[A-Za-z0-9._\ -]*$ ]] || { echo "Invalid release selector" >&2; exit 1; }
+if [[ "$is_build_image" == true ]]; then rm -f -- incus.tar.xz lxd.tar.xz rootfs.squashfs disk.qcow2 disk_compressed.qcow2; fi
 if [ "$is_build_image" == true ]; then
     ls
 fi
 
 if [[ "$run_funct" == "kali" || "$run_funct" == "oracle" ]]; then
     echo "KVM images for ${run_funct} are disabled because images_yaml/${run_funct}.yaml lacks complete VM boot support." >&2
-    exit 0
+    exit 1
 fi
 
 if [ "$is_build_image" == true ] && command -v apt-get >/dev/null 2>&1; then
@@ -206,11 +211,16 @@ build_or_list_kvm_images() {
     read -ra variants <<< "$3"
     local architectures=("$build_arch")
     local len=${#versions[@]}
+    if (( len == 0 )); then echo "No image releases were obtained from the configured source" >&2; return 1; fi
     for ((i = 0; i < len; i++)); do
         version=${versions[i]}
         ver_num=${ver_nums[i]}
+        if [[ -n "${CI_IMAGE_RELEASES:-}" && " ${CI_IMAGE_RELEASES} " != *" ${version} "* && " ${CI_IMAGE_RELEASES} " != *" ${ver_num} "* ]]; then
+            continue
+        fi
         for arch in "${architectures[@]}"; do
             for variant in "${variants[@]}"; do
+                selected_images=$((selected_images + 1))
                 if [[ "$run_funct" == "centos" || "$run_funct" == "fedora" || "$run_funct" == "openeuler" ]]; then
                     manager="yum"
                 elif [[ "$run_funct" == "kali" || "$run_funct" == "ubuntu" || "$run_funct" == "debian" ]]; then
@@ -295,6 +305,7 @@ build_or_list_kvm_images() {
                     [ "${arch}" = "arm64" ] && arch="aarch64"
                 fi
                 if [ "$is_build_image" == true ]; then
+                    rm -f -- incus.tar.xz lxd.tar.xz rootfs.squashfs rootfs.tar.xz disk.qcow2 disk_compressed.qcow2
                     builder_path=""
                     if command -v distrobuilder >/dev/null 2>&1; then
                         builder_path="distrobuilder"
@@ -302,7 +313,7 @@ build_or_list_kvm_images() {
                         builder_path="$HOME/goprojects/bin/distrobuilder"
                     else
                         echo "distrobuilder not found"
-                        continue
+                        return 1
                     fi
 
                     success=false
@@ -323,7 +334,7 @@ build_or_list_kvm_images() {
                     if ! $success; then
                         echo "Build failed for ${run_funct} ${version} ${arch} ${variant}; removing partial VM artifacts"
                         rm -f incus.tar.xz disk.qcow2 disk_compressed.qcow2
-                        continue
+                        return 1
                     fi
 
                     if [[ "$run_funct" == "debian" || "$run_funct" == "ubuntu" || "$run_funct" == "gentoo" ]]; then
@@ -338,7 +349,7 @@ build_or_list_kvm_images() {
                     if ! patch_incus_metadata_for_kvm "$zip_file"; then
                         echo "Failed to patch metadata for ${zip_file}; skipping package"
                         rm -f incus.tar.xz disk.qcow2 disk_compressed.qcow2
-                        continue
+                        return 1
                     fi
 
                     if command -v qemu-img >/dev/null 2>&1; then
@@ -346,9 +357,11 @@ build_or_list_kvm_images() {
                     fi
 
                     if validate_vm_artifacts "$zip_file"; then
+                        rm -f -- "$zip_file"
                         zip -9 "$zip_file" incus.tar.xz disk.qcow2
                     else
-                        echo "VM artifacts failed validation for ${zip_file}; skipping package"
+                        echo "VM artifacts failed validation for ${zip_file}" >&2
+                        return 1
                     fi
 
                     rm -f incus.tar.xz disk.qcow2 disk_compressed.qcow2
@@ -434,6 +447,9 @@ openwrt)
     build_or_list_kvm_images "$curl_output" "$curl_output" "default cloud"
     ;;
 *)
-    echo "Invalid distribution specified."
+    echo "Invalid distribution specified." >&2
+    exit 1
     ;;
 esac
+
+(( selected_images > 0 )) || { echo "No images match the requested release" >&2; exit 1; }

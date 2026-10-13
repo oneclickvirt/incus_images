@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+[[ "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {
+    printf 'This initialization is restricted to a disposable GitHub-hosted runner.\n' >&2
+    exit 1
+}
 if [[ "$(uname -m)" != x86_64 ]] || [[ ! -c /dev/kvm ]]; then
     printf 'This test requires an x86_64 host with /dev/kvm.\n' >&2
     exit 1
@@ -8,10 +12,38 @@ fi
 
 sudo apt-get update -y
 # Ubuntu 24.04 provides the VM tools as native QEMU/firmware packages.
-sudo apt-get install -y --no-install-recommends qemu-system-x86 qemu-utils ovmf swtpm unzip jq
-curl --fail --show-error --location --retry 2 --connect-timeout 20 --max-time 120 \
-    https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh \
-    --output "$RUNNER_TEMP/incus_install.sh"
-sudo env noninteractive=true WITHOUTCDN=true INCUS_DISK_SIZE=12 \
-    timeout 900 bash "$RUNNER_TEMP/incus_install.sh" 2>&1 | tee "$RUNNER_TEMP/incus-install.log"
+sudo apt-get install -y --no-install-recommends incus qemu-system-x86 qemu-utils ovmf swtpm dnsmasq-base unzip jq
+sudo systemctl start incus
+sudo incus admin waitready --timeout=120
+# The image test needs an isolated bridge and root pool. Production installer
+# changes to host DNS, cloud-init and firewall persistence are unnecessary here.
+sudo incus admin init --preseed <<'PRESEED'
+config: {}
+networks:
+  - name: incusbr0
+    type: bridge
+    config:
+      ipv4.address: auto
+      ipv4.dhcp: "true"
+      ipv4.nat: "true"
+      ipv6.address: none
+storage_pools:
+  - name: default
+    driver: dir
+profiles:
+  - name: default
+    devices:
+      root:
+        type: disk
+        path: /
+        pool: default
+      eth0:
+        type: nic
+        network: incusbr0
+        name: eth0
+PRESEED
+# Docker's preinstalled FORWARD policy can otherwise drop the Incus bridge.
+# Keep these ephemeral test rules scoped to this bridge.
+sudo iptables -I FORWARD -i incusbr0 -j ACCEPT
+sudo iptables -I FORWARD -o incusbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
 sudo incus query /1.0 | jq -e '(.metadata // .).environment.driver | split(" | ") | index("qemu") != null'

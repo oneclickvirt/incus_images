@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Validate installer and VM driver before expanding the matrix
+      - name: Validate runtime and VM driver before expanding the matrix
         run: bash .github/scripts/setup_kvm_runner.sh
 
   prepare-matrix:

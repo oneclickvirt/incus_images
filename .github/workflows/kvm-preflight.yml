@@ -18,7 +18,7 @@ jobs:
           uname -a
           lscpu
           ls -l /dev/kvm
-      - name: Validate Incus installation and VM driver
+      - name: Validate Incus runtime and VM driver
         run: bash .github/scripts/setup_kvm_runner.sh
       - name: Inspect service after installation
         if: always()

@@ -29,11 +29,11 @@ jobs:
       with:
         go-version: 1.26.5
         cache: false
-      if: ${{ inputs.distro == 'openwrt' || inputs.distro == 'oracle' }}
+      if: ${{ inputs.distro == 'openwrt' || inputs.distro == 'oracle' || inputs.distro == 'gentoo' }}
     - name: Install compatible verified image builder
       shell: bash
       run: bash .github/scripts/install_distrobuilder.sh
-      if: ${{ inputs.distro == 'openwrt' || inputs.distro == 'oracle' }}
+      if: ${{ inputs.distro == 'openwrt' || inputs.distro == 'oracle' || inputs.distro == 'gentoo' }}
     - name: Check workspace
       run: pwd
     - name: Build environment

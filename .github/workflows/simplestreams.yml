@@ -1,24 +1,23 @@
 name: Build Incus Simplestreams
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 5 * * *'
-
 jobs:
   build-simplestreams:
     runs-on: ubuntu-latest
     steps:
+    - name: Load trusted network recovery helpers
+      shell: bash
+      run: |
+        set -euo pipefail
+        curl --fail --silent --show-error --location --connect-timeout 15 --max-time 90 --retry 3 --retry-max-time 180 --retry-connrefused "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/.github/scripts/ci_network.sh" -o "$RUNNER_TEMP/ci-network.sh"
+        curl --fail --silent --show-error --location --connect-timeout 15 --max-time 90 --retry 3 --retry-max-time 180 --retry-connrefused "https://raw.githubusercontent.com/oneclickvirt/incus_images/main/.github/scripts/release_assets.py" -o "$RUNNER_TEMP/ci-release-assets.py"
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y python3 python3-pip python3-requests snapd wget
-
     - name: Install simplestream-maintainer
       run: |
+        source "$RUNNER_TEMP/ci-network.sh"
         sudo apt-get update
         sudo apt-get install -y golang git
         git clone https://github.com/oneclickvirt/lxd-imagebuilder.git
@@ -28,60 +27,11 @@ jobs:
         sudo mv simplestream-maintainer /usr/local/bin/
         simplestream-maintainer --version
         simplestream-maintainer build -h
-
+      shell: bash
     - name: Download assets from GitHub Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        python3 <<EOF
-        import requests, os, re, glob
-        from datetime import datetime
-        API_URL = "https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/processed"
-        OUTDIR = "build/spiritlhl"
-        os.makedirs(OUTDIR, exist_ok=True)
-        headers = {"Accept": "application/vnd.github+json"}
-        token = os.environ.get("GITHUB_TOKEN")
-        if token:
-            headers["Authorization"] = f"Bearer {token}"
-        r = requests.get(API_URL, headers=headers)
-        r.raise_for_status()
-        assets = r.json().get("assets", [])
-        seen_dirs = set()
-        dt = datetime.now().strftime("%Y%m%d_%H%M")
-        for a in assets:
-            name = a["name"]
-            url = a["browser_download_url"]
-            m = re.match(r"([a-zA-Z0-9]+)-([^-]+)-([^-]+)-([^-]+)-(rootfs|incus)\.(squashfs|tar\.xz)", name)
-            if not m: continue
-            os_name, rel, arch, variant, t, ext = m.groups()
-            if variant == "default": continue
-            local_dir = f"{OUTDIR}/{os_name}/{rel}/{arch}/{variant}/{dt}"
-            os.makedirs(local_dir, exist_ok=True)
-            local_file = f"{local_dir}/{name}"
-            if not os.path.exists(local_file):
-                print("Downloading", url)
-                resp = requests.get(url, stream=True, headers=headers)
-                with open(local_file, "wb") as f:
-                    for chunk in resp.iter_content(8192):
-                        f.write(chunk)
-            if local_dir not in seen_dirs:
-                meta_file = f"{local_dir}/meta.yaml"
-                if not os.path.exists(meta_file):
-                    with open(meta_file, "w") as mf:
-                        mf.write(f"architecture: {arch}\n")
-                        mf.write(f"os: {os_name}\n")
-                        mf.write(f"release: {rel}\n")
-                        mf.write(f"variant: {variant}\n")
-                        mf.write(f"type: {t}\n")
-                        mf.write(f"created_at: {dt}\n")
-                seen_dirs.add(local_dir)
-        for d, _, _ in os.walk(OUTDIR):
-            for f in glob.glob(os.path.join(d, "*-rootfs.squashfs")):
-                os.rename(f, os.path.join(d, "rootfs.squashfs"))
-            for f in glob.glob(os.path.join(d, "*-incus.tar.xz")):
-                os.rename(f, os.path.join(d, "incus.tar.xz"))
-        EOF
-
+      run: python3 .github/scripts/download_processed.py --metadata incus
     - name: Generate SHA256SUMS for images
       run: |
         find build/spiritlhl -type d | while read d; do
@@ -98,13 +48,11 @@ jobs:
           fi
           cd - >/dev/null
         done
-
     - name: Build simplestreams index and webpage
       run: |
         ls build/
         cd build
         simplestream-maintainer build . --build-webpage -d spiritlhl
-
     - name: Patch index.html for spiritlhl (content-only)
       run: |
         find build -name "index.html" | while read -r f; do
@@ -116,20 +64,24 @@ jobs:
           sed -i 's/lxc image/incus image/g' "$f"
           echo "Patched $f"
         done
-
     - name: List build contents
       run: |
+        source "$RUNNER_TEMP/ci-network.sh"
         wget https://raw.githubusercontent.com/oneclickvirt/incus_images/refs/heads/main/back/google9217a97bfdec3a8f.html -O ./build/google9217a97bfdec3a8f.html
         chmod 777 ./build/google9217a97bfdec3a8f.html
         echo "Build directory contents:"
         find build -type f | head -39
-
+      shell: bash
     - name: Deploy to Netlify
       uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0.0
       with:
-        publish-dir: './build'
+        publish-dir: ./build
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+'on':
+  workflow_dispatch: null
+  schedule:
+  - cron: 0 5 * * *

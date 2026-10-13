@@ -76,9 +76,9 @@ if $is_kvm_image; then
 fi
 
 echo "开始下载镜像..."
-if ! curl -m 1800 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
+if ! curl -f --connect-timeout 20 -m 600 --retry 2 -LO "https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
     echo "主下载失败，尝试备用下载源..."
-    if ! curl -m 1800 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
+    if ! curl -f --connect-timeout 20 -m 600 --retry 2 -LO "https://cdn.spiritlhl.net/https://github.com/oneclickvirt/incus_images/releases/download/${release_tag}/$image_name"; then
         echo "错误：所有下载源均失败" | tee -a log
         echo "fail" > "$test_status_file"
         exit 1

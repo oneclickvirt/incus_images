@@ -4,35 +4,61 @@ on:
   schedule:
     - cron: "30 5 * * 1"
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Published x86_64 KVM images to validate (hosted ARM has no KVM)
+        type: choice
+        options: [smoke, full]
+        default: smoke
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kvm-tests-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  verify-host:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate installer and VM driver before expanding the matrix
+        run: bash .github/scripts/setup_kvm_runner.sh
+
   prepare-matrix:
-    runs-on: ubuntu-latest
+    needs: verify-host
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: set-matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEST_SCOPE: ${{ inputs.scope || 'smoke' }}
         run: |
-          distros=(openeuler debian ubuntu fedora opensuse alpine archlinux centos almalinux rockylinux openwrt gentoo)
-          matrix_json='{"include":['
-
-          for arch in amd64 arm64; do
-            runner="ubuntu-latest"
-            [ "$arch" = "arm64" ] && runner="ubuntu-24.04-arm"
-
-            for distro in "${distros[@]}"; do
-              output=$(bash build_kvm_images.sh "$distro" false "$arch" | tail -n 1)
-              for image in $output; do
-                [ -n "$image" ] || continue
-                matrix_json+="{\"image\":\"$image\",\"arch\":\"$arch\",\"runner\":\"$runner\"},"
-              done
-            done
-          done
-
-          matrix_json=${matrix_json%,}
-          matrix_json+=']}'
-          echo "matrix=$matrix_json" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+          request = urllib.request.Request(
+              'https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/kvm_images',
+              headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
+          with urllib.request.urlopen(request, timeout=30) as response:
+              release = json.load(response)
+          names = sorted({asset['name'] for asset in release['assets']
+                          if re.fullmatch(r'[A-Za-z0-9._-]+_x86_64_(cloud|default)_kvm\.zip', asset['name'])})
+          if os.environ['TEST_SCOPE'] != 'full':
+              names = ['debian_12_bookworm_x86_64_default_kvm.zip', 'alpine_3.22_3.22_x86_64_default_kvm.zip']
+              published = {asset['name'] for asset in release['assets']}
+              if not set(names) <= published:
+                  raise SystemExit('A required smoke image has not been published.')
+          if not names:
+              raise SystemExit('No published x86_64 KVM images were found.')
+          matrix = {'include': [{'image': name, 'arch': 'amd64'} for name in names]}
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              print('matrix=' + json.dumps(matrix, separators=(',', ':')), file=output)
+          PY
 
   test-single-kvm-image:
     needs: prepare-matrix
@@ -40,22 +66,21 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 120
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Fresh Environment
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y unzip
-          sudo sh -c 'export noninteractive=true; curl -sL https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh -o incus_install.sh && chmod +x incus_install.sh && bash incus_install.sh >/dev/null 2>&1'
+        run: bash .github/scripts/setup_kvm_runner.sh
       - name: Test KVM Image
+        env:
+          KVM_IMAGE: ${{ matrix.image }}
+          KVM_ARCH: ${{ matrix.arch }}
         run: |
-          echo "测试 KVM 镜像: ${{ matrix.image }}"
-          if sudo bash test.sh "${{ matrix.image }}"; then
-            echo "KVM 测试通过: ${{ matrix.image }}"
-            echo "TEST_KVM_RESULT success=true image=${{ matrix.image }} arch=${{ matrix.arch }}"
+          set -euo pipefail
+          if sudo bash test.sh "$KVM_IMAGE"; then
+            echo "TEST_KVM_RESULT success=true image=$KVM_IMAGE arch=$KVM_ARCH"
           else
-            echo "KVM 测试失败: ${{ matrix.image }}"
-            echo "TEST_KVM_RESULT success=false image=${{ matrix.image }} arch=${{ matrix.arch }}"
+            echo "TEST_KVM_RESULT success=false image=$KVM_IMAGE arch=$KVM_ARCH"
+            exit 1
           fi

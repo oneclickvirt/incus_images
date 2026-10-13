@@ -237,6 +237,11 @@ build_or_list_kvm_images() {
                     manager="portage"
                 elif [[ "$run_funct" == "openwrt" ]]; then
                     manager="opkg"
+                    if [[ "$version" == "snapshot" || "$version" =~ ^([0-9]+)\. ]]; then
+                        if [[ "$version" == "snapshot" ]] || (( 10#${BASH_REMATCH[1]} >= 25 )); then
+                            manager="apk"
+                        fi
+                    fi
                 else
                     echo "Unsupported distribution: $run_funct"
                     exit 1
@@ -265,7 +270,7 @@ build_or_list_kvm_images() {
                 elif [[ "$run_funct" == "oracle" ]]; then
                     [ "${arch}" = "amd64" ] && arch="x86_64"
                     [ "${arch}" = "arm64" ] && arch="aarch64"
-                    if [[ "$version" == "9" ]]; then
+                    if [[ "$version" == "9" || "$version" == "10" ]]; then
                         EXTRA_ARGS="-o source.url=https://yum.oracle.com/ISOS/OracleLinux"
                     fi
                 elif [[ "$run_funct" == "archlinux" ]]; then

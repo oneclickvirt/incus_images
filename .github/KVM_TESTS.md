@@ -8,4 +8,4 @@ A runtime canary must pass before the image matrix starts. Each fresh runner ins
 
 Guest networking is checked with its existing DNS configuration. The probe uses the GitHub origin first, with a bounded CDN fallback, so a failed CDN alone cannot invalidate a working image.
 
-QEMU's SPICE module is explicitly installed because Incus uses it for the VM console even in headless tests. Alpine, Arch, Gentoo and OpenWrt images must declare `requirements.secureboot=false` in their metadata; only these verified images set `security.secureboot=false` on their test instance. Other images keep the default Secure Boot setting.
+The native runtime includes the `incus-agent` binary for guest commands and QEMU's SPICE module for the VM console even in headless tests. Alpine, Arch, Gentoo and OpenWrt images must declare `requirements.secureboot=false` in their metadata; only these verified images set `security.secureboot=false` on their test instance. Other images keep the default Secure Boot setting. Failed tests retain bounded instance/console diagnostics before deleting their disposable resources, and SSH probes report command failures separately from a missing TCP listener.

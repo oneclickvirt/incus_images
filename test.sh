@@ -43,6 +43,13 @@ echo "success" > "$test_status_file"
 # shellcheck disable=SC2329
 cleanup() {
     local exit_code=$?
+    if [[ "$exit_code" -ne 0 ]]; then
+        echo "保留失败实例诊断..."
+        timeout 15 incus info --show-log test || true
+        if $is_kvm_image; then
+            timeout 15 incus console test --show-log || true
+        fi
+    fi
     echo "清理资源..."
     incus stop test 2>/dev/null || true
     incus delete -f test 2>/dev/null || true
@@ -192,15 +199,17 @@ fi
 ssh_test() {
     local retries=0
     local max_retries=5
+    local probe_output
     if $is_kvm_image; then
         max_retries=12
     fi
     
     while [ $retries -lt $max_retries ]; do
-        if incus exec test -- lsof -i:22 2>/dev/null | grep -q ssh; then
+        if probe_output=$(timeout 15 incus exec test -- lsof -iTCP:22 -sTCP:LISTEN -nP 2>&1) && grep -q ssh <<< "$probe_output"; then
             echo "SSH服务正常" | tee -a log
             return 0
         fi
+        printf '%s\n' "$probe_output" | tee -a log
         echo "等待SSH服务启动，尝试 $((retries + 1))/$max_retries..." | tee -a log
         if $is_kvm_image; then
             sleep 10

@@ -208,19 +208,18 @@ ssh_test() {
 }
 
 network_test() {
-    incus exec test -- cp /etc/resolv.conf /etc/resolv.conf.bak || true
-
-    incus exec test -- sh -c 'echo "nameserver 8.8.8.8" > /etc/resolv.conf'
-
-    if incus exec test -- curl -m 10 -skL https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test | grep -q "success"; then
-        echo "网络连通正常" | tee -a log
-        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf 2>/dev/null || true
-        return 0
-    else
-        echo "网络连接失败" | tee -a log
-        incus exec test -- mv /etc/resolv.conf.bak /etc/resolv.conf 2>/dev/null || true
-        return 1
-    fi
+    local check_url
+    # Check the image's configured DNS and use the available origin first.
+    for check_url in \
+        https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test \
+        https://cdn.spiritlhl.net/https://raw.githubusercontent.com/spiritLHLS/ecs/main/back/test; do
+        if incus exec test -- curl --connect-timeout 5 -m 10 -fskL "$check_url" | grep -q "success"; then
+            echo "网络连通正常" | tee -a log
+            return 0
+        fi
+    done
+    echo "网络连接失败" | tee -a log
+    return 1
 }
 
 if ! ssh_test; then

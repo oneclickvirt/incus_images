@@ -1,0 +1,47 @@
+name: KVM runner preflight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-host:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - name: Inspect virtualization capability
+        run: |
+          set -euo pipefail
+          uname -a
+          cat /etc/os-release
+          lscpu
+          if [ -e /dev/kvm ]; then
+            ls -l /dev/kvm
+          else
+            echo 'This hosted runner does not expose /dev/kvm.'
+          fi
+          systemctl cat docker.service || true
+      - name: Diagnose current Incus installer
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --location --retry 2 \
+            https://raw.githubusercontent.com/oneclickvirt/incus/main/scripts/incus_install.sh \
+            --output "$RUNNER_TEMP/incus_install.sh"
+          sudo env noninteractive=true timeout 900 bash "$RUNNER_TEMP/incus_install.sh" \
+            2>&1 | tee "$RUNNER_TEMP/incus-install.log"
+      - name: Inspect Incus service after installation
+        if: always()
+        run: |
+          sudo systemctl --no-pager --full status incus.service || true
+          sudo journalctl --no-pager -u incus.service -n 100 || true
+          if command -v incus >/dev/null 2>&1; then
+            sudo incus version || true
+            sudo incus storage list || true
+            sudo incus network list || true
+          fi

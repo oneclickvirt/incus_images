@@ -76,6 +76,10 @@ jobs:
         else
           echo "测试失败: ${{ matrix.image }}"
           echo "TEST_RESULT success=false image=${{ matrix.image }} arch=${{ matrix.arch }}"
+          exit 1
+          exit 1
+          exit 1
+          exit 1
         fi
 'on':
   schedule:

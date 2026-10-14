@@ -10,9 +10,10 @@ if [[ "$(uname -m)" != x86_64 ]] || [[ ! -c /dev/kvm ]]; then
     exit 1
 fi
 
-sudo apt-get update -y
+source .github/scripts/ci_network.sh
+ci_retry sudo apt-get update -y
 # Ubuntu 24.04 provides the VM tools as native QEMU/firmware packages.
-sudo apt-get install -y --no-install-recommends incus incus-agent qemu-system-x86 qemu-system-modules-spice qemu-utils ovmf swtpm dnsmasq-base unzip jq
+ci_retry sudo apt-get install -y --no-install-recommends incus incus-agent qemu-system-x86 qemu-system-modules-spice qemu-utils ovmf swtpm dnsmasq-base unzip jq virtiofsd genisoimage
 # Ubuntu installs the VM agent outside the interactive shell's PATH.
 dpkg-query -W -f='${Package} ${Version} ${Status}\n' incus-agent
 sudo systemctl start incus
@@ -43,6 +44,9 @@ profiles:
         type: nic
         network: incusbr0
         name: eth0
+      agent-config:
+        type: disk
+        source: agent:config
 PRESEED
 # Docker's preinstalled FORWARD policy can otherwise drop the Incus bridge.
 # Keep these ephemeral test rules scoped to this bridge.

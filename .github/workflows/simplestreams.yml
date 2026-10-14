@@ -1,7 +1,7 @@
 name: Build Incus Simplestreams
 jobs:
   build-simplestreams:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Load trusted network recovery helpers
       shell: bash
@@ -15,18 +15,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y python3 python3-pip python3-requests snapd wget
+    - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      with:
+        go-version: 1.26.5
+        cache: false
     - name: Install simplestream-maintainer
-      run: |
-        source "$RUNNER_TEMP/ci-network.sh"
-        sudo apt-get update
-        sudo apt-get install -y golang git
-        git clone https://github.com/oneclickvirt/lxd-imagebuilder.git
-        sed -i 's/ItemTypeMetadata = "lxd\.tar\.xz"/ItemTypeMetadata = "incus.tar.xz"/' lxd-imagebuilder/simplestream-maintainer/stream/stream.go
-        cd lxd-imagebuilder/simplestream-maintainer
-        go build -o simplestream-maintainer .
-        sudo mv simplestream-maintainer /usr/local/bin/
-        simplestream-maintainer --version
-        simplestream-maintainer build -h
+      run: bash .github/scripts/install_stream_maintainer.sh incus
       shell: bash
     - name: Download assets from GitHub Release
       env:
@@ -53,17 +47,8 @@ jobs:
         ls build/
         cd build
         simplestream-maintainer build . --build-webpage -d spiritlhl
-    - name: Patch index.html for spiritlhl (content-only)
-      run: |
-        find build -name "index.html" | while read -r f; do
-          sed -i 's/LXD/Incus/g' "$f"
-          sed -i 's/lxd/incus/g' "$f"
-          sed -i 's/images:/spiritlhl:/g' "$f"
-          sed -i 's/lxc launch/incus launch/g' "$f"
-          sed -i 's/lxc remote/incus remote/g' "$f"
-          sed -i 's/lxc image/incus image/g' "$f"
-          echo "Patched $f"
-        done
+    - name: Validate image index and apply maintained portal layout
+      run: python3 .github/scripts/style_image_portal.py --root build --flavour incus
     - name: List build contents
       run: |
         source "$RUNNER_TEMP/ci-network.sh"
@@ -72,17 +57,61 @@ jobs:
         echo "Build directory contents:"
         find build -type f | sed -n '1,39p'
       shell: bash
-    - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0.0
-      with:
-        publish-dir: ./build
-        production-branch: main
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Require Netlify publication credentials
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-    timeout-minutes: 45
+      run: test -n "$NETLIFY_AUTH_TOKEN" && test -n "$NETLIFY_SITE_ID"
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0.0
+      with: &id001
+        publish-dir: ./build
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        production-deploy: true
+        fails-without-credentials: true
+        enable-pull-request-comment: false
+        enable-commit-comment: false
+        enable-github-deployment: false
+      env: &id002
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      id: deploy
+      continue-on-error: true
+    - name: Retry atomic Netlify publication
+      uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0.0
+      with: *id001
+      env: *id002
+      id: deploy-retry
+      continue-on-error: true
+      if: steps.deploy.outcome == 'failure'
+    - name: Require successful atomic deployment
+      if: steps.deploy.outcome == 'failure' && steps.deploy-retry.outcome == 'failure'
+      run: |-
+        echo 'Netlify deployment failed; the previous published site remains available' >&2
+        exit 1
+    timeout-minutes: 90
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
 'on':
   workflow_dispatch: null
   schedule:
   - cron: 0 5 * * *
+  push:
+    branches:
+    - main
+    paths:
+    - .github/scripts/style_image_portal.py
+    - .github/scripts/install_stream_maintainer.sh
+    - .github/workflows/simplestreams.yml
+  workflow_run:
+    workflows:
+    - Incus Simplestreams Pre Build
+    types:
+    - completed
+    branches:
+    - main
+permissions:
+  contents: read
+concurrency:
+  group: image-portal-deploy
+  cancel-in-progress: false

@@ -333,13 +333,13 @@ build_or_list_kvm_images() {
                     success=false
                     if [[ "$run_funct" != "archlinux" && "$run_funct" != "gentoo" ]]; then
                         echo "sudo ${builder_path} build-incus ${opath}/images_yaml/${run_funct}.yaml --vm -o image.release=${version} -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
-                        if sudo "$builder_path" build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release="${version}" -o image.architecture="${arch}" -o image.variant="${variant}" -o packages.manager="${manager}" ${EXTRA_ARGS}; then
+                        if python3 "${opath}/.github/scripts/build_image_retry.py" -- sudo "$builder_path" build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.release="${version}" -o image.architecture="${arch}" -o image.variant="${variant}" -o packages.manager="${manager}" ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                             success=true
                         fi
                     else
                         echo "sudo ${builder_path} build-incus ${opath}/images_yaml/${run_funct}.yaml --vm -o image.architecture=${arch} -o image.variant=${variant} -o packages.manager=${manager} ${EXTRA_ARGS}"
-                        if sudo "$builder_path" build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.architecture="${arch}" -o image.variant="${variant}" -o packages.manager="${manager}" ${EXTRA_ARGS}; then
+                        if python3 "${opath}/.github/scripts/build_image_retry.py" -- sudo "$builder_path" build-incus "${opath}/images_yaml/${run_funct}.yaml" --vm -o image.architecture="${arch}" -o image.variant="${variant}" -o packages.manager="${manager}" ${EXTRA_ARGS}; then
                             echo "Command succeeded"
                             success=true
                         fi

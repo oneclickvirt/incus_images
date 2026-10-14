@@ -89,28 +89,29 @@ patch_incus_metadata_for_kvm() {
         return 1
     fi
 
-    awk '
-        BEGIN { done = 0 }
-        /^[[:space:]]*requirements\.secureboot:[[:space:]]*/ {
-            print "  requirements.secureboot: \"false\""
-            done = 1
-            next
-        }
-        /^properties:[[:space:]]*$/ && done == 0 {
-            print
-            print "  requirements.secureboot: \"false\""
-            done = 1
-            next
-        }
-        { print }
-        END {
-            if (done == 0) {
+    # Runtime requirements are string-valued properties in Incus/LXD
+    # metadata, not a separate top-level requirements mapping.
+    if grep -q '^[[:space:]]*requirements\.secureboot:' "$temp_dir/metadata.yaml"; then
+        sed 's/^[[:space:]]*requirements\.secureboot:.*/  requirements.secureboot: "false"/' "$temp_dir/metadata.yaml" > "$temp_dir/metadata.yaml.new"
+    else
+        awk '
+            /^properties:[[:space:]]*(\{\})?[[:space:]]*$/ {
                 print "properties:"
                 print "  requirements.secureboot: \"false\""
+                done = 1
+                next
             }
-        }
-    ' "$temp_dir/metadata.yaml" > "$temp_dir/metadata.yaml.new"
+            { print }
+            END {
+                if (!done) {
+                    print "properties:"
+                    print "  requirements.secureboot: \"false\""
+                }
+            }
+        ' "$temp_dir/metadata.yaml" > "$temp_dir/metadata.yaml.new"
+    fi
     mv "$temp_dir/metadata.yaml.new" "$temp_dir/metadata.yaml"
+
 
     if [ -d "$temp_dir/templates" ]; then
         if ! tar -C "$temp_dir" -cJf incus.tar.xz metadata.yaml templates; then

@@ -20,6 +20,8 @@ alpine_3.24_3.24_x86_64_default.zip
 alpine_edge_edge_x86_64_cloud.zip
 archlinux_current_current_x86_64_cloud.zip
 archlinux_current_current_x86_64_default.zip
+centos_10_10-Stream_x86_64_cloud.zip
+centos_10_10-Stream_x86_64_default.zip
 centos_7_7_x86_64_cloud.zip
 centos_7_7_x86_64_default.zip
 centos_8_8-Stream_x86_64_cloud.zip
@@ -42,6 +44,10 @@ fedora_39_39_x86_64_cloud.zip
 fedora_39_39_x86_64_default.zip
 fedora_40_40_x86_64_cloud.zip
 fedora_40_40_x86_64_default.zip
+fedora_43_43_x86_64_cloud.zip
+fedora_43_43_x86_64_default.zip
+fedora_44_44_x86_64_cloud.zip
+fedora_44_44_x86_64_default.zip
 gentoo_current_current_x86_64_cloud.zip
 gentoo_current_current_x86_64_openrc.zip
 gentoo_current_current_x86_64_systemd.zip

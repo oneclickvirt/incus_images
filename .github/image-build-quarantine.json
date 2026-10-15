@@ -67,19 +67,11 @@
     },
     {
       "distro": "centos",
-      "release": "10-Stream",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "centos",
       "release": "9-Stream",
       "arch": "amd64",
       "kind": "vm",
-      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663827182"
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38664973641"
     },
     {
       "distro": "centos",
@@ -150,8 +142,8 @@
       "release": "current",
       "arch": "amd64",
       "kind": "vm",
-      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663988912"
     },
     {
       "distro": "gentoo",

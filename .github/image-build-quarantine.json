@@ -159,7 +159,7 @@
       "arch": "arm64",
       "kind": "vm",
       "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38698503949"
     },
     {
       "distro": "oracle",

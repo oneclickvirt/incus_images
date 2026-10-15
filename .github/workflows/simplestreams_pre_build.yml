@@ -2,6 +2,9 @@ name: Incus Simplestreams Pre Build
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: processed-image-refresh
+      cancel-in-progress: false
     timeout-minutes: 360
     steps:
     - name: Load trusted network recovery helpers
@@ -33,6 +36,3 @@ jobs:
     - main
 permissions:
   contents: write
-concurrency:
-  group: processed-image-refresh
-  cancel-in-progress: false

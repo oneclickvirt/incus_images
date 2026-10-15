@@ -88,8 +88,12 @@ openwrt_23.05_23.05_x86_64_default.zip
 openwrt_25.12_25.12_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
+oracle_10_10_x86_64_cloud.zip
+oracle_10_10_x86_64_default.zip
 oracle_8_8_x86_64_cloud.zip
+oracle_8_8_x86_64_default.zip
 oracle_9_9_x86_64_cloud.zip
+oracle_9_9_x86_64_default.zip
 rockylinux_10_10_x86_64_cloud.zip
 rockylinux_10_10_x86_64_default.zip
 rockylinux_8_8_x86_64_cloud.zip

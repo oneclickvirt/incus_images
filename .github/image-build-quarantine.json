@@ -14,7 +14,7 @@
       "release": "10",
       "arch": "arm64",
       "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "reason": "Guest entered emergency mode after its EFI filesystem device timed out under ARM TCG; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38622970950"
     },
     {
@@ -39,7 +39,7 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38664983922"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674829789"
     },
     {
       "distro": "almalinux",
@@ -47,7 +47,7 @@
       "arch": "arm64",
       "kind": "vm",
       "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38664983922"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674829789"
     },
     {
       "distro": "archlinux",
@@ -62,8 +62,16 @@
       "release": "10-Stream",
       "arch": "amd64",
       "kind": "vm",
-      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663827182"
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674839989"
+    },
+    {
+      "distro": "centos",
+      "release": "10-Stream",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674839989"
     },
     {
       "distro": "centos",
@@ -78,7 +86,7 @@
       "release": "9-Stream",
       "arch": "arm64",
       "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "reason": "Guest boot command line retained a build-host loop device; newer UUID-root repair requires complete variant validation before re-enabling automation",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668611604"
     },
     {
@@ -118,7 +126,7 @@
       "release": "44",
       "arch": "arm64",
       "kind": "vm",
-      "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "reason": "Guest entered emergency mode after its EFI filesystem device timed out under ARM TCG; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668593900"
     },
     {
@@ -231,7 +239,7 @@
       "arch": "amd64",
       "kind": "container",
       "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38672683642"
     },
     {
       "distro": "oracle",
@@ -239,7 +247,7 @@
       "arch": "arm64",
       "kind": "container",
       "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38672683642"
     },
     {
       "distro": "rockylinux",

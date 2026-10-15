@@ -2,22 +2,6 @@
   "schema": 1,
   "entries": [
     {
-      "distro": "almalinux",
-      "release": "8",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712582337"
-    },
-    {
-      "distro": "openeuler",
-      "release": "24.03",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713453934"
-    },
-    {
       "distro": "openeuler",
       "release": "24.03",
       "arch": "arm64",

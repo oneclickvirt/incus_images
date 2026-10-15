@@ -195,14 +195,6 @@
     },
     {
       "distro": "ubuntu",
-      "release": "noble",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Build or guest validation failed; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "ubuntu",
       "release": "resolute",
       "arch": "arm64",
       "kind": "vm",

@@ -39,15 +39,7 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674829789"
-    },
-    {
-      "distro": "almalinux",
-      "release": "9",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674829789"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691138689"
     },
     {
       "distro": "archlinux",
@@ -120,14 +112,6 @@
       "kind": "vm",
       "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "fedora",
-      "release": "44",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Guest entered emergency mode after its EFI filesystem device timed out under ARM TCG; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668593900"
     },
     {
       "distro": "gentoo",
@@ -206,7 +190,7 @@
       "release": "10",
       "arch": "amd64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
     },
     {
@@ -214,7 +198,7 @@
       "release": "10",
       "arch": "arm64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
     },
     {
@@ -222,7 +206,7 @@
       "release": "8",
       "arch": "amd64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
     },
     {
@@ -230,7 +214,7 @@
       "release": "8",
       "arch": "arm64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
     },
     {
@@ -238,16 +222,16 @@
       "release": "9",
       "arch": "amd64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38672683642"
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691106134"
     },
     {
       "distro": "oracle",
       "release": "9",
       "arch": "arm64",
       "kind": "container",
-      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38672683642"
+      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691106134"
     },
     {
       "distro": "rockylinux",

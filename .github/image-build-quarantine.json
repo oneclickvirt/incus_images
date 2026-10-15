@@ -11,14 +11,6 @@
     },
     {
       "distro": "almalinux",
-      "release": "10",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Guest entered emergency mode after its EFI filesystem device timed out under ARM TCG; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38622970950"
-    },
-    {
-      "distro": "almalinux",
       "release": "8",
       "arch": "amd64",
       "kind": "vm",
@@ -55,14 +47,6 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668611604"
-    },
-    {
-      "distro": "centos",
-      "release": "9-Stream",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Guest boot command line retained a build-host loop device; newer UUID-root repair requires complete variant validation before re-enabling automation",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668611604"
     },
     {
@@ -191,7 +175,7 @@
       "arch": "arm64",
       "kind": "vm",
       "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38707727707"
     }
   ]
 }

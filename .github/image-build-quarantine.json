@@ -1,13 +1,4 @@
 {
   "schema": 1,
-  "entries": [
-    {
-      "distro": "rockylinux",
-      "release": "9",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Large vendor firmware package remained undownloaded when the build budget expired; bounded DNF mirror-speed recovery requires complete variant validation before re-enabling automation",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38728651776"
-    }
-  ]
+  "entries": []
 }

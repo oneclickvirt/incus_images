@@ -63,8 +63,11 @@ opensuse_16.0_16.0_arm64_cloud.zip
 opensuse_16.0_16.0_arm64_default.zip
 opensuse_tumbleweed_tumbleweed_arm64_cloud.zip
 opensuse_tumbleweed_tumbleweed_arm64_default.zip
+openwrt_25.12_25.12_arm64_default.zip
 oracle_8_8_arm64_cloud.zip
 oracle_9_9_arm64_cloud.zip
+rockylinux_10_10_arm64_cloud.zip
+rockylinux_10_10_arm64_default.zip
 rockylinux_8_8_arm64_cloud.zip
 rockylinux_8_8_arm64_default.zip
 rockylinux_9_9_arm64_cloud.zip
@@ -77,3 +80,5 @@ ubuntu_22.04_jammy_arm64_cloud.zip
 ubuntu_22.04_jammy_arm64_default.zip
 ubuntu_24.04_noble_arm64_cloud.zip
 ubuntu_24.04_noble_arm64_default.zip
+ubuntu_26.04_resolute_arm64_cloud.zip
+ubuntu_26.04_resolute_arm64_default.zip

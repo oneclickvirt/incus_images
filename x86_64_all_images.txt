@@ -85,10 +85,13 @@ openwrt_22.03_22.03_x86_64_cloud.zip
 openwrt_22.03_22.03_x86_64_default.zip
 openwrt_23.05_23.05_x86_64_cloud.zip
 openwrt_23.05_23.05_x86_64_default.zip
+openwrt_25.12_25.12_x86_64_default.zip
 openwrt_snapshot_snapshot_x86_64_cloud.zip
 openwrt_snapshot_snapshot_x86_64_default.zip
 oracle_8_8_x86_64_cloud.zip
 oracle_9_9_x86_64_cloud.zip
+rockylinux_10_10_x86_64_cloud.zip
+rockylinux_10_10_x86_64_default.zip
 rockylinux_8_8_x86_64_cloud.zip
 rockylinux_8_8_x86_64_default.zip
 rockylinux_9_9_x86_64_cloud.zip
@@ -105,3 +108,5 @@ ubuntu_23.10_mantic_x86_64_cloud.zip
 ubuntu_23.10_mantic_x86_64_default.zip
 ubuntu_24.04_noble_x86_64_cloud.zip
 ubuntu_24.04_noble_x86_64_default.zip
+ubuntu_26.04_resolute_x86_64_cloud.zip
+ubuntu_26.04_resolute_x86_64_default.zip

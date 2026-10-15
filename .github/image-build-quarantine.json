@@ -42,28 +42,12 @@
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691138689"
     },
     {
-      "distro": "archlinux",
-      "release": "current",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Guest kernel could not mount its root filesystem with the tested storage controllers; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
       "distro": "centos",
       "release": "10-Stream",
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674839989"
-    },
-    {
-      "distro": "centos",
-      "release": "10-Stream",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "ARM guest panicked in MOPS memset while loading a kernel module under QEMU TCG max CPU; stable CPU baseline repair requires complete variant validation before re-enabling automation",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674839989"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38693215239"
     },
     {
       "distro": "centos",
@@ -112,14 +96,6 @@
       "kind": "vm",
       "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "gentoo",
-      "release": "current",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663988912"
     },
     {
       "distro": "gentoo",
@@ -187,30 +163,6 @@
     },
     {
       "distro": "oracle",
-      "release": "10",
-      "arch": "amd64",
-      "kind": "container",
-      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
-    },
-    {
-      "distro": "oracle",
-      "release": "10",
-      "arch": "arm64",
-      "kind": "container",
-      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
-    },
-    {
-      "distro": "oracle",
-      "release": "8",
-      "arch": "amd64",
-      "kind": "container",
-      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
-    },
-    {
-      "distro": "oracle",
       "release": "8",
       "arch": "arm64",
       "kind": "container",
@@ -222,16 +174,8 @@
       "release": "9",
       "arch": "amd64",
       "kind": "container",
-      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691106134"
-    },
-    {
-      "distro": "oracle",
-      "release": "9",
-      "arch": "arm64",
-      "kind": "container",
-      "reason": "Vendor SELinux labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691106134"
+      "reason": "Oracle ISO rootfs copying failed while reading a security.selinux extended attribute; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38696558327"
     },
     {
       "distro": "rockylinux",

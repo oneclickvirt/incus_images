@@ -13,3 +13,12 @@ Oracle 8/9/10 use the official ISO host on these distrobuilder paths. The pinned
 OpenWrt rootfs archives can validly be smaller than 10 MiB. They use a 1 MiB compressed size floor plus full XZ/tar integrity and an etc/openwrt_release identity check; other images retain the 10 MiB floor. ZIP CRC checks and maximum size limits remain enabled.
 
 Gentoo also uses the pinned 3.4.0 builder because its definition contains the newer VM boot_size field; even LXC-only construction must successfully parse the complete definition.
+
+
+## Hosted build and schedule safeguards
+
+The hosted workflows use GitHub's Ubuntu AMD64/ARM64 runners. Native containers and AMD64 VMs use the available runtime; ARM64 or unavailable KVM uses bounded QEMU software emulation. A build is published only after archive checks and actual guest execution, SSH listening, certificate-verified HTTPS/DNS and a changed boot ID after restart. Software-emulation success does not certify a separate production Proxmox host.
+
+`.github/image-build-quarantine.json` holds exact distribution/release/architecture/type combinations with failed build or boot evidence. Scheduled jobs omit those combinations, retain existing assets and report the selection count. An empty automated matrix skips the build job; it does not produce an image validation marker. Manual dispatch still accepts those rows for repair. Remove an entry only after a real successful validation of the affected combination. Upstream definition/catalog refresh does not replace this policy.
+
+Every upstream refresh reapplies repository compatibility fixes, including SUSE resolver ownership and cloud-init's local stage, EL ARM package names and EFI/BLS paths, Fedora bootstrap ordering, Debian SSH host-key regeneration at boot and Gentoo cloud dependencies. Refreshes validate the entire staged snapshot before promotion. Native SUSE archives retain the vendor-managed DNS symlink; raw LXC consumers supply their own DNS and NoCloud configuration.

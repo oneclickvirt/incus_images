@@ -1,0 +1,341 @@
+{
+  "schema": 1,
+  "entries": [
+    {
+      "distro": "almalinux",
+      "release": "10",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38620212532"
+    },
+    {
+      "distro": "almalinux",
+      "release": "10",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38622970950"
+    },
+    {
+      "distro": "almalinux",
+      "release": "8",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "almalinux",
+      "release": "8",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38622970950"
+    },
+    {
+      "distro": "almalinux",
+      "release": "9",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "almalinux",
+      "release": "9",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663837278"
+    },
+    {
+      "distro": "archlinux",
+      "release": "current",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Guest kernel could not mount its root filesystem with the tested storage controllers; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "centos",
+      "release": "10-Stream",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663827182"
+    },
+    {
+      "distro": "centos",
+      "release": "10-Stream",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "centos",
+      "release": "9-Stream",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663827182"
+    },
+    {
+      "distro": "centos",
+      "release": "9-Stream",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "RPM boot metadata referenced a kernel outside the guest boot filesystem; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663827182"
+    },
+    {
+      "distro": "debian",
+      "release": "bookworm",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Guest booted but its SSH listener failed the readiness gate; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "debian",
+      "release": "bookworm",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "debian",
+      "release": "trixie",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "fedora",
+      "release": "43",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "fedora",
+      "release": "43",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "fedora",
+      "release": "44",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "fedora",
+      "release": "44",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "gentoo",
+      "release": "current",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "gentoo",
+      "release": "current",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "openeuler",
+      "release": "24.03",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "openeuler",
+      "release": "24.03",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor package transaction failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "opensuse",
+      "release": "16.0",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Guest booted but its SSH listener failed the readiness gate; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "opensuse",
+      "release": "16.0",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "opensuse",
+      "release": "tumbleweed",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Guest booted but its SSH listener failed the readiness gate; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "opensuse",
+      "release": "tumbleweed",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "openwrt",
+      "release": "25.12",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "oracle",
+      "release": "10",
+      "arch": "amd64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "oracle",
+      "release": "10",
+      "arch": "arm64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "oracle",
+      "release": "8",
+      "arch": "amd64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "oracle",
+      "release": "8",
+      "arch": "arm64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "oracle",
+      "release": "9",
+      "arch": "amd64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "oracle",
+      "release": "9",
+      "arch": "arm64",
+      "kind": "container",
+      "reason": "Vendor SELinux symlink labels cannot be unpacked by the hosted container runtime; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605011383"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "10",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "10",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "8",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "8",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "9",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "rockylinux",
+      "release": "9",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Vendor image hook failed before a bootable image was accepted; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "ubuntu",
+      "release": "jammy",
+      "arch": "amd64",
+      "kind": "vm",
+      "reason": "Guest booted but its SSH listener failed the readiness gate; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "ubuntu",
+      "release": "noble",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Build or guest validation failed; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    },
+    {
+      "distro": "ubuntu",
+      "release": "resolute",
+      "arch": "arm64",
+      "kind": "vm",
+      "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+    }
+  ]
+}

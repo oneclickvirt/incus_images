@@ -23,7 +23,7 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38691138689"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713425128"
     },
     {
       "distro": "centos",
@@ -42,20 +42,12 @@
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668611604"
     },
     {
-      "distro": "gentoo",
-      "release": "current",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663988912"
-    },
-    {
       "distro": "openeuler",
       "release": "24.03",
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38663999622"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713453934"
     },
     {
       "distro": "openeuler",
@@ -71,7 +63,7 @@
       "arch": "arm64",
       "kind": "vm",
       "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712552569"
     },
     {
       "distro": "rockylinux",
@@ -102,8 +94,8 @@
       "release": "resolute",
       "arch": "arm64",
       "kind": "vm",
-      "reason": "Guest failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38707727707"
+      "reason": "Guest entered emergency mode after its EFI filesystem device timed out under ARM TCG; previous assets retained and manual repair remains available",
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38716607490"
     }
   ]
 }

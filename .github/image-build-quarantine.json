@@ -70,7 +70,7 @@
       "release": "10-Stream",
       "arch": "arm64",
       "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
+      "reason": "ARM guest panicked in MOPS memset while loading a kernel module under QEMU TCG max CPU; stable CPU baseline repair requires complete variant validation before re-enabling automation",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38674839989"
     },
     {

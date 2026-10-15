@@ -13,6 +13,7 @@ curl --fail --silent --show-error --location --connect-timeout 15 --max-time 120
   -o "$task_dir/source.tar.gz"
 printf '%s  %s\n' "$digest" "$task_dir/source.tar.gz" | sha256sum --check --status
 tar -xzf "$task_dir/source.tar.gz" -C "$task_dir"
+python3 .github/scripts/patch_container_labels.py "$task_dir/distrobuilder-${version}"
 
 # Oracle's official OL8 ISO uses the same versioned filename as OL9/OL10.
 # The upstream 3.4.0 iteration fallback only recognizes the latter two.

@@ -3,43 +3,11 @@
   "entries": [
     {
       "distro": "almalinux",
-      "release": "10",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38620212532"
-    },
-    {
-      "distro": "almalinux",
       "release": "8",
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712582337"
-    },
-    {
-      "distro": "almalinux",
-      "release": "9",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713425128"
-    },
-    {
-      "distro": "centos",
-      "release": "10-Stream",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713439211"
-    },
-    {
-      "distro": "centos",
-      "release": "9-Stream",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38668611604"
     },
     {
       "distro": "openeuler",
@@ -64,14 +32,6 @@
       "kind": "vm",
       "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712552569"
-    },
-    {
-      "distro": "rockylinux",
-      "release": "10",
-      "arch": "amd64",
-      "kind": "vm",
-      "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712430739"
     },
     {
       "distro": "rockylinux",

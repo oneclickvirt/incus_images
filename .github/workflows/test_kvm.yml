@@ -1,86 +1,26 @@
 name: Run Incus KVM Tests
-
-on:
+'on':
   schedule:
-    - cron: "30 5 * * 1"
+  - cron: 30 5 * * 1
   workflow_dispatch:
     inputs:
       scope:
-        description: Published x86_64 KVM images to validate (hosted ARM has no KVM)
+        description: Published image coverage
         type: choice
-        options: [smoke, full]
+        options:
+        - smoke
+        - full
         default: smoke
-
+      image:
+        description: Exact published asset; empty selects the suite
+        type: string
+        default: ''
 permissions:
   contents: read
-
-concurrency:
-  group: kvm-tests-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  verify-host:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Validate runtime and VM driver before expanding the matrix
-        run: bash .github/scripts/setup_kvm_runner.sh
-
-  prepare-matrix:
-    needs: verify-host
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - id: set-matrix
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TEST_SCOPE: ${{ inputs.scope || 'smoke' }}
-        run: |
-          python3 - <<'PY'
-          import json, os, re, urllib.request
-          request = urllib.request.Request(
-              'https://api.github.com/repos/oneclickvirt/incus_images/releases/tags/kvm_images',
-              headers={'Authorization': 'Bearer ' + os.environ['GH_TOKEN'], 'Accept': 'application/vnd.github+json'})
-          with urllib.request.urlopen(request, timeout=30) as response:
-              release = json.load(response)
-          names = sorted({asset['name'] for asset in release['assets']
-                          if re.fullmatch(r'[A-Za-z0-9._-]+_x86_64_(cloud|default)_kvm\.zip', asset['name'])})
-          if os.environ['TEST_SCOPE'] != 'full':
-              names = ['debian_12_bookworm_x86_64_default_kvm.zip', 'alpine_3.22_3.22_x86_64_default_kvm.zip']
-              published = {asset['name'] for asset in release['assets']}
-              if not set(names) <= published:
-                  raise SystemExit('A required smoke image has not been published.')
-          if not names:
-              raise SystemExit('No published x86_64 KVM images were found.')
-          matrix = {'include': [{'image': name, 'arch': 'amd64'} for name in names]}
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
-              print('matrix=' + json.dumps(matrix, separators=(',', ':')), file=output)
-          PY
-
-  test-single-kvm-image:
-    needs: prepare-matrix
-    strategy:
-      fail-fast: false
-      max-parallel: 3
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup Fresh Environment
-        run: bash .github/scripts/setup_kvm_runner.sh
-      - name: Test KVM Image
-        env:
-          KVM_IMAGE: ${{ matrix.image }}
-          KVM_ARCH: ${{ matrix.arch }}
-        run: |
-          set -euo pipefail
-          if sudo bash test.sh "$KVM_IMAGE"; then
-            echo "TEST_KVM_RESULT success=true image=$KVM_IMAGE arch=$KVM_ARCH"
-          else
-            echo "TEST_KVM_RESULT success=false image=$KVM_IMAGE arch=$KVM_ARCH"
-            exit 1
-          fi
+  validate-published:
+    uses: ./.github/workflows/hosted-tests.yml
+    with:
+      scope: ${{ inputs.scope || 'smoke' }}
+      image: ${{ inputs.image || '' }}
+      kind: vm

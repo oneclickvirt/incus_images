@@ -15,15 +15,7 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "almalinux",
-      "release": "8",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38622970950"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38712582337"
     },
     {
       "distro": "almalinux",
@@ -39,7 +31,7 @@
       "arch": "amd64",
       "kind": "vm",
       "reason": "Native VM agent failed readiness; boot and guest integration remain unverified; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38693215239"
+      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38713439211"
     },
     {
       "distro": "centos",
@@ -80,14 +72,6 @@
       "kind": "vm",
       "reason": "Software VM failed bounded SSH readiness; no working guest was established; previous assets retained and manual repair remains available",
       "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38605039079"
-    },
-    {
-      "distro": "openwrt",
-      "release": "25.12",
-      "arch": "arm64",
-      "kind": "vm",
-      "reason": "Guest booted but its SSH listener failed the readiness gate; previous assets retained and manual repair remains available",
-      "evidence": "https://github.com/oneclickvirt/incus_images/actions/runs/38711280834"
     },
     {
       "distro": "rockylinux",

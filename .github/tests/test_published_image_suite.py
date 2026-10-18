@@ -10,7 +10,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / '.github/scripts'))
 import published_image_suite as suite
-from published_image_suite import matrix, automatic_published_matrix
+from published_image_suite import matrix, automatic_published_matrix, supported_published_assets
 
 
 class PublishedSuiteTests(unittest.TestCase):
@@ -36,6 +36,20 @@ class PublishedSuiteTests(unittest.TestCase):
         self.assertEqual(len(result), 3)
         exact = matrix([self.assets[-1]], ROOT.name, 'full', 'vm')['include']
         self.assertEqual(exact[0]['image'], self.assets[-1]['name'])
+
+    def test_legacy_published_assets_follow_current_catalog(self):
+        catalog = {'distros': {
+            'debian': {'releases': [{'release': 'trixie', 'version': '13'}],
+                       'architectures': ['amd64'], 'variants': ['default', 'cloud']},
+        }}
+        assets = [
+            {'name': 'debian_13_trixie_x86_64_cloud_kvm.zip'},
+            {'name': 'debian_11_bullseye_x86_64_cloud_kvm.zip'},
+            {'name': 'legacy-format.tar.xz'},
+        ]
+        selected = supported_published_assets(assets, catalog)
+        self.assertEqual([asset['name'] for asset in selected], [
+            'debian_13_trixie_x86_64_cloud_kvm.zip', 'legacy-format.tar.xz'])
 
     def test_empty_or_invalid_selection_fails_without_a_success_marker(self):
         for scope, kind in (('smoke', 'vm'), ('invalid', 'vm'), ('smoke', 'invalid')):

@@ -7,7 +7,39 @@ from pathlib import Path
 import re
 import subprocess
 from release_assets import Publisher
-from image_catalog import automatic_matrix
+from image_catalog import automatic_matrix, validate as validate_catalog
+
+
+ASSET_RE = re.compile(
+    r'^([A-Za-z0-9]+)_([A-Za-z0-9.-]+)_([A-Za-z0-9.-]+)_'
+    r'(amd64|x86_64|arm64|aarch64)_(default|cloud|openrc|systemd)_kvm\.zip$'
+)
+
+
+def supported_published_assets(assets, catalog):
+    """Keep the suite aligned with the current producer catalog.
+
+    Releases intentionally retain old assets for consumers, but those assets
+    must not be mistaken for current build outputs in the scheduled/full
+    matrix. Explicit ``--image`` requests bypass this filter for diagnosis.
+    """
+    supported = set()
+    for distro, config in catalog['distros'].items():
+        for release in config['releases']:
+            for arch in config['architectures']:
+                for variant in config['variants']:
+                    supported.add((distro, release['version'], release['release'], arch, variant))
+    selected = []
+    for asset in assets:
+        match = ASSET_RE.fullmatch(asset['name'])
+        if not match:
+            selected.append(asset)
+            continue
+        distro, version, release, raw_arch, variant = match.groups()
+        arch = {'x86_64': 'amd64', 'aarch64': 'arm64'}.get(raw_arch, raw_arch)
+        if (distro, version, release, arch, variant) in supported:
+            selected.append(asset)
+    return selected
 
 
 def published(publisher):
@@ -76,8 +108,15 @@ def main():
     publisher=Publisher(repo,os.environ['GH_TOKEN'])
     if args.command=='matrix':
         assets=published(publisher)
-        if os.environ.get('IMAGE'):
+        explicit_image = bool(os.environ.get('IMAGE'))
+        if explicit_image:
             assets=[a for a in assets if a['name']==os.environ['IMAGE']]
+        else:
+            catalog = validate_catalog(json.loads(Path('.github/image-catalog.json').read_text()))
+            before_catalog = len(assets)
+            assets = supported_published_assets(assets, catalog)
+            print(f'Current catalog filter: {len(assets)} selected, '
+                  f'{before_catalog-len(assets)} legacy assets held out')
         value=matrix(assets,repo.split('/')[-1],'full' if os.environ.get('IMAGE') else args.scope,args.kind)
         if os.environ.get('CI_IMAGE_AUTOMATIC') == 'true':
             before = len(value['include'])

@@ -16,7 +16,7 @@ ASSET_RE = re.compile(
 )
 
 
-def supported_published_assets(assets, catalog):
+def supported_published_assets(assets, catalog, kind):
     """Keep the suite aligned with the current producer catalog.
 
     Releases intentionally retain old assets for consumers, but those assets
@@ -25,6 +25,8 @@ def supported_published_assets(assets, catalog):
     """
     supported = set()
     for distro, config in catalog['distros'].items():
+        if kind == 'vm' and distro in ('kali', 'oracle'):
+            continue
         for release in config['releases']:
             for arch in config['architectures']:
                 for variant in config['variants']:
@@ -114,7 +116,7 @@ def main():
         else:
             catalog = validate_catalog(json.loads(Path('.github/image-catalog.json').read_text()))
             before_catalog = len(assets)
-            assets = supported_published_assets(assets, catalog)
+            assets = supported_published_assets(assets, catalog, args.kind)
             print(f'Current catalog filter: {len(assets)} selected, '
                   f'{before_catalog-len(assets)} legacy assets held out')
         value=matrix(assets,repo.split('/')[-1],'full' if os.environ.get('IMAGE') else args.scope,args.kind)

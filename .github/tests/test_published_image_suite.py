@@ -47,9 +47,28 @@ class PublishedSuiteTests(unittest.TestCase):
             {'name': 'debian_11_bullseye_x86_64_cloud_kvm.zip'},
             {'name': 'legacy-format.tar.xz'},
         ]
-        selected = supported_published_assets(assets, catalog)
+        selected = supported_published_assets(assets, catalog, 'vm')
         self.assertEqual([asset['name'] for asset in selected], [
             'debian_13_trixie_x86_64_cloud_kvm.zip', 'legacy-format.tar.xz'])
+
+    def test_vm_filter_excludes_catalog_container_only_oracle_assets(self):
+        catalog = {'distros': {
+            'oracle': {'releases': [{'release': '9', 'version': '9'}],
+                       'architectures': ['amd64'], 'variants': ['default']},
+            'debian': {'releases': [{'release': 'trixie', 'version': '13'}],
+                       'architectures': ['amd64'], 'variants': ['default']},
+        }}
+        assets = [
+            {'name': 'oracle_9_9_x86_64_default_kvm.zip'},
+            {'name': 'debian_13_trixie_x86_64_default_kvm.zip'},
+        ]
+        vm = supported_published_assets(assets, catalog, 'vm')
+        container = supported_published_assets(assets, catalog, 'container')
+        self.assertEqual([asset['name'] for asset in vm], [
+            'debian_13_trixie_x86_64_default_kvm.zip'])
+        self.assertEqual([asset['name'] for asset in container], [
+            'oracle_9_9_x86_64_default_kvm.zip',
+            'debian_13_trixie_x86_64_default_kvm.zip'])
 
     def test_empty_or_invalid_selection_fails_without_a_success_marker(self):
         for scope, kind in (('smoke', 'vm'), ('invalid', 'vm'), ('smoke', 'invalid')):

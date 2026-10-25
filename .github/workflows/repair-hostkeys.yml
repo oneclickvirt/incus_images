@@ -11,10 +11,14 @@ name: Replace inherited SSH identities in published container images
         type: choice
         options: [all, amd64, arm64]
         default: all
+      image:
+        description: Exact published container ZIP to repair, including retained older releases (optional)
+        type: string
+        default: ''
 permissions:
   contents: write
 concurrency:
-  group: repair-image-hostkeys-${{ inputs.distro }}-${{ inputs.arch }}
+  group: repair-image-hostkeys-${{ inputs.distro }}-${{ inputs.arch }}-${{ inputs.image }}
   cancel-in-progress: false
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -32,9 +36,18 @@ jobs:
     - id: catalog
       env:
         CI_IMAGE_AUTOMATIC: 'true'
+        GH_TOKEN: ${{ github.token }}
         DISTRO: ${{ inputs.distro }}
         ARCH: ${{ inputs.arch }}
-      run: python3 .github/scripts/image_catalog.py matrix --distro "$DISTRO" --arch "$ARCH" --scope current --kind container
+        IMAGE: ${{ inputs.image }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ -n "$IMAGE" ]]; then
+          python3 .github/scripts/repair_published_selection.py
+        else
+          python3 .github/scripts/image_catalog.py matrix --distro "$DISTRO" --arch "$ARCH" --scope current --kind container
+        fi
   repair:
     needs: catalog
     if: needs.catalog.outputs.count != '0'
@@ -51,6 +64,7 @@ jobs:
       CI_IMAGE_RELEASES: ${{ matrix.release }}
       DISTRO: ${{ matrix.distro }}
       ARCH: ${{ matrix.arch }}
+      SELECTED_IMAGE: ${{ matrix.image }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -65,8 +79,12 @@ jobs:
       shell: bash
       run: |
         set -euo pipefail
-        output=$(bash build_images.sh "$DISTRO" false "$ARCH" | tail -n 1)
-        read -r -a assets <<< "$output"
+        if [[ -n "$SELECTED_IMAGE" ]]; then
+          assets=("$SELECTED_IMAGE")
+        else
+          output=$(bash build_images.sh "$DISTRO" false "$ARCH" | tail -n 1)
+          read -r -a assets <<< "$output"
+        fi
         [[ ${#assets[@]} -gt 0 ]]
         for file in "${assets[@]}"; do
           IMAGE="$file" TAG="$DISTRO" python3 .github/scripts/published_image_suite.py download

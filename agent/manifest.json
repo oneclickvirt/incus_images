@@ -1,0 +1,11 @@
+{
+  "repository": "oneclickvirt/incus_images",
+  "skill_name": "oneclickvirt-incus-images",
+  "mcp": true,
+  "files": {
+    "agent/profile.json": "abe4b38be5e29341cfba17d35f90835679c9eb0547b751145671627b095d58ac",
+    "skills/oneclickvirt-incus-images/SKILL.md": "605148b86ed395b61014c7f422a7041b63bcde0cce9d886bbd1677afd4f5f550",
+    "skills/oneclickvirt-incus-images/SKILL_ZH.md": "60ee59801ebdf2bff7c927e05c42e79f25af0f5d2d222a09ffdd828b90523d59",
+    "agent/server.py": "d01416e6194095d90bf0d49ea29f7122969f0b74cf4d74ed0b1ce78753423a7d"
+  }
+}

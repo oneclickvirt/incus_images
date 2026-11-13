@@ -79,6 +79,8 @@ opensuse_15.6_15.6_x86_64_cloud.zip
 opensuse_15.6_15.6_x86_64_default.zip
 opensuse_16.0_16.0_x86_64_cloud.zip
 opensuse_16.0_16.0_x86_64_default.zip
+opensuse_16.1_16.1_x86_64_cloud.zip
+opensuse_16.1_16.1_x86_64_default.zip
 opensuse_tumbleweed_tumbleweed_x86_64_cloud.zip
 opensuse_tumbleweed_tumbleweed_x86_64_default.zip
 openwrt_21.02_21.02_x86_64_cloud.zip
